@@ -1,0 +1,196 @@
+/* eslint-disable @next/next/no-img-element */
+import { useState, useEffect, useRef } from "react";
+import Router from "next/router";
+import { toast } from "react-toastify";
+import { useAuth } from "../../../controllers/hooks/use_auth";
+import HttpClient from "../../../controllers/utils/http_client";
+import { Bodega, ResponseData } from "../../../models";
+import Sidebar from "../../components/sidebar";
+import {
+  ExcelExport,
+  ExcelExportColumn,
+} from "@progress/kendo-react-excel-export";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
+const InformacionBodega = () => {
+  const { auth } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [bodega, setBodega] = useState<Bodega | null>(null);
+  const excelExporter = useRef<any>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (Router.asPath !== Router.route) {
+        setLoading(true);
+        const bodegaID = Router.query.id as string;
+        const response: ResponseData = await HttpClient(
+          `/api/bodegas/${bodegaID}`,
+          "GET",
+          auth.usuario,
+          auth.rol
+        );
+        if (response.success) {
+          setBodega(response.data);
+        } else {
+          toast.error("Bodega no encontrada.");
+        }
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [auth]);
+
+  const exportToExcel = () => {
+    if (excelExporter.current) {
+      excelExporter.current.save();
+    }
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.text(`Reporte de Herramientas - Bodega: ${bodega?.nombreBodega}`, 14, 10);
+
+    const headers = [
+      [
+        "Código",
+        "Estado",
+        "Nombre",
+        "N° Parte",
+        "Serie",
+        "Modelo",
+        "Marca",
+        "Ubicación",
+        "Cantidad",
+        "Observación",
+      ],
+    ];
+
+    const data = bodega?.herramientas.map((h) => [
+      h.codigo,
+      h.estado,
+      h.nombre,
+      h.NParte,
+      h.serie,
+      h.modelo,
+      h.marca,
+      h.ubicacion,
+      h.cantidad,
+      h.observacion,
+    ]);
+
+    autoTable(doc, {
+      head: headers,
+      body: data || [],
+      startY: 20,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save("Reporte_Herramientas.pdf");
+  };
+
+  return (
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="w-full bg-blue-100 p-8 overflow-y-auto">
+        <div className="bg-white rounded-lg shadow p-6 max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">
+            Información de la Bodega: {bodega?.nombreBodega}
+          </h1>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div>
+              <p>
+                <strong>Creador:</strong> {bodega?.creador}
+              </p>
+              <p>
+                <strong>Bodeguero Asignado:</strong> {bodega?.bodegueroAsignado}
+              </p>
+              <p>
+                <strong>Fecha de Creación:</strong> {bodega?.fechaDeCreacion}
+              </p>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+            Herramientas
+          </h2>
+
+          <div className="overflow-auto mb-6">
+            <table className="min-w-full border border-gray-300">
+              <thead className="bg-blue-200 text-gray-700">
+                <tr>
+                  <th className="p-2 border">Imagen</th>
+                  <th className="p-2 border">Nombre</th>
+                  <th className="p-2 border">Código</th>
+                  <th className="p-2 border">Modelo</th>
+                  <th className="p-2 border">Ubicación</th>
+                  <th className="p-2 border">Estado</th>
+                  <th className="p-2 border">Calibracion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bodega?.herramientas.map((h, i) => (
+                  <tr key={i} className="text-sm text-center">
+                    <td className="p-2 border">
+                      <a
+                        href={h.imagen}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Ver archivo
+                      </a>
+                    </td>
+                    <td className="p-2 border">{h.nombre}</td>
+                    <td className="p-2 border">{h.codigo}</td>
+                    <td className="p-2 border">{h.modelo}</td>
+                    <td className="p-2 border">{h.ubicacion}</td>
+                    <td className="p-2 border">{h.estado}</td>
+                    <td className="p-2 border">{h.calibracion}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex gap-4 justify-end">
+            <button
+              onClick={exportToExcel}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Exportar a Excel
+            </button>
+            <button
+              onClick={exportToPDF}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Exportar a PDF
+            </button>
+          </div>
+
+          {/* Exportador Excel oculto */}
+          <ExcelExport
+            data={bodega?.herramientas || []}
+            ref={excelExporter}
+            fileName="Inventario_Herramientas.xlsx"
+          >
+            <ExcelExportColumn field="codigo" title="Código" />
+            <ExcelExportColumn field="estado" title="Estado" />
+            <ExcelExportColumn field="nombre" title="Nombre" />
+            <ExcelExportColumn field="NParte" title="N° Parte" />
+            <ExcelExportColumn field="serie" title="Serie" />
+            <ExcelExportColumn field="modelo" title="Modelo" />
+            <ExcelExportColumn field="marca" title="Marca" />
+            <ExcelExportColumn field="ubicacion" title="Ubicación" />
+            <ExcelExportColumn field="cantidad" title="Cantidad" />
+            <ExcelExportColumn field="observacion" title="Observación" />
+          </ExcelExport>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InformacionBodega;
