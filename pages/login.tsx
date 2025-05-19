@@ -7,6 +7,7 @@ import HttpClient from "../controllers/utils/http_client";
 import { LoginData } from "../models";
 import LoadingContainer from "./components/loading_container";
 import Router from "next/router";
+import Cookies from "js-cookie";
 
 const currentYear = new Date().getFullYear();
 // login de la app
@@ -28,13 +29,21 @@ const LoginPage = () => {
     if (response.success) {
       const data = response.data;
       login(data);
-      console.log(formData);
-      Router.push({ pathname: "/" });
+
+      // ✅ Redirección por tipo de usuario
+      if (data.rol === 0) {
+        Router.push("/dashboard/admin");
+      } else if (data.rol === 1) {
+        Router.push("/dashboard/bodeguero");
+      } else {
+        Router.push("/dashboard/cliente");
+      }
     } else {
       toast.warning(response.message);
     }
     setLoading(false);
   };
+
 
   // maneja los datos y comportamiento del formulario
   const formik = useFormik({

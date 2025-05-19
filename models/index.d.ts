@@ -67,6 +67,7 @@ export type Herramienta = {
   ubicacion: string;
   estado: string;
   imagen: string;
+  bodega: string;
   tipo: string;
   cantidad: number;
   observacion: string;
