@@ -5,22 +5,30 @@ import { useAuth } from "../../../controllers/hooks/use_auth";
 import { useFormik } from "formik";
 import Router from "next/router";
 import { toast } from "react-toastify";
-import { Solicitude, ResponseData } from "../../../models";
+import { Solicitude, Herramienta, ResponseData } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
 import { useEffect, useState } from "react";
-import FormatedDate from "../../../controllers/utils/formated_date";
-import Select from "react-select";
+
+// Tipo extendido solo para esta vista
+type HerramientaConEntrega = Herramienta & { entregada?: boolean };
 
 export const EditarRegistro = () => {
   const { auth } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [solicitudes, setsolicitudes] = useState<Solicitude[]>([]);
-  const [selectedTool, setSelectedTool] = useState(null);
-  const [initialValues, setInitialValues] = useState<Solicitude | null>(null);
+  const [initialValues, setInitialValues] = useState<{
+    number: number;
+    herramientas: HerramientaConEntrega[];
+    fecha: string;
+    solicitante: string;
+    receptor: string;
+    estado: string;
+    observacion?: string;
+  } | null>(null);
 
   const loadData = async () => {
     setLoading(true);
     const solicitudeId = Router.query.id as string;
+
     const response = await HttpClient(
       `/api/solicitudes/${solicitudeId}`,
       "GET",
@@ -28,36 +36,52 @@ export const EditarRegistro = () => {
       auth.rol
     );
 
-    console.log("response.data:", response.data);
-    setsolicitudes(response.data);
-    setInitialValues(response.data);
+    const solicitud = response.data;
+
+    solicitud.herramientas = solicitud.herramientas.map((h: HerramientaConEntrega) => ({
+      ...h,
+      entregada: true,
+    }));
+
+    setInitialValues({
+      ...solicitud,
+      observacion: solicitud.observacion || "",
+    });
 
     setLoading(false);
   };
 
   useEffect(() => {
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Valores iniciales para la solicitud
-
-  // Configuración de Formik
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: initialValues || {
-      number: 0, // Generar un número si es necesario
+      number: 0,
       herramientas: [],
       fecha: "",
       solicitante: "",
       receptor: "",
       estado: "",
+      observacion: "",
     },
     onSubmit: async (values) => {
-      // Si pasa las validaciones, se envía el formulario
       setLoading(true);
-      console.log("Valores del formulario:", values);
-      values.estado = "Herramientas entregadas"
+
+      const total = values.herramientas.length;
+      const entregadas = values.herramientas.filter(h => h.entregada !== false).length;
+
+      values.estado =
+        entregadas === total
+          ? "Herramientas entregadas"
+          : "Faltan herramientas por entregar";
+
+      values.herramientas = values.herramientas.map((h) => ({
+        ...h,
+        entregada: h.entregada !== false,
+      }));
+
       const response: ResponseData = await HttpClient(
         `/api/solicitudes`,
         "PUT",
@@ -68,7 +92,6 @@ export const EditarRegistro = () => {
 
       if (response.success) {
         try {
-          // 1. Obtener todas las bodegas para identificar dónde está cada herramienta
           const bodegasResponse = await HttpClient(
             "/api/bodegas",
             "GET",
@@ -77,69 +100,56 @@ export const EditarRegistro = () => {
           );
 
           const bodegas = bodegasResponse.data ?? [];
+          const actualizacionesPorBodega: {
+            [key: string]: {
+              bodega: any;
+              herramientasActualizar: { indice: number; id: string }[];
+            };
+          } = {};
 
-          // 2. Crear un mapa de herramientas a actualizar por bodega
-          const actualizacionesPorBodega = {};
-
-          // Agrupar herramientas por bodega
-          for (const herramientaSolicitud of values.herramientas) {
-            // Buscar la bodega que contiene esta herramienta
+          for (const herramienta of values.herramientas.filter(h => h.entregada !== false)) {
             for (const bodega of bodegas) {
               if (!bodega.herramientas) continue;
 
               const indiceHerramienta = bodega.herramientas.findIndex(
-                (h) => h.id === herramientaSolicitud.id
+                (h) => h.id === herramienta.id
               );
 
               if (indiceHerramienta !== -1) {
-                // Esta herramienta está en esta bodega
                 if (!actualizacionesPorBodega[bodega.id]) {
-                  // Inicializar la entrada para esta bodega si no existe
                   actualizacionesPorBodega[bodega.id] = {
                     bodega: bodega,
                     herramientasActualizar: [],
                   };
                 }
 
-                // Agregar esta herramienta a la lista de actualizaciones
-                actualizacionesPorBodega[bodega.id].herramientasActualizar.push(
-                  {
-                    indice: indiceHerramienta,
-                    id: herramientaSolicitud.id,
-                  }
-                );
+                actualizacionesPorBodega[bodega.id].herramientasActualizar.push({
+                  indice: indiceHerramienta,
+                  id: herramienta.id,
+                });
 
-                // No es necesario seguir buscando en otras bodegas
                 break;
               }
             }
           }
 
-          // 3. Realizar las actualizaciones por bodega
           await Promise.all(
             Object.values(actualizacionesPorBodega).map(
-              async (actualizacion) => {
-                //@ts-ignore
-                const { bodega, herramientasActualizar } = actualizacion;
-
-                // Crear una copia de las herramientas de la bodega
+              async ({ bodega, herramientasActualizar }) => {
                 const herramientasActualizadas = [...bodega.herramientas];
 
-                // Actualizar cada herramienta
-                for (const { indice, id } of herramientasActualizar) {
+                for (const { indice } of herramientasActualizar) {
                   herramientasActualizadas[indice] = {
                     ...herramientasActualizadas[indice],
                     estado: "Disponible",
                   };
                 }
 
-                // Crear la bodega actualizada
                 const bodegaActualizada = {
                   ...bodega,
                   herramientas: herramientasActualizadas,
                 };
 
-                // Enviar la actualización al servidor
                 return HttpClient(
                   `/api/bodegas/`,
                   "PUT",
@@ -151,34 +161,15 @@ export const EditarRegistro = () => {
             )
           );
 
-          toast.success(
-            "Registro creado correctamente y herramientas actualizadas a 'Disponible'!"
-          );
+          toast.success("Entrega registrada correctamente.");
           Router.back();
         } catch (error) {
-          console.error("Error al actualizar las herramientas:", error);
-          toast.warning(
-            "Registro creado pero hubo un problema al actualizar las herramientas."
-          );
+          console.error("Error al actualizar herramientas:", error);
+          toast.warning("Entrega registrada, pero falló la actualización de herramientas.");
         }
       } else {
         toast.warning(response.message);
       }
-
-      //const response: ResponseData = await HttpClient(
-      //  "/api/solicitudes",
-      //  "POST",
-      //  auth.usuario,
-      //  auth.rol,
-      //  values
-      //);
-      //
-      //if (response.success) {
-      //  toast.success("Registro creado correctamente!");
-      //
-      //} else {
-      //  toast.warning(response.message);
-      //}
 
       setLoading(false);
     },
@@ -195,39 +186,29 @@ export const EditarRegistro = () => {
             Editar registro de herramientas prestadas
           </h1>
           <form onSubmit={formik.handleSubmit}>
-            {/* Datos del cliente */}
+            {/* Datos generales */}
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Solicitante
-              </label>
+              <label className="block text-blue-500 font-bold mb-2">Solicitante</label>
               <input
                 type="text"
                 name="solicitante"
-                onChange={formik.handleChange}
                 value={formik.values.solicitante}
                 className="border p-2 w-full rounded-lg"
-                placeholder="Nombre del solicitante"
                 disabled
               />
             </div>
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Receptor
-              </label>
+              <label className="block text-blue-500 font-bold mb-2">Receptor</label>
               <input
                 type="text"
                 name="receptor"
-                onChange={formik.handleChange}
                 value={formik.values.receptor}
                 className="border p-2 w-full rounded-lg"
-                placeholder="Nombre del receptor"
                 disabled
               />
             </div>
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Fecha
-              </label>
+              <label className="block text-blue-500 font-bold mb-2">Fecha</label>
               <input
                 type="text"
                 name="fecha"
@@ -237,11 +218,22 @@ export const EditarRegistro = () => {
               />
             </div>
 
-            {/* Listado de herramientas agregadas */}
+            {/* Observación */}
             <div className="mb-4">
-              <p className="text-xl font-bold text-blue-500 mb-2">
-                Herramientas agregadas
-              </p>
+              <label className="block text-blue-500 font-bold mb-2">Observación</label>
+              <textarea
+                name="observacion"
+                value={formik.values.observacion}
+                onChange={formik.handleChange}
+                className="border p-2 w-full rounded-lg"
+                rows={3}
+                placeholder="Ejemplo: Faltó herramienta por daño, cliente firmó sin recibir completa."
+              />
+            </div>
+
+            {/* Herramientas */}
+            <div className="mb-4">
+              <p className="text-xl font-bold text-blue-500 mb-2">Herramientas agregadas</p>
               {formik.values.herramientas.length === 0 ? (
                 <p className="text-gray-500">No hay herramientas agregadas.</p>
               ) : (
@@ -249,37 +241,45 @@ export const EditarRegistro = () => {
                   {formik.values.herramientas.map((tool, index) => (
                     <li
                       key={index}
-                      className="flex justify-between items-center border-b last:border-b-0 p-2"
+                      className={`flex justify-between items-center border-b last:border-b-0 p-2 ${
+                        tool.entregada === false ? "bg-red-100" : ""
+                      }`}
                     >
                       <span>
-                        {tool.nombre} - {tool.codigo} - {tool.modelo} -
-                        {tool.marca} - {tool.ubicacion} - {tool.serie}
+                        {tool.nombre} - {tool.codigo} - {tool.modelo} - {tool.marca} - {tool.ubicacion} - {tool.serie}
                       </span>
                       <Button
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg"
+                        className={`font-bold py-1 px-3 rounded-lg text-white ${
+                          tool.entregada === false
+                            ? "bg-red-500 hover:bg-red-600"
+                            : "bg-green-500 hover:bg-green-600"
+                        }`}
                         size="sm"
                         onClick={() => {
-                          const updatedTools =
-                            formik.values.herramientas.filter(
-                              (_, i) => i !== index
-                            );
+                          const updatedTools = [...formik.values.herramientas];
+                          updatedTools[index] = {
+                            ...updatedTools[index],
+                            entregada: !(tool.entregada !== false), // toggle entre true y false
+                          };
                           formik.setFieldValue("herramientas", updatedTools);
                         }}
                       >
-                        Eliminar
+                        {tool.entregada === false ? "No entrega" : "Entregar"}
                       </Button>
+
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
+            {/* Submit */}
             <Button
               type="submit"
               disabled={loading}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full"
             >
-              {loading ? "Registrando..." : "Registrar herramientas entregas"}
+              {loading ? "Registrando..." : "Registrar entrega"}
             </Button>
           </form>
         </div>

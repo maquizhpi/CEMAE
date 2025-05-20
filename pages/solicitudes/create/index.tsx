@@ -104,6 +104,8 @@ export const RegistroCreate = () => {
         toast.warning("Debes agregar al menos una herramienta.");
         return;
       }
+
+
   
       // Si pasa las validaciones, se envía el formulario
       setLoading(true);

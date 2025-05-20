@@ -67,7 +67,6 @@ export type Herramienta = {
   ubicacion: string;
   estado: string;
   imagen: string;
-  bodega: string;
   tipo: string;
   cantidad: number;
   observacion: string;
@@ -75,7 +74,8 @@ export type Herramienta = {
   file?: File | CloudImage;
 };
 
-// Modelo para las ventas
+// Modelo para las bodegas
+// Se ha añadido el campo "herramientas" como un array de Herramienta
 export type Bodega = {
   id?: string;
   number: number;
@@ -86,7 +86,7 @@ export type Bodega = {
   nombreBodega: string;
 };
 
-// Modelo para las ventas
+// Modelo para las solicitudes
 export type Solicitude = {
   id?: string;
   number: number;
@@ -95,8 +95,10 @@ export type Solicitude = {
   solicitante: string;
   receptor: string;
   estado: string;
+  observacion: string;
 };
 
+// Modelo para las calibraciones
 export type Calibracion = {
   id?: string;
   number: number;

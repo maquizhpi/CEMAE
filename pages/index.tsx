@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useAuth } from "../../controllers/hooks/use_auth";
+import { useAuth } from "../controllers/hooks/use_auth";
 
 export default function DashboardIndex() {
   const { auth } = useAuth();

@@ -10,32 +10,38 @@ export default async function handler(
   const solicitud = req.body as Solicitude;
   const userName = req.headers.username as string;
 
-  const newsolicitud = (): Solicitude => {
-    return solicitud;
+  const updateFields = {
+    number: solicitud.number,
+    fecha: solicitud.fecha,
+    solicitante: solicitud.solicitante,
+    receptor: solicitud.receptor,
+    estado: solicitud.estado,
+    herramientas: solicitud.herramientas,
+    observacion: solicitud.observacion ?? "", // ✅ aseguramos que se incluya
   };
 
   const resp = await SolicitudeModel.findOneAndUpdate(
-    {
-      _id: solicitud.id,
-    },
-    newsolicitud()
+    { _id: solicitud.id },
+    updateFields,
+    { new: true }
   );
 
   const auditory = new AuditoryModel({
     date: FormatedDate(),
     user: userName,
-    action: "Actualizo a la solicitud:" + solicitud.number,
+    action: "Actualizó la solicitud: " + solicitud.number,
   });
   await auditory.save();
 
   if (resp === null)
     return res.status(500).json({
-      message: "solicitud no encontrada",
+      message: "Solicitud no encontrada",
       success: false,
     });
 
   return res.status(200).json({
-    message: "solicitud editada",
+    message: "Solicitud editada",
     success: true,
+    data: resp,
   });
 }

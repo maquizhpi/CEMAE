@@ -119,7 +119,7 @@ const Sidebar = () => {
             onClick={handleChanges}
           >
             <MdOutlineStickyNote2 className="text-2xl" />
-            <span>AuditoriasC</span>
+            <span>Auditorias</span>
           </a>
         )}
         <button

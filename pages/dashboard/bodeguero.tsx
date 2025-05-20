@@ -4,7 +4,7 @@ import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
 import Sidebar from "../components/sidebar";
 import { Herramienta, Bodega } from "../../models";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -27,7 +27,7 @@ export default function DashboardBodeguero() {
     loadData();
   }, []);
 
-  const bodegaActual = bodegas.find(b => b._id === bodegaSeleccionada);
+  const bodegaActual = bodegas.find(b => b.id === bodegaSeleccionada);
   const herramientasPorBodega: Herramienta[] = bodegaActual?.herramientas ?? [];
 
   const total = herramientasPorBodega.length;
@@ -87,7 +87,7 @@ export default function DashboardBodeguero() {
                 className="w-full p-2 border rounded-lg shadow-sm"
               >
                 {bodegas.map(b => (
-                  <option key={b._id} value={b._id}>{b.nombreBodega}</option>
+                  <option key={b.id} value={b.id}>{b.nombreBodega}</option>
                 ))}
               </select>
             </div>
@@ -115,11 +115,23 @@ export default function DashboardBodeguero() {
               <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Herramientas</h2>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#0072CC" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                    {data.map((entry, index) => (
+                    <Cell
+                        key={`cell-${index}`}
+                        fill={
+                        entry.name === "Disponibles" ? "#3B82F6" :
+                        entry.name === "En Uso" ? "#EF4444" :
+                        entry.name === "Calibradas" ? "#FACC15" :
+                        "#9CA3AF"
+                        }
+                    />
+                    ))}
+                </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>

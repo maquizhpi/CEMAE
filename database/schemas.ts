@@ -9,8 +9,8 @@ import {
   Solicitude,
   Ubicaciones,
   Usuario,
-} from "../models";
 
+} from "../models";
 const UserSchema = new mongoose.Schema<Usuario>(
   {
     number: { type: Number },
@@ -148,6 +148,7 @@ const SolicitudeSchema = new mongoose.Schema<Solicitude>(
     herramientas: { type: [HerramientaSchema] },
     receptor: { type: String },
     estado: { type: String },
+    observacion: { type: String, default: "" },
   },
   { timestamps: true }
 );

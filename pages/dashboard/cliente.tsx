@@ -1,42 +1,43 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useAuth } from "../../controllers/hooks/use_auth";
-import HttpClient from "../../controllers/utils/http_client";
 import Sidebar from "../components/sidebar";
-import { Herramienta } from "../../models";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Legend, Cell } from "recharts";
 
-export default function DashboardBodeguero() {
+export default function DashboardCliente() {
   const { auth } = useAuth();
-  const [herramientas, setHerramientas] = useState<Array<Herramienta>>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [solicitudes, setSolicitudes] = useState([]);
 
   const loadData = async () => {
-    setLoading(true);
-    const response = await HttpClient("/api/herramientas", "GET", auth.usuario, auth.rol);
-    const herramientasFiltradas = (response.data ?? []).filter(
-      (h: Herramienta) => h.bodegueroAsignado === auth.usuario
-    );
-    setHerramientas(herramientasFiltradas);
-    setLoading(false);
+    try {
+      const responseSol = await fetch("/api/solicitudes");
+      const dataSol = await responseSol.json();
+
+      const misSolicitudes = (dataSol.data ?? []).filter(s =>
+        s.receptor?.toLowerCase().replace(/\s+/g, '') === auth.usuario?.toLowerCase()
+      );
+      setSolicitudes(misSolicitudes);
+
+    } catch (error) {
+      console.error("Error al cargar datos desde la base de datos:", error);
+    }
   };
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const total = herramientas.length;
-  const disponibles = herramientas.filter(h => h.estado === "Disponible").length;
-  const enUso = herramientas.filter(h => h.estado === "En uso").length;
-  const calibradas = herramientas.filter(h => h.calibracion === "Calibrada").length;
-  const noCalibradas = herramientas.filter(h => h.calibracion === "No calibrada").length;
+  const totalSolicitudes = solicitudes.length;
+  const entregadas = solicitudes.filter(s => s.estado === "Herramientas entregadas").length;
+  const noEntregadas = solicitudes.filter(s => s.estado !== "Herramientas entregadas").length;
 
   const data = [
-    { name: "Disponibles", value: disponibles },
-    { name: "En Uso", value: enUso },
-    { name: "Calibradas", value: calibradas },
-    { name: "No Calibradas", value: noCalibradas }
+    { name: "Total Solicitudes", value: totalSolicitudes },
+    { name: "Solicitudes Entregadas", value: entregadas },
+    { name: "Solicitudes No Entregadas", value: noEntregadas }
   ];
+
+  const colors = ["#FDE68A", "#D1FAE5", "#FECACA"];
 
   return (
     <div className="flex h-screen">
@@ -47,37 +48,37 @@ export default function DashboardBodeguero() {
         <div className="flex-1 p-6">
           <div className="bg-white w-full rounded-xl shadow-2xl p-8 mb-8">
             <h2 className="text-3xl text-center text-blue-800 font-bold mb-6">
-              Dashboard del Bodeguero
+              Dashboard del Cliente
             </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-green-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{total}</p>
-                <p className="text-sm">Total Herramientas</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-yellow-100 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{totalSolicitudes}</p>
+                <p className="text-sm">Total Solicitudes Realizadas</p>
               </div>
-              <div className="bg-blue-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{disponibles}</p>
-                <p className="text-sm">Disponibles</p>
+              <div className="bg-green-100 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{entregadas}</p>
+                <p className="text-sm">Solicitudes Entregadas</p>
               </div>
-              <div className="bg-red-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{enUso}</p>
-                <p className="text-sm">En Uso</p>
-              </div>
-              <div className="bg-yellow-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{calibradas}</p>
-                <p className="text-sm">Calibradas</p>
+             <div className="bg-red-100 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{noEntregadas}</p>
+                <p className="text-sm">Solicitudes No Entregadas</p>
               </div>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow mb-8">
-              <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Herramientas</h2>
+              <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Solicitudes</h2>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={data}>
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="value" fill="#0072CC" />
+                    <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                    {data.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    ))}
+                    </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>

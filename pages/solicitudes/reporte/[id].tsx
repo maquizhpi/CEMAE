@@ -20,7 +20,6 @@ const ReporteRegistro = () => {
       setLoading(true);
       const registroId = Router.query.id as string;
 
-      // Obtener los datos de la solicitud
       const response: ResponseData = await HttpClient(
         `/api/solicitudes/${registroId}`,
         "GET",
@@ -32,19 +31,8 @@ const ReporteRegistro = () => {
         const solicitud = response.data;
         setRegistro(solicitud);
 
-        // Consultar los detalles de cada herramienta
-        const herramientasPromises = solicitud.herramientas.map(async (herramienta) => {
-          const herramientaResponse: ResponseData = await HttpClient(
-            `/api/herramientas/${herramienta.id}`,
-            "GET",
-            auth.usuario,
-            auth.rol
-          );
-          return herramientaResponse.success ? herramientaResponse.data : null;
-        });
-
-        const herramientasDetalles = await Promise.all(herramientasPromises);
-        setHerramientasDetalles(herramientasDetalles.filter((h) => h !== null));
+        //Usa directamente los datos que ya están embebidos
+        setHerramientasDetalles(solicitud.herramientas || []);
       } else {
         toast.error("Registro no encontrado.");
       }
@@ -56,7 +44,7 @@ const ReporteRegistro = () => {
 
   useEffect(() => {
     loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePrint = useReactToPrint({
@@ -89,46 +77,48 @@ const ReporteRegistro = () => {
 
               {/* Información del solicitante y receptor */}
               <div className="mt-4 border-b pb-2">
-                <p>
-                  <strong>Solicitante:</strong> {registro?.solicitante ?? "________"}
-                </p>
-                <p>
-                  <strong>Receptor:</strong> {registro?.receptor ?? "________"}
-                </p>
-                <p>
-                  <strong>Fecha:</strong> {registro?.fecha ?? "________"}
-                </p>
+                <p><strong>Solicitante:</strong> {registro?.solicitante ?? "________"}</p>
+                <p><strong>Receptor:</strong> {registro?.receptor ?? "________"}</p>
+                <p><strong>Fecha:</strong> {registro?.fecha ?? "________"}</p>
+                <p><strong>Observacion:</strong> {registro?.observacion ?? "________"}</p>
               </div>
 
               {/* Tabla de herramientas */}
               <table className="w-full border mt-4">
                 <thead>
-                  <tr className="bg-gray-200">
+                  <tr className="bg-gray-200 text-center">
                     <th className="border p-2">Descripción</th>
                     <th className="border p-2">Marca</th>
                     <th className="border p-2">Serie</th>
-                    <th className="border p-2">Novedad</th>
+                    <th className="border p-2">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   {herramientasDetalles.length ? (
                     herramientasDetalles.map((herramienta, index) => (
                       <tr key={index} className="text-center">
-                        <td className="border p-2">{herramienta.nombre}</td>
-                        <td className="border p-2">{herramienta.marca}</td>
-                        <td className="border p-2">{herramienta.serie}</td>
-                        <td className="border p-2">Entregado</td>
+                        <td className="border p-2">{herramienta.nombre ?? herramienta.descripcion}</td>
+                        <td className="border p-2">{herramienta.marca ?? "Sin marca"}</td>
+                        <td className="border p-2">{herramienta.serie ?? "N/A"}</td>
+                        <td className="border p-2">
+                          {registro?.estado?.toLowerCase() === "herramientas entregadas" ? (
+                            <span className="text-green-700 font-semibold">Entregado</span>
+                          ) : (
+                            <span className="text-red-600 italic">Pendiente</span>
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="border p-2 text-center">
+                      <td colSpan={4} className="border p-2 text-center text-gray-500">
                         No hay herramientas registradas
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+
 
               {/* Firmas */}
               <div className="mt-6 flex justify-between text-sm">

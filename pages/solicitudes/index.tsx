@@ -81,6 +81,12 @@ export const SolicitudePage = (props: Props) => {
       alignment: "center",
       cssClass: "bold",
     },
+        {
+      dataField: "observacion",
+      caption: "Observacion",
+      alignment: "center",
+      cssClass: "bold",
+    },
   ];
 
   const buttons = {
@@ -100,7 +106,7 @@ export const SolicitudePage = (props: Props) => {
       }
 
       // Verificar permisos del usuario
-      if (!CheckPermissions(auth, [0, 1, 2])) {
+      if (!CheckPermissions(auth, [0, 1])) {
         toast.error("No tienes permisos para editar esta solicitud");
         return;
       }
@@ -121,7 +127,7 @@ export const SolicitudePage = (props: Props) => {
           <div className="bg-white w-5/6 h-5/6 mx-auto">
             <div className="mt-6">
               <p className="md:text-4xl text-xl text-center pt-5 font-extrabold text-blue-500">
-                Registro de herramientas prestadas
+                Registro de solicitudes generadas
               </p>
             </div>
             {CheckPermissions(auth, [0, 1]) && (
@@ -136,7 +142,7 @@ export const SolicitudePage = (props: Props) => {
                 Crear registro
               </Button>
             )}
-            {CheckPermissions(auth, [2]) && (
+            {CheckPermissions(auth, [0]) && (
               <Button
                 className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
                 onClick={() =>
@@ -174,3 +180,4 @@ export const SolicitudePage = (props: Props) => {
 };
 
 export default SolicitudePage;
+
