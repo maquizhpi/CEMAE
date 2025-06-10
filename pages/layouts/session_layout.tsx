@@ -4,6 +4,7 @@ import LoadingContainer from "../components/loading_container";
 import { useRouter } from "next/router";
 import LoginPage from "../login";
 
+
 type Props = {
   rol?: Array<number>;
   children: React.ReactNode;
@@ -14,14 +15,15 @@ const SessionLayout = (props: Props) => {
   const { auth } = useAuth();
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
-
   const publicRoutes = ["/login", "/registro", "/recuperar"];
   const isPublicRoute = publicRoutes.includes(router.pathname);
 
+  // Verifica si el usuario está autenticado
   useEffect(() => {
     setLoggedIn(auth !== null);
   }, [auth]);
 
+  // Redirige a la página de inicio de sesión si el usuario no está autenticado
   return (
     <LoadingContainer visible={loggedIn === null && !isPublicRoute}>
       {loggedIn || isPublicRoute ? <>{props.children}</> : <LoginPage />}

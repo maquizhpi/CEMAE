@@ -12,7 +12,7 @@ export default async function handler(
   const modelo = await ModeloHerramientaModel.findById(id);
 
   return res.status(200).json({
-    message: "un modelo",
+    message: "una marca",
     data: modelo as ModelosHerramienta,
     success: true,
   });

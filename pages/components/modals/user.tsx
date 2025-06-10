@@ -42,12 +42,12 @@ const UserModal = (props: Props) => {
     initialValues,
     onSubmit: async (formData: Usuario) => {
       if (formData.nombre === "") {
-        toast.warning("El nombre del traabajador no puede estar vacio");
+        toast.warning("El nombre no puede estar vacio");
         return;
       }
 
       if (formData.identificacion === "") {
-        toast.warning("La cedula o ruc del traabajador no puede estar vacio");
+        toast.warning("La cedula no puede estar vacio");
         return;
       }
 

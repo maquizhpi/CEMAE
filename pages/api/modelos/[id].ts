@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import read from "../../../controllers/mongo/modelos/read";
+import read from "../../../controllers/mongo/marcas/read";
 import dbConnect from "../../../database/connect/mongo";
 
 export default async function handler(

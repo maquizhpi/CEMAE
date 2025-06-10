@@ -9,8 +9,10 @@ import { Solicitude, Herramienta, ResponseData } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
 import { useEffect, useState } from "react";
 
-// Tipo extendido solo para esta vista
-type HerramientaConEntrega = Herramienta & { entregada?: boolean };
+type HerramientaConEntrega = Herramienta & {
+  entregada?: boolean;
+  estadoActual?: string;
+};
 
 export const EditarRegistro = () => {
   const { auth } = useAuth();
@@ -19,41 +21,74 @@ export const EditarRegistro = () => {
     number: number;
     herramientas: HerramientaConEntrega[];
     fecha: string;
-    solicitante: string;
+    bodeguero: string;
     receptor: string;
     estado: string;
     observacion?: string;
   } | null>(null);
 
   const loadData = async () => {
-    setLoading(true);
-    const solicitudeId = Router.query.id as string;
+    try {
+      setLoading(true);
+      const solicitudeId = Router.query.id as string;
 
-    const response = await HttpClient(
-      `/api/solicitudes/${solicitudeId}`,
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
+      const response = await HttpClient(
+        `/api/solicitudes/${solicitudeId}`,
+        "GET",
+        auth.usuario,
+        auth.rol
+      );
+      const solicitud = response.data;
 
-    const solicitud = response.data;
+      const herramientasSolicitud = Array.isArray(solicitud.herramientas)
+        ? solicitud.herramientas
+        : [];
 
-    solicitud.herramientas = solicitud.herramientas.map((h: HerramientaConEntrega) => ({
-      ...h,
-      entregada: true,
-    }));
+      const bodegasResponse = await HttpClient(
+        "/api/bodegas",
+        "GET",
+        auth.usuario,
+        auth.rol
+      );
+      const bodegas = bodegasResponse.data ?? [];
 
-    setInitialValues({
-      ...solicitud,
-      observacion: solicitud.observacion || "",
-    });
+      const herramientasActualizadas = herramientasSolicitud.map((h: HerramientaConEntrega) => {
+        let estadoActual = "En uso";
+        for (const bodega of bodegas) {
+          if (bodega && Array.isArray(bodega.herramientas)) {
+            const encontrada = bodega.herramientas.find((item) => item.id === h.id);
+            if (encontrada) {
+              estadoActual = encontrada.estado;
+              break;
+            }
+          }
+        }
+        return {
+          ...h,
+          entregada: estadoActual === "En uso",
+          estadoActual: estadoActual
+        };
+      });
 
-    setLoading(false);
+      setInitialValues({
+        ...solicitud,
+        herramientas: herramientasActualizadas,
+        observacion: solicitud.observacion || "",
+      });
+    } catch (error) {
+      console.error("Error cargando la solicitud:", error);
+      toast.error("Error cargando los datos de la solicitud.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (Router.query.id) {
+      loadData();
+    }
+  }, [Router.query.id]);
+
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -61,7 +96,7 @@ export const EditarRegistro = () => {
       number: 0,
       herramientas: [],
       fecha: "",
-      solicitante: "",
+      bodeguero: "",
       receptor: "",
       estado: "",
       observacion: "",
@@ -69,13 +104,15 @@ export const EditarRegistro = () => {
     onSubmit: async (values) => {
       setLoading(true);
 
-      const total = values.herramientas.length;
-      const entregadas = values.herramientas.filter(h => h.entregada !== false).length;
+      const entregadas = values.herramientas.filter(
+        h => h.estadoActual === "Disponible" || h.entregada !== false
+      ).length;
 
       values.estado =
-        entregadas === total
+        entregadas === values.herramientas.length
           ? "Herramientas entregadas"
           : "Faltan herramientas por entregar";
+
 
       values.herramientas = values.herramientas.map((h) => ({
         ...h,
@@ -186,13 +223,12 @@ export const EditarRegistro = () => {
             Editar registro de herramientas prestadas
           </h1>
           <form onSubmit={formik.handleSubmit}>
-            {/* Datos generales */}
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">Solicitante</label>
+              <label className="block text-blue-500 font-bold mb-2">Bodeguero</label>
               <input
                 type="text"
-                name="solicitante"
-                value={formik.values.solicitante}
+                name="bodeguero"
+                value={formik.values.bodeguero}
                 className="border p-2 w-full rounded-lg"
                 disabled
               />
@@ -217,8 +253,6 @@ export const EditarRegistro = () => {
                 className="border p-2 w-full bg-gray-200 rounded-lg"
               />
             </div>
-
-            {/* Observación */}
             <div className="mb-4">
               <label className="block text-blue-500 font-bold mb-2">Observación</label>
               <textarea
@@ -230,8 +264,6 @@ export const EditarRegistro = () => {
                 placeholder="Ejemplo: Faltó herramienta por daño, cliente firmó sin recibir completa."
               />
             </div>
-
-            {/* Herramientas */}
             <div className="mb-4">
               <p className="text-xl font-bold text-blue-500 mb-2">Herramientas agregadas</p>
               {formik.values.herramientas.length === 0 ? (
@@ -246,34 +278,39 @@ export const EditarRegistro = () => {
                       }`}
                     >
                       <span>
-                        {tool.nombre} - {tool.codigo} - {tool.modelo} - {tool.marca} - {tool.ubicacion} - {tool.serie}
+                        {tool.nombre}- {tool.marca} - {tool.ubicacion} - {tool.serie}
                       </span>
                       <Button
                         className={`font-bold py-1 px-3 rounded-lg text-white ${
-                          tool.entregada === false
+                          tool.estadoActual === "Disponible"
+                            ? "bg-yellow-500 cursor-not-allowed"
+                            : tool.entregada === false
                             ? "bg-red-500 hover:bg-red-600"
                             : "bg-green-500 hover:bg-green-600"
                         }`}
                         size="sm"
                         onClick={() => {
+                          if (tool.estadoActual === "Disponible") return;
                           const updatedTools = [...formik.values.herramientas];
                           updatedTools[index] = {
                             ...updatedTools[index],
-                            entregada: !(tool.entregada !== false), // toggle entre true y false
+                            entregada: !(tool.entregada !== false),
                           };
                           formik.setFieldValue("herramientas", updatedTools);
                         }}
+                        disabled={tool.estadoActual === "Disponible"}
                       >
-                        {tool.entregada === false ? "No entrega" : "Entregar"}
+                        {tool.estadoActual === "Disponible"
+                          ? "Entregada"
+                          : tool.entregada === false
+                          ? "No entrega"
+                          : "Entregar"}
                       </Button>
-
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-
-            {/* Submit */}
             <Button
               type="submit"
               disabled={loading}
@@ -289,3 +326,4 @@ export const EditarRegistro = () => {
 };
 
 export default EditarRegistro;
+

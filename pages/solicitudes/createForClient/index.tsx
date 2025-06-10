@@ -72,9 +72,10 @@ export const RegistroCreateForClient = () => {
     number: 0, // Generar un número si es necesario
     herramientas: [],
     fecha: FormatedDate(), // Fecha formateada
-    solicitante: "",
+    bodeguero: "",
     receptor: auth?.nombre,
     estado: "No entregado",
+    observacion: ""
   };
 
   // Configuración de Formik
@@ -237,7 +238,7 @@ export const RegistroCreateForClient = () => {
   };
 
     useEffect(() => {
-    if (!formik.values.solicitante) {
+    if (!formik.values.bodeguero) {
       setHerramientas([]);
       return;
     }
@@ -245,7 +246,7 @@ export const RegistroCreateForClient = () => {
     const bodegasDelBodeguero = allBodegas.filter(
       (bodega) =>
         bodega.bodegueroAsignado.toLowerCase() ===
-        formik.values.solicitante.toLowerCase()
+        formik.values.bodeguero.toLowerCase()
     );
 
     const herramientasDisponibles = bodegasDelBodeguero
@@ -253,7 +254,7 @@ export const RegistroCreateForClient = () => {
       .filter((herramienta) => herramienta.estado === "Disponible");
 
     setHerramientas(herramientasDisponibles);
-  }, [formik.values.solicitante, allBodegas]);
+  }, [formik.values.bodeguero, allBodegas]);
 
   return (
     <div className="flex h-screen">
@@ -269,11 +270,11 @@ export const RegistroCreateForClient = () => {
             {/* Datos del cliente */}
             <div className="mb-4">
               <label className="block text-blue-500 font-bold mb-2">
-                Solicitante
+                Bodeguero
               </label>
               <select
-                name="solicitante"
-                value={formik.values.solicitante}
+                name="bodeguero"
+                value={formik.values.bodeguero}
                 onChange={formik.handleChange}
                 className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
               >
@@ -328,7 +329,7 @@ export const RegistroCreateForClient = () => {
                     className="w-full"
                   />
                   {herramientasDisponibles.length === 0 &&
-                    formik.values.solicitante && (
+                    formik.values.bodeguero && (
                       <p className="text-red-500 text-sm mt-2">
                         No hay herramientas disponibles para este bodeguero.
                       </p>

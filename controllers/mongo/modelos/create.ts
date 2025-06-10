@@ -20,12 +20,12 @@ export default async function handler(
   const auditory = new AuditoryModel({
     date: FormatedDate(),
     user: userName,
-    action: "Creo un Modelo: " + Modelopost.nombre,
+    action: "Creo un modelo: " + Modelopost.nombre,
   });
   await auditory.save();
 
   return res.status(200).json({
-    message: "Modelo Creado",
+    message: "Marca mnodelo",
     success: true,
   });
 }

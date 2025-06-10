@@ -23,7 +23,7 @@ export const RegistroCreate = () => {
   const [client, setClient] = useState<Usuario[]>([]);
   const [selectedTool, setSelectedTool] = useState(null);
 
-  // Cargar herramientas disponibles
+  // Cargar bodegas disponibles
   const loadProducts = async () => {
     setLoading(true);
 
@@ -35,24 +35,20 @@ export const RegistroCreate = () => {
     );
 
     const bodegas = response.data ?? [];
-    console.log("bodegas disponibles:", bodegas);
     const bodegasDelUsuario = bodegas.filter(
       (bodega) =>
         bodega.bodegueroAsignado.toLowerCase() === auth.usuario.toLowerCase()
     );
 
-    // Extraemos todas las herramientas de todas las bodegas
     const herramientasDisponibles = bodegasDelUsuario
-      .flatMap((bodega) => bodega.herramientas ?? []) // Aseguramos que herramientas exista
+      .flatMap((bodega) => bodega.herramientas ?? [])
       .filter((herramienta) => herramienta.estado === "Disponible");
 
-    console.log("Herramientas disponibles:", herramientasDisponibles);
     setHerramientas(herramientasDisponibles);
-
     setLoading(false);
   };
 
-  // Cargar herramientas disponibles
+  // Cargar clientes disponibles
   const loadClient = async () => {
     setLoading(true);
 
@@ -63,14 +59,11 @@ export const RegistroCreate = () => {
       auth.rol
     );
 
-    console.log(response.data);
     const clientesDisponibles = (response.data ?? []).filter(
       (clientes: any) => clientes.rol === 2
     );
 
-    console.log("clientes clientesDisponibles:", clientesDisponibles);
     setClient(clientesDisponibles);
-
     setLoading(false);
   };
 
@@ -80,37 +73,30 @@ export const RegistroCreate = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Valores iniciales para la solicitud
   const initialValues: Solicitude = {
-    number: 0, // Generar un número si es necesario
+    number: 0,
     herramientas: [],
-    fecha: FormatedDate(), // Fecha formateada
-    solicitante: auth?.nombre || "",
+    fecha: FormatedDate(),
+    bodeguero: auth?.nombre || "",
     receptor: "",
-    estado: "No entregado"
+    estado: "No entregado",
+    observacion: ""
   };
 
-  // Configuración de Formik
   const formik = useFormik({
     initialValues,
     onSubmit: async (values) => {
-      // Validaciones manuales antes de enviar
       if (!values.receptor.trim()) {
         toast.warning("El campo 'Receptor' es obligatorio.");
         return;
       }
-  
       if (values.herramientas.length === 0) {
         toast.warning("Debes agregar al menos una herramienta.");
         return;
       }
 
-
-  
-      // Si pasa las validaciones, se envía el formulario
       setLoading(true);
-      console.log("Valores del formulario:", values);
-  
+
       const response = await HttpClient(
         "/api/solicitudes",
         "POST",
@@ -118,80 +104,63 @@ export const RegistroCreate = () => {
         auth.rol,
         values
       );
-  
+
       if (response.success) {
-        console.log(values.herramientas);
-        
         try {
-          // 1. Obtener todas las bodegas para identificar dónde está cada herramienta
           const bodegasResponse = await HttpClient(
             "/api/bodegas",
             "GET",
             auth.usuario,
             auth.rol
           );
-          
+
           const bodegas = bodegasResponse.data ?? [];
-          
-          // 2. Crear un mapa de herramientas a actualizar por bodega
           const actualizacionesPorBodega = {};
-          
-          // Agrupar herramientas por bodega
+
           for (const herramientaSolicitud of values.herramientas) {
-            // Buscar la bodega que contiene esta herramienta
             for (const bodega of bodegas) {
               if (!bodega.herramientas) continue;
-              
+
               const indiceHerramienta = bodega.herramientas.findIndex(
                 h => h.id === herramientaSolicitud.id
               );
-              
+
               if (indiceHerramienta !== -1) {
-                // Esta herramienta está en esta bodega
                 if (!actualizacionesPorBodega[bodega.id]) {
-                  // Inicializar la entrada para esta bodega si no existe
                   actualizacionesPorBodega[bodega.id] = {
                     bodega: bodega,
                     herramientasActualizar: []
                   };
                 }
-                
-                // Agregar esta herramienta a la lista de actualizaciones
+
                 actualizacionesPorBodega[bodega.id].herramientasActualizar.push({
                   indice: indiceHerramienta,
                   id: herramientaSolicitud.id
                 });
-                
-                // No es necesario seguir buscando en otras bodegas
+
                 break;
               }
             }
           }
-          
-          // 3. Realizar las actualizaciones por bodega
+
           await Promise.all(
             Object.values(actualizacionesPorBodega).map(async (actualizacion) => {
               //@ts-ignore
               const { bodega, herramientasActualizar } = actualizacion;
-              
-              // Crear una copia de las herramientas de la bodega
               const herramientasActualizadas = [...bodega.herramientas];
-              
-              // Actualizar cada herramienta
+
               for (const { indice, id } of herramientasActualizar) {
                 herramientasActualizadas[indice] = {
                   ...herramientasActualizadas[indice],
                   estado: "En uso"
                 };
               }
-              
-              // Crear la bodega actualizada
+
               const bodegaActualizada = {
                 ...bodega,
                 herramientas: herramientasActualizadas
               };
-              
-              // Enviar la actualización al servidor
+
               return HttpClient(
                 `/api/bodegas/`,
                 "PUT",
@@ -201,34 +170,31 @@ export const RegistroCreate = () => {
               );
             })
           );
-          
+
           toast.success("Registro creado correctamente y herramientas actualizadas a 'En uso'!");
         } catch (error) {
           console.error("Error al actualizar las herramientas:", error);
           toast.warning("Registro creado pero hubo un problema al actualizar las herramientas.");
         }
-        
+
         Router.back();
       } else {
         toast.warning(response.message);
       }
-  
+
       setLoading(false);
     },
   });
 
-  // Filtrar herramientas ya seleccionadas
   const herramientasDisponibles = herramientas.filter(
     (h) => !formik.values.herramientas.some((selected) => selected.id === h.id)
   );
 
-  // Opciones para el Select con búsqueda
   const toolOptions = herramientasDisponibles.map((tool) => ({
     value: tool.id,
     label: `${tool.nombre} - ${tool.codigo} - ${tool.modelo} - ${tool.marca} - ${tool.ubicacion} - ${tool.serie}`,
   }));
 
-  // Agregar herramienta
   const addHerramienta = () => {
     if (!selectedTool) return;
     const selectedToolData = herramientas.find(
@@ -254,18 +220,16 @@ export const RegistroCreate = () => {
             Crear registro de herramientas prestadas
           </h1>
           <form onSubmit={formik.handleSubmit}>
-            {/* Datos del cliente */}
             <div className="mb-4">
               <label className="block text-blue-500 font-bold mb-2">
-                Solicitante
+                Bodeguero
               </label>
               <input
                 type="text"
-                name="solicitante"
+                name="bodeguero"
                 onChange={formik.handleChange}
-                value={formik.values.solicitante}
+                value={formik.values.bodeguero}
                 className="border p-2 w-full rounded-lg"
-                placeholder="Nombre del solicitante"
                 disabled
               />
             </div>
@@ -282,7 +246,7 @@ export const RegistroCreate = () => {
                 <option value="">Seleccione un cliente</option>
                 {client.map((ubic) => (
                   <option key={ubic.id} value={ubic.nombre}>
-                    {ubic.nombre}
+                    {ubic.nombre} - {ubic.correo}
                   </option>
                 ))}
               </select>
@@ -300,10 +264,9 @@ export const RegistroCreate = () => {
               />
             </div>
 
-            {/* Agregar herramientas */}
             <div className="mb-4">
               <p className="text-xl font-bold text-blue-500 mb-2">
-                Agregar Herramientas
+                Agregar herramientas
               </p>
               <div className="flex items-center gap-2">
                 <div className="w-full">
@@ -326,7 +289,6 @@ export const RegistroCreate = () => {
               </div>
             </div>
 
-            {/* Listado de herramientas agregadas */}
             <div className="mb-4">
               <p className="text-xl font-bold text-blue-500 mb-2">
                 Herramientas agregadas

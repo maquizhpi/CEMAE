@@ -30,7 +30,7 @@ const LoginPage = () => {
       const data = response.data;
       login(data);
 
-      // ✅ Redirección por tipo de usuario
+      // Redirección por tipo de usuario
       if (data.rol === 0) {
         Router.push("/dashboard/admin");
       } else if (data.rol === 1) {
@@ -72,9 +72,15 @@ const LoginPage = () => {
       <title>Inicio de sesión</title>
       <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
         <div className="flex flex-col items-center justify-center rounded-3xl shadow-lg bg-white w-full max-w-md p-8">
+        <img 
+            src="/image/logo1.jpeg" 
+            alt="Bienvenido" 
+            className="w-32 mx-auto mb-4"
+          />
           <h2 className="text-center text-3xl font-extrabold text-blue-800 mb-6">
-            Sistema de herramientas
+            SISTEMA DE HERRAMIETAS DEL HELICÓPTERO SUPER PUMA
           </h2>
+          {/* Imagen de bienvenida */}
 
           <LoadingContainer visible={loading} miniVersion>
             <form onSubmit={formik.handleSubmit} className="w-full">

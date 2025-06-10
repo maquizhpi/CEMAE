@@ -13,11 +13,11 @@ export default async function handler(
   const updateFields = {
     number: solicitud.number,
     fecha: solicitud.fecha,
-    solicitante: solicitud.solicitante,
+    bodeguero: solicitud.bodeguero,
     receptor: solicitud.receptor,
     estado: solicitud.estado,
     herramientas: solicitud.herramientas,
-    observacion: solicitud.observacion ?? "", // ✅ aseguramos que se incluya
+    observacion: solicitud.observacion ?? "",
   };
 
   const resp = await SolicitudeModel.findOneAndUpdate(

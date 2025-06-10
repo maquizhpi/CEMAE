@@ -40,15 +40,18 @@ export type Usuario = {
   estado: string;
 };
 
+// modelo para url imgenes de las herramientas
 export type CloudImage = {
   secure_url: string;
 };
 
+// Modelo para ubicaciones
 export type Ubicaciones = {
   id?: string;
   nombre: string;
 };
 
+// Modelo para modelo de herramientas
 export type ModelosHerramienta = {
   id?: string;
   nombre: string;
@@ -56,6 +59,7 @@ export type ModelosHerramienta = {
 
 // Modelo para los productos
 export type Herramienta = {
+  _id: any;
   id?: string;
   nombre: string;
   codigo: string;
@@ -77,6 +81,8 @@ export type Herramienta = {
 // Modelo para las bodegas
 // Se ha añadido el campo "herramientas" como un array de Herramienta
 export type Bodega = {
+  ciudad: string;
+  _id: Key;
   id?: string;
   number: number;
   herramientas: Array<Herramienta>;
@@ -88,11 +94,12 @@ export type Bodega = {
 
 // Modelo para las solicitudes
 export type Solicitude = {
+  bodeguero: string;
   id?: string;
   number: number;
   herramientas: Array<Herramienta>;
   fecha: string;
-  solicitante: string;
+  bodeguero: string;
   receptor: string;
   estado: string;
   observacion: string;
@@ -104,8 +111,13 @@ export type Calibracion = {
   number: number;
   herramientas: Array<Herramienta>;
   fecha: string;
-  solicitante: string;
+  bodeguero: string;
   estado: string;
+  fechaCalibracion: string;
+  fechaProximaCalibracion: string;
+  empresaDeCalibracion: string;
+  observacion: string;  
+  documentoCalibracion: string; // URL del documento de calibración
 };
 
 //backups
@@ -125,12 +137,15 @@ export type Auditory = {
   action: string;
 };
 
+
+//Modelo 
 export interface ModalProps<T> {
   visible: boolean;
   close: () => void;
   onDone?: (data?: T) => void | Promise<void>;
 }
 
+//Modelo para los formularios
 export interface FormikComponentProps<T = Element> extends FormikProps<T> {
   formik: {
     values: T;

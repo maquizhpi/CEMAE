@@ -56,7 +56,7 @@ export default async function handler(
       }
 
       return res.status(200).json({
-        message: "Días de vacaciones actualizados correctamente",
+        message: "Datos actualizados correctamente",
         data: user,
         success: true,
       });

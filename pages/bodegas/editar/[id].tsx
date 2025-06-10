@@ -271,7 +271,7 @@ const EditarBodega = () => {
                   }
                   className="p-2 border rounded"
                 >
-                  <option value="">Seleccione un modelo</option>
+                  <option value="">Seleccione una Marca</option>
                   {modelos.map((m) => (
                     <option key={m.id} value={m.nombre}>
                       {m.nombre}
@@ -280,7 +280,7 @@ const EditarBodega = () => {
                 </select>
                 <input
                   value={toolTemp.marca}
-                  placeholder="Marca"
+                  placeholder="Modelo"
                   onChange={(e) =>
                     setToolTemp({ ...toolTemp, marca: e.target.value })
                   }
@@ -329,6 +329,7 @@ const EditarBodega = () => {
                   <option value="">Seleccione Calibracion</option>
                   <option value="Calibrada">Calibrada</option>
                   <option value="No calibrada">No calibrada</option>
+                  <option value="No necesita">No necesita</option>
                 </select>
                 <input
                   value={toolTemp.tipo}

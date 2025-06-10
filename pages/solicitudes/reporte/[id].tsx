@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../controllers/hooks/use_auth";
 import HttpClient from "../../../controllers/utils/http_client";
-import { ResponseData, Solicitude, Herramienta } from "../../../models";
+import { ResponseData, Solicitude, Herramienta, Usuario } from "../../../models";
 import Sidebar from "../../components/sidebar";
 import { useReactToPrint } from "react-to-print";
 
@@ -13,6 +13,8 @@ const ReporteRegistro = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [registro, setRegistro] = useState<Solicitude | null>(null);
   const [herramientasDetalles, setHerramientasDetalles] = useState<Herramienta[]>([]);
+  const [encargado, setEncargado] = useState<Usuario | null>(null);
+  const [cliente, setCliente] = useState<Usuario | null>(null);
   const printRef = useRef(null);
 
   const loadData = async () => {
@@ -30,9 +32,22 @@ const ReporteRegistro = () => {
       if (response.success) {
         const solicitud = response.data;
         setRegistro(solicitud);
-
-        //Usa directamente los datos que ya están embebidos
         setHerramientasDetalles(solicitud.herramientas || []);
+
+        const usersResponse: ResponseData = await HttpClient(
+          "/api/user",
+          "GET",
+          auth.usuario,
+          auth.rol
+        );
+
+        if (usersResponse.success) {
+          const usuarios: Usuario[] = usersResponse.data;
+          const encontradoBodeguero = usuarios.find(u => u.nombre === solicitud.bodeguero);
+          const encontradoCliente = usuarios.find(u => u.nombre === solicitud.receptor);
+          setEncargado(encontradoBodeguero ?? null);
+          setCliente(encontradoCliente ?? null);
+        }
       } else {
         toast.error("Registro no encontrado.");
       }
@@ -65,7 +80,6 @@ const ReporteRegistro = () => {
             </h1>
 
             <div ref={printRef} className="p-4 border mt-4">
-              {/* Encabezado */}
               <div className="text-center">
                 <p className="font-bold text-lg">
                   BRIGADA DE AVIACIÓN DEL EJÉRCITO BAE 15 "PAQUISHA"
@@ -75,15 +89,13 @@ const ReporteRegistro = () => {
                 <p className="text-sm font-bold text-red-500">No. {registro?.number ?? "___"}</p>
               </div>
 
-              {/* Información del solicitante y receptor */}
               <div className="mt-4 border-b pb-2">
-                <p><strong>Solicitante:</strong> {registro?.solicitante ?? "________"}</p>
+                <p><strong>Bodeguero:</strong> {registro?.bodeguero ?? "________"}</p>
                 <p><strong>Receptor:</strong> {registro?.receptor ?? "________"}</p>
                 <p><strong>Fecha:</strong> {registro?.fecha ?? "________"}</p>
                 <p><strong>Observacion:</strong> {registro?.observacion ?? "________"}</p>
               </div>
 
-              {/* Tabla de herramientas */}
               <table className="w-full border mt-4">
                 <thead>
                   <tr className="bg-gray-200 text-center">
@@ -119,25 +131,22 @@ const ReporteRegistro = () => {
                 </tbody>
               </table>
 
-
-              {/* Firmas */}
               <div className="mt-6 flex justify-between text-sm">
                 <div className="text-center w-1/2">
                   <p>Encargado de la Bodega</p>
                   <p className="mt-12 border-t w-3/4 mx-auto">Firma</p>
-                  <p>Nombre:</p>
-                  <p>Cédula:</p>
+                  <p>Nombre: {encargado?.nombre ?? auth?.nombre ?? "________"}</p>
+                  <p>Cédula: {encargado?.identificacion ?? auth?.identificacion ?? "________"}</p>
                 </div>
                 <div className="text-center w-1/2">
                   <p>Recibí Conforme</p>
                   <p className="mt-12 border-t w-3/4 mx-auto">Firma</p>
-                  <p>Nombre:</p>
-                  <p>Cédula:</p>
+                  <p>Nombre: {cliente?.nombre ?? "________"}</p>
+                  <p>Cédula: {cliente?.identificacion ?? "________"}</p>
                 </div>
               </div>
             </div>
 
-            {/* Botón de impresión */}
             <div className="text-center mt-6">
               <button
                 onClick={handlePrint}

@@ -116,7 +116,7 @@ export const BodegasPage = () => {
   //  ]);
   //
   //  autoTable(doc, {
-  //    // ✅ Pasamos doc como argumento
+  //    //  Pasamos doc como argumento
   //    head: headers,
   //    body: data,
   //    startY: 20,

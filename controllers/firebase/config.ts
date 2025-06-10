@@ -13,6 +13,7 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 const firebaseApp = initializeApp(firebaseConfig);
+// // Obtiene el servicio de almacenamiento
 const storage = getStorage(firebaseApp);
 
 export { firebaseApp, storage };

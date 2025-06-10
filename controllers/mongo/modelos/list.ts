@@ -10,7 +10,7 @@ export default async function handler(
   const modelos = await ModeloHerramientaModel.find({});
 
   return res.status(200).json({
-    message: "todos los modelos",
+    message: "todos las marcas",
     data: modelos as Array<ModelosHerramienta>,
     success: true,
   });

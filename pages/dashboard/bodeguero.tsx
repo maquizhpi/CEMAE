@@ -44,20 +44,34 @@ export default function DashboardBodeguero() {
   ];
 
   const generatePDF = (title: string, herramientas: Herramienta[]) => {
+      
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text(title, 14, 10);
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('BRIGADA DE AVIACIÓN DEL EJÉRCITO BAE 15 "PAQUISHA"', doc.internal.pageSize.getWidth() / 2, 10, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text('ESCUDARÓN DE ASALTO SUPER PUMA', doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('BODEGA DE HERRAMIENTAS', doc.internal.pageSize.getWidth() / 2, 26, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(255, 0, 0);
+    doc.text(`No. ${title}`, doc.internal.pageSize.getWidth() / 2, 34, { align: 'center' });
+    doc.setTextColor(0, 0, 0); // Reset text color
+
+     
 
     if (herramientas.length === 0) {
       doc.text("No hay herramientas registradas en esta categoría.", 14, 20);
     } else {
-      const headers = [["Nombre", "Código", "Marca", "Serie", "Ubicación", "Cantidad"]];
-      const data = herramientas.map(h => [h.nombre, h.codigo, h.marca, h.serie, h.ubicacion, h.cantidad]);
+      const headers = [["Código","Nombre", "Marca", "Serie", "Ubicación", "Estado", "Calibración",]];
+      const data = herramientas.map(h => [h.codigo, h.nombre, h.marca, h.serie, h.ubicacion, h.estado, h.calibracion]);
 
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 20,
+        startY:44,
         styles: { fontSize: 10 },
         headStyles: { fillColor: [0, 122, 204] },
       });

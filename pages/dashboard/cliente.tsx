@@ -14,7 +14,8 @@ export default function DashboardCliente() {
       const dataSol = await responseSol.json();
 
       const misSolicitudes = (dataSol.data ?? []).filter(s =>
-        s.receptor?.toLowerCase().replace(/\s+/g, '') === auth.usuario?.toLowerCase()
+        s.receptor?.toLowerCase().trim() === auth.nombre?.toLowerCase().trim()
+
       );
       setSolicitudes(misSolicitudes);
 

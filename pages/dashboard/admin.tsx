@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
-import { Herramienta, Bodega } from "../../models";
+import { Herramienta, Bodega, Ciudad } from "../../models";
 import Sidebar from "../components/sidebar";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import jsPDF from "jspdf";
@@ -216,6 +216,7 @@ export default function DashboardAdmin() {
                 </table>
             </div>
             </div>
+
 
             {/* Exportación */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">

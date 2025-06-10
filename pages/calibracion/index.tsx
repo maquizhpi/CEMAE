@@ -41,35 +41,93 @@ export const CalibracionPage = (props: Props) => {
 
   useEffect(() => {
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Definición de las columnas para el TreeTable
   const columns: ColumnData[] = [
     {
-      dataField: "number",
-      caption: "#",
+      dataField: "herramientas[0].nombre",
+      caption: "Herramienta",
       alignment: "center",
       cssClass: "bold",
     },
     {
-      dataField: "solicitante",
-      caption: "Solicitante",
+      dataField: "herramientas[0].serie",
+      caption: "Número de Serie",
       alignment: "center",
       cssClass: "bold",
     },
     {
-      dataField: "fecha",
-      caption: "Fecha",
+      dataField: "fechaCalibracion",
+      caption: "Fecha Calibración",
       alignment: "center",
       cssClass: "bold",
+    },
+    {
+      dataField: "fechaProximaCalibracion",
+      caption: "Fecha Próxima Calibración",
+      alignment: "center",
+      cssClass: "bold",
+    },
+    {
+      dataField: "documentoCalibracion",
+      caption: "Documento",
+      alignment: "center",
+      cssClass: "bold",
+      cellRender: (cellData: any) => {
+        return cellData.value && cellData.value.trim() !== "" ? (
+          <a
+            href={cellData.value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg"
+          >
+            Ver documento
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="inline-block bg-gray-400 text-white font-bold py-1 px-3 rounded-lg cursor-not-allowed"
+          >
+            Sin documento
+          </button>
+        );
+      },
     },
     {
       dataField: "estado",
       caption: "Estado",
       alignment: "center",
       cssClass: "bold",
+      cellRender: (cellData: any) => {
+        const estado = cellData.value;
+
+        if (estado === "Herramientas calibradas") {
+          return (
+            <span className="inline-block bg-green-500 text-white font-bold py-1 px-3 rounded-lg">
+              {estado}
+            </span>
+          );
+        } else if (estado === "En calibracion") {
+          return (
+            <span className="inline-block bg-yellow-300 text-black font-bold py-1 px-3 rounded-lg">
+              {estado}
+            </span>
+          );
+        } else {
+          // Por si hay otros estados
+          return (
+            <span className="inline-block bg-gray-200 text-black font-bold py-1 px-3 rounded-lg">
+              {estado}
+            </span>
+          );
+        }
+      },
     },
   ];
+
+
 
   const buttons = {
     edit: (rowData: Calibracion) => {

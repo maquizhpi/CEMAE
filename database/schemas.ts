@@ -9,8 +9,10 @@ import {
   Solicitude,
   Ubicaciones,
   Usuario,
+  } from "../models";
+import { time } from "console";
 
-} from "../models";
+////////////// Modelo para los usuarios////////////////
 const UserSchema = new mongoose.Schema<Usuario>(
   {
     number: { type: Number },
@@ -39,6 +41,7 @@ UserSchema.set("toJSON", {
 export const UserModel =
   mongoose.models.Users || mongoose.model("Users", UserSchema);
 
+//////////////////////Modelo para los ubicaciones//////////////////////////
 const UbicacionesSchema = new mongoose.Schema<Ubicaciones>(
   {
     nombre: { type: String },
@@ -60,6 +63,7 @@ export const UbicacionesModel =
   mongoose.models.Ubicaciones ||
   mongoose.model("Ubicaciones", UbicacionesSchema);
 
+ //////////////////////Modelo para los modelos////////////////////////// 
 const ModeloHerramientaSchema = new mongoose.Schema<ModelosHerramienta>(
   {
     nombre: { type: String },
@@ -81,6 +85,7 @@ export const ModeloHerramientaModel =
   mongoose.models.ModeloHerramienta ||
   mongoose.model("ModeloHerramienta", ModeloHerramientaSchema);
 
+//////////////////////Modelo para herramientas//////////////////////////
 const HerramientaSchema = new mongoose.Schema<Herramienta>(
   {
     nombre: { type: String },
@@ -115,6 +120,7 @@ export const HerramientaModel =
   mongoose.models.Herramienta ||
   mongoose.model("Herramienta", HerramientaSchema);
 
+//////////////////////Modelo para los bodegas//////////////////////////
 const BodegaSchema = new mongoose.Schema<Bodega>(
   {
     number: { type: Number },
@@ -140,11 +146,13 @@ BodegaSchema.set("toJSON", {
 export const BodegaModel =
   mongoose.models.Bodegas || mongoose.model("Bodegas", BodegaSchema);
 
+
+// //////////////Modelo para las solicitudes//////////////////
 const SolicitudeSchema = new mongoose.Schema<Solicitude>(
   {
     number: { type: Number },
     fecha: { type: String },
-    solicitante: { type: String },
+    bodeguero: { type: String },
     herramientas: { type: [HerramientaSchema] },
     receptor: { type: String },
     estado: { type: String },
@@ -167,13 +175,19 @@ export const SolicitudeModel =
   mongoose.models.Solicitudes ||
   mongoose.model("Solicitudes", SolicitudeSchema);
 
+//////////////////////Modelo para calibracion//////////////////////////
 const CalibracionSchema = new mongoose.Schema<Calibracion>(
   {
     number: { type: Number },
     fecha: { type: String },
-    solicitante: { type: String },
+    bodeguero: { type: String },
     herramientas: { type: [HerramientaSchema] },
     estado: { type: String },
+    fechaCalibracion: { type: String },
+    fechaProximaCalibracion: { type: String },
+    empresaDeCalibracion: { type: String },
+    observacion: { type: String, default: "" },
+    documentoCalibracion: { type: String },
   },
   { timestamps: true }
 );
@@ -192,29 +206,31 @@ export const CalibracionModel =
   mongoose.models.Calibracion ||
   mongoose.model("Calibracion", CalibracionSchema);
 
-  const BackupBodegaSchema = new mongoose.Schema<Backup>(
-    {
-      solicitude: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Bodegas",
-      },
+
+//////////////////////Modelo para BackupBodega//////////////////////////
+const BackupBodegaSchema = new mongoose.Schema<Backup>(
+  {
+    solicitude: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Bodegas",
     },
-    { timestamps: true }
-  );
-  
+  },
+  { timestamps: true }
+);
+// Duplicate the ID field.
   BackupBodegaSchema.virtual("id").get(function () {
     return this._id.toHexString();
   });
-  
+// Ensure virtual fields are serialised.  
   BackupBodegaSchema.set("toJSON", {
     virtuals: true,
   });
   
-  export const BackupBodegaModel =
-    mongoose.models.BackupsBodega ||
-    mongoose.model("BackupsBodega", BackupBodegaSchema);
+export const BackupBodegaModel =
+  mongoose.models.BackupsBodega ||
+  mongoose.model("BackupsBodega", BackupBodegaSchema);
   
-
+//////////////////////Modelo para los Backupsolicitudes//////////////////////////
 const BackupSolicitudesSchema = new mongoose.Schema<Backup>(
   {
     solicitude: {
@@ -225,10 +241,11 @@ const BackupSolicitudesSchema = new mongoose.Schema<Backup>(
   { timestamps: true }
 );
 
+// Duplicate the ID field.
 BackupSolicitudesSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
-
+// Ensure virtual fields are serialised.
 BackupSolicitudesSchema.set("toJSON", {
   virtuals: true,
 });
@@ -237,6 +254,29 @@ export const BackupSolicitudesModel =
   mongoose.models.BackupsSolicitudes ||
   mongoose.model("BackupsSolicitudes", BackupSolicitudesSchema);
 
+// //////////////////////Modelo para BackupUsuarios //////////////////////////
+const BackupUsuariosSchema = new mongoose.Schema<Backup>(
+  {
+    solicitude: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+  },
+  { timestamps: true }
+);
+// Duplicate the ID field.
+BackupUsuariosSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+}); 
+// Ensure virtual fields are serialised.
+BackupUsuariosSchema.set("toJSON", {
+  virtuals: true,   
+});
+export const BackupUsuariosModel =  
+  mongoose.models.BackupsUsuarios ||
+  mongoose.model("BackupsUsuarios", BackupUsuariosSchema);
+  
+//////////////////////Modelo para Backupcalibracion//////////////////////////
 const BackupCalibracionSchema = new mongoose.Schema<Backup>(
     {
       solicitude: {
@@ -246,19 +286,20 @@ const BackupCalibracionSchema = new mongoose.Schema<Backup>(
     },
     { timestamps: true }
   );
-  
-  BackupCalibracionSchema.virtual("id").get(function () {
-    return this._id.toHexString();
-  });
-  
-  BackupCalibracionSchema.set("toJSON", {
-    virtuals: true,
-  });
-  
-  export const BackupCalibracionModel =
-    mongoose.models.BackupsCalibracion ||
-    mongoose.model("BackupsCalibracion", BackupCalibracionSchema);
+// Duplicate the ID field.  
+BackupCalibracionSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+// Ensure virtual fields are serialised.
+BackupCalibracionSchema.set("toJSON", {
+  virtuals: true,
+});
 
+export const BackupCalibracionModel =
+  mongoose.models.BackupsCalibracion ||
+  mongoose.model("BackupsCalibracion", BackupCalibracionSchema);
+
+// //////////////////////Modelo para auditorias//////////////////////////
 const AuditorySchema = new mongoose.Schema<Auditory>(
   {
     date: { type: String },
@@ -280,3 +321,4 @@ AuditorySchema.set("toJSON", {
 
 export const AuditoryModel =
   mongoose.models.Auditory || mongoose.model("Auditory", AuditorySchema);
+

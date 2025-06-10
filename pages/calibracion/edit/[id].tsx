@@ -8,12 +8,14 @@ import { toast } from "react-toastify";
 import { Calibracion, ResponseData } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
 import { useEffect, useState } from "react";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage } from "../../../controllers/firebase/config";
 
 export const EditarCalibracion = () => {
   const { auth } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [solicitudes, setsolicitudes] = useState<Calibracion[]>([]);
   const [initialValues, setInitialValues] = useState<Calibracion | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -25,47 +27,68 @@ export const EditarCalibracion = () => {
       auth.rol
     );
 
-    console.log("response.data:", response.data);
-    setsolicitudes(response.data);
     setInitialValues(response.data);
-
     setLoading(false);
   };
 
   useEffect(() => {
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Valores iniciales para la solicitud
-
-  // Configuración de Formik
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: initialValues || {
-      number: 0, // Generar un número si es necesario
+      number: 0,
       herramientas: [],
       fecha: "",
-      solicitante: "",
-      receptor: "",
+      bodeguero: "",
       estado: "",
+      fechaCalibracion: "",
+      fechaProximaCalibracion: "",
+      empresaDeCalibracion: "",
+      observacion: "",
+      documentoCalibracion: "",
     },
     onSubmit: async (values) => {
-      // Si pasa las validaciones, se envía el formulario
       setLoading(true);
-      console.log("Valores del formulario:", values);
       values.estado = "Herramientas calibradas";
+
+      // Subir el PDF si hay uno nuevo
+      let documentoURL = formik.values.documentoCalibracion;
+
+      if (file) {
+        const storageRef = ref(
+          storage,
+          `documentosCalibracion/${Date.now()}_${file.name}`
+        );
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            null,
+            (error) => reject(error),
+            async () => {
+              documentoURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve();
+            }
+          );
+        });
+      }
+
       const response: ResponseData = await HttpClient(
         `/api/calibracion`,
         "PUT",
         auth.usuario,
         auth.rol,
-        values
+        {
+          ...values,
+          documentoCalibracion: documentoURL,
+        }
       );
 
       if (response.success) {
         try {
-          // 1. Obtener todas las bodegas para identificar dónde está cada herramienta
           const bodegasResponse = await HttpClient(
             "/api/bodegas",
             "GET",
@@ -74,13 +97,9 @@ export const EditarCalibracion = () => {
           );
 
           const bodegas = bodegasResponse.data ?? [];
-
-          // 2. Crear un mapa de herramientas a actualizar por bodega
           const actualizacionesPorBodega = {};
 
-          // Agrupar herramientas por bodega
           for (const herramientaSolicitud of values.herramientas) {
-            // Buscar la bodega que contiene esta herramienta
             for (const bodega of bodegas) {
               if (!bodega.herramientas) continue;
 
@@ -89,54 +108,41 @@ export const EditarCalibracion = () => {
               );
 
               if (indiceHerramienta !== -1) {
-                // Esta herramienta está en esta bodega
                 if (!actualizacionesPorBodega[bodega.id]) {
-                  // Inicializar la entrada para esta bodega si no existe
                   actualizacionesPorBodega[bodega.id] = {
                     bodega: bodega,
                     herramientasActualizar: [],
                   };
                 }
 
-                // Agregar esta herramienta a la lista de actualizaciones
-                actualizacionesPorBodega[bodega.id].herramientasActualizar.push(
-                  {
-                    indice: indiceHerramienta,
-                    id: herramientaSolicitud.id,
-                  }
-                );
-
-                // No es necesario seguir buscando en otras bodegas
+                actualizacionesPorBodega[bodega.id].herramientasActualizar.push({
+                  indice: indiceHerramienta,
+                  id: herramientaSolicitud.id,
+                });
                 break;
               }
             }
           }
 
-          // 3. Realizar las actualizaciones por bodega
           await Promise.all(
             Object.values(actualizacionesPorBodega).map(
               async (actualizacion) => {
                 //@ts-ignore
                 const { bodega, herramientasActualizar } = actualizacion;
-
-                // Crear una copia de las herramientas de la bodega
                 const herramientasActualizadas = [...bodega.herramientas];
 
-                // Actualizar cada herramienta
-                for (const { indice, id } of herramientasActualizar) {
+                for (const { indice } of herramientasActualizar) {
                   herramientasActualizadas[indice] = {
                     ...herramientasActualizadas[indice],
                     calibracion: "Calibrada",
                   };
                 }
 
-                // Crear la bodega actualizada
                 const bodegaActualizada = {
                   ...bodega,
                   herramientas: herramientasActualizadas,
                 };
 
-                // Enviar la actualización al servidor
                 return HttpClient(
                   `/api/bodegas/`,
                   "PUT",
@@ -148,34 +154,15 @@ export const EditarCalibracion = () => {
             )
           );
 
-          toast.success(
-            "Registro creado correctamente y herramientas actualizadas a 'Calibrada'!"
-          );
+          toast.success("Registro actualizado y herramientas marcadas como 'Calibrada'.");
           Router.back();
         } catch (error) {
-          console.error("Error al actualizar las herramientas:", error);
-          toast.warning(
-            "Registro creado pero hubo un problema al actualizar las herramientas."
-          );
+          console.error("Error al actualizar herramientas:", error);
+          toast.warning("Actualización realizada, pero ocurrió un error al actualizar las herramientas.");
         }
       } else {
         toast.warning(response.message);
       }
-
-      //const response: ResponseData = await HttpClient(
-      //  "/api/solicitudes",
-      //  "POST",
-      //  auth.usuario,
-      //  auth.rol,
-      //  values
-      //);
-      //
-      //if (response.success) {
-      //  toast.success("Registro creado correctamente!");
-      //
-      //} else {
-      //  toast.warning(response.message);
-      //}
 
       setLoading(false);
     },
@@ -189,28 +176,22 @@ export const EditarCalibracion = () => {
       <div className="w-12/12 md:w-5/6 bg-blue-100 p-4">
         <div className="bg-white w-5/6 mx-auto p-6 m-5 rounded-lg shadow-md">
           <h1 className="text-3xl font-bold text-blue-500 text-center mb-4">
-            Editar registro de herramientas prestadas
+            Editar registro de calibración
           </h1>
           <form onSubmit={formik.handleSubmit}>
-            {/* Datos del cliente */}
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Solicitante
-              </label>
+              <label className="block text-blue-500 font-bold mb-2">Bodeguero</label>
               <input
                 type="text"
-                name="solicitante"
+                name="bodeguero"
                 onChange={formik.handleChange}
-                value={formik.values.solicitante}
+                value={formik.values.bodeguero}
                 className="border p-2 w-full rounded-lg"
-                placeholder="Nombre del solicitante"
                 disabled
               />
             </div>
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Fecha
-              </label>
+              <label className="block text-blue-500 font-bold mb-2">Fecha</label>
               <input
                 type="text"
                 name="fecha"
@@ -219,37 +200,92 @@ export const EditarCalibracion = () => {
                 className="border p-2 w-full bg-gray-200 rounded-lg"
               />
             </div>
-
-            {/* Listado de herramientas agregadas */}
+            <div className="mb-4">
+              <label className="block text-blue-500 font-bold mb-2">Empresa de Calibración</label>
+              <input
+                type="text"
+                name="empresaDeCalibracion"
+                value={formik.values.empresaDeCalibracion}
+                onChange={formik.handleChange}
+                className="border p-2 w-full rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-blue-500 font-bold mb-2">Fecha Calibración</label>
+              <input
+                type="date"
+                name="fechaCalibracion"
+                value={formik.values.fechaCalibracion}
+                onChange={formik.handleChange}
+                className="border p-2 w-full rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-blue-500 font-bold mb-2">Fecha Próxima Calibración</label>
+              <input
+                type="date"
+                name="fechaProximaCalibracion"
+                value={formik.values.fechaProximaCalibracion}
+                onChange={formik.handleChange}
+                className="border p-2 w-full rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-blue-500 font-bold mb-2">Observación</label>
+              <textarea
+                name="observacion"
+                value={formik.values.observacion}
+                onChange={formik.handleChange}
+                className="border p-2 w-full rounded-lg"
+                rows={3}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-blue-500 font-bold mb-2">Documento de Calibración (PDF)</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => {
+                  const selectedFile = e.target.files[0];
+                  if (selectedFile && selectedFile.type === "application/pdf") {
+                    setFile(selectedFile);
+                  } else {
+                    toast.error("Solo se permite subir archivos PDF.");
+                  }
+                }}
+                className="border p-2 w-full rounded-lg"
+              />
+            </div>
             <div className="mb-4">
               <p className="text-xl font-bold text-blue-500 mb-2">
-                Herramientas agregadas para calibrar
+                Herramientas calibradas
               </p>
-              {formik.values.herramientas.length === 0 ? (
-                <p className="text-gray-500">No hay herramientas agregadas.</p>
-              ) : (
-                <ul className="border rounded-lg p-3 bg-gray-50">
-                  {formik.values.herramientas.map((tool, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between items-center border-b last:border-b-0 p-2"
-                    >
-                      <span>
-                        {tool.nombre} - {tool.codigo} - {tool.modelo} -
-                        {tool.marca} - {tool.ubicacion} - {tool.serie}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <ul className="border rounded-lg p-3 bg-gray-50">
+                {formik.values.herramientas.map((tool, index) => (
+                  <li
+                    key={index}
+                    className="flex justify-between items-center border-b last:border-b-0 p-2"
+                  >
+                    <span>
+                      {tool.nombre} - {tool.codigo} - {tool.modelo} - {tool.marca} - {tool.ubicacion} - {tool.serie}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
-
             <Button
               type="submit"
               disabled={loading}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full"
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full mb-2"
             >
               {loading ? "Registrando..." : "Registrar herramientas calibradas"}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => Router.back()}
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full"
+            >
+              Cancelar
             </Button>
           </form>
         </div>

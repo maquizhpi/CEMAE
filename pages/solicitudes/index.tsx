@@ -35,9 +35,10 @@ export const SolicitudePage = (props: Props) => {
     );
 
     const solicitudes: Array<Solicitude> = response.data ?? [];
+    
     const bodegasDelUsuario = solicitudes.filter(
       (bodega) =>
-        bodega.solicitante?.toLowerCase() === auth.usuario.toLowerCase() ||
+        bodega.bodeguero?.toLowerCase() === auth.nombre.toLowerCase() ||
         bodega.receptor?.toLowerCase() === auth.nombre.toLowerCase()
     );
     console.log(bodegasDelUsuario);
@@ -47,7 +48,7 @@ export const SolicitudePage = (props: Props) => {
 
   useEffect(() => {
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const columns: ColumnData[] = [
@@ -58,8 +59,8 @@ export const SolicitudePage = (props: Props) => {
       cssClass: "bold",
     },
     {
-      dataField: "solicitante",
-      caption: "Solicitante",
+      dataField: "bodeguero",
+      caption: "Bodeguero",
       alignment: "center",
       cssClass: "bold",
     },
@@ -96,6 +97,7 @@ export const SolicitudePage = (props: Props) => {
             pathname: "/solicitudes/reporte/" + (rowData.id as string),
           })
         : toast.error("No puedes acceder"),
+        
     edit: (rowData: Solicitude) => {
       // Verificar si las herramientas ya fueron entregadas
       if (rowData.estado?.toLowerCase() === "herramientas entregadas") {
@@ -166,7 +168,7 @@ export const SolicitudePage = (props: Props) => {
                 paging
                 showNavigationButtons
                 showNavigationInfo
-                pageSize={10}
+                pageSize={16}
                 infoText={(actual, total, items) =>
                   `Página ${actual} de ${total} (${items} solicitudes)`
                 }
