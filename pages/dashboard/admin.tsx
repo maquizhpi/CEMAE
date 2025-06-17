@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
-import { Herramienta, Bodega, Ciudad } from "../../models";
+import { Herramienta, Bodega,} from "../../models";
 import Sidebar from "../components/sidebar";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import jsPDF from "jspdf";
