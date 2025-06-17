@@ -81,8 +81,7 @@ export type Herramienta = {
 // Modelo para las bodegas
 // Se ha añadido el campo "herramientas" como un array de Herramienta
 export type Bodega = {
-  ciudad: string;
-  _id: Key;
+  
   id?: string;
   number: number;
   herramientas: Array<Herramienta>;
@@ -94,13 +93,25 @@ export type Bodega = {
 
 // Modelo para las solicitudes
 export type Solicitude = {
-  bodeguero: string;
+  correo: string;
+  identificacion: string;
+  nombre: string;
   id?: string;
   number: number;
   herramientas: Array<Herramienta>;
   fecha: string;
-  bodeguero: string;
-  receptor: string;
+  bodeguero:{
+    nombre: string;
+    identificacion: string;
+    correo: string;
+    telefono: string;
+  }
+  receptor: {    
+    nombre: string;
+    identificacion: string;
+    correo: string;
+    telefono: string;
+  }
   estado: string;
   observacion: string;
 };

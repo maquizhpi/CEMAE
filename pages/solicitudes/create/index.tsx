@@ -22,8 +22,10 @@ export const RegistroCreate = () => {
   const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
   const [client, setClient] = useState<Usuario[]>([]);
   const [selectedTool, setSelectedTool] = useState(null);
+  const [bodegasDelUsuario, setBodegasDelUsuario] = useState<any[]>([]);
+  const [bodegaSeleccionada, setBodegaSeleccionada] = useState<string>("");
 
-  // Cargar bodegas disponibles
+  // Cargar bodegas
   const loadProducts = async () => {
     setLoading(true);
 
@@ -35,20 +37,22 @@ export const RegistroCreate = () => {
     );
 
     const bodegas = response.data ?? [];
-    const bodegasDelUsuario = bodegas.filter(
+    const bodegasUsuario = bodegas.filter(
       (bodega) =>
         bodega.bodegueroAsignado.toLowerCase() === auth.usuario.toLowerCase()
     );
 
-    const herramientasDisponibles = bodegasDelUsuario
-      .flatMap((bodega) => bodega.herramientas ?? [])
-      .filter((herramienta) => herramienta.estado === "Disponible");
+    setBodegasDelUsuario(bodegasUsuario);
 
-    setHerramientas(herramientasDisponibles);
+    // Si no hay seleccionada, selecciona la primera
+    if (bodegasUsuario.length > 0 && !bodegaSeleccionada) {
+      setBodegaSeleccionada(bodegasUsuario[0].id);
+    }
+
     setLoading(false);
   };
 
-  // Cargar clientes disponibles
+  // Cargar clientes
   const loadClient = async () => {
     setLoading(true);
 
@@ -67,26 +71,54 @@ export const RegistroCreate = () => {
     setLoading(false);
   };
 
+  // Cuando cambia bodega → actualiza herramientas
+  useEffect(() => {
+    if (!bodegaSeleccionada) return;
+
+    const bodega = bodegasDelUsuario.find((b) => b.id === bodegaSeleccionada);
+    if (!bodega) {
+      setHerramientas([]);
+      return;
+    }
+
+    const herramientasDisponibles = (bodega.herramientas ?? []).filter(
+      (herramienta) => herramienta.estado === "Disponible"
+    );
+
+    setHerramientas(herramientasDisponibles);
+  }, [bodegaSeleccionada, bodegasDelUsuario]);
+
+  // Cargar herramientas y clientes al inicio
   useEffect(() => {
     loadProducts();
     loadClient();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Valores iniciales del formulario  
   const initialValues: Solicitude = {
     number: 0,
     herramientas: [],
     fecha: FormatedDate(),
-    bodeguero: auth?.nombre || "",
-    receptor: "",
-    estado: "No entregado",
+    bodeguero: {
+      nombre: auth.nombre,
+      identificacion: auth.identificacion,
+      telefono: auth.telefono,
+      correo: auth.correo
+    },
+    receptor: {
+      nombre: "",
+      identificacion: "",
+      telefono: "",
+      correo: "",
+    },
+    estado: "NO ENTREGADO",
     observacion: ""
   };
 
   const formik = useFormik({
     initialValues,
     onSubmit: async (values) => {
-      if (!values.receptor.trim()) {
+      if (!values.receptor?.nombre?.trim()) {
         toast.warning("El campo 'Receptor' es obligatorio.");
         return;
       }
@@ -220,6 +252,26 @@ export const RegistroCreate = () => {
             Crear registro de herramientas prestadas
           </h1>
           <form onSubmit={formik.handleSubmit}>
+
+            {/* SELECCION DE BODEGA */}
+            <div className="mb-4">
+              <label className="block text-blue-500 font-bold mb-2">
+                Seleccionar Bodega
+              </label>
+              <select
+                value={bodegaSeleccionada}
+                onChange={(e) => setBodegaSeleccionada(e.target.value)}
+                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              >
+                {bodegasDelUsuario.map((bodega) => (
+                  <option key={bodega.id} value={bodega.id}>
+                    {bodega.nombreBodega}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* BODEGUERO */}
             <div className="mb-4">
               <label className="block text-blue-500 font-bold mb-2">
                 Bodeguero
@@ -228,42 +280,49 @@ export const RegistroCreate = () => {
                 type="text"
                 name="bodeguero"
                 onChange={formik.handleChange}
-                value={formik.values.bodeguero}
+                value={formik.values.bodeguero.nombre}
                 className="border p-2 w-full rounded-lg"
                 disabled
               />
             </div>
+
+            {/* RECEPTOR */}
             <div className="mb-4">
               <label className="block text-blue-500 font-bold mb-2">
                 Receptor
               </label>
               <select
                 name="receptor"
-                value={formik.values.receptor}
-                onChange={formik.handleChange}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light"
+                value={formik.values.receptor?.nombre || ""}
+                onChange={(e) => {
+                  const selectedClient = client.find(c => c.nombre === e.target.value);
+                  if (selectedClient) {
+                    formik.setFieldValue("receptor", {
+                      nombre: selectedClient.nombre,
+                      identificacion: selectedClient.identificacion,
+                      correo: selectedClient.correo,
+                      telefono: selectedClient.telefono
+                    });
+                  } else {
+                    formik.setFieldValue("receptor", {
+                      nombre: "",
+                      identificacion: "",
+                      correo: "",
+                      telefono: ""
+                    });
+                  }
+                }}
+                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               >
                 <option value="">Seleccione un cliente</option>
                 {client.map((ubic) => (
                   <option key={ubic.id} value={ubic.nombre}>
-                    {ubic.nombre} - {ubic.correo}
+                    {ubic.nombre} -{ubic.identificacion}- {ubic.correo}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Fecha
-              </label>
-              <input
-                type="text"
-                name="fecha"
-                value={formik.values.fecha}
-                disabled
-                className="border p-2 w-full bg-gray-200 rounded-lg"
-              />
-            </div>
-
+            {/* HERRAMIENTAS */}
             <div className="mb-4">
               <p className="text-xl font-bold text-blue-500 mb-2">
                 Agregar herramientas
@@ -289,6 +348,7 @@ export const RegistroCreate = () => {
               </div>
             </div>
 
+            {/* HERRAMIENTAS AGREGADAS */}
             <div className="mb-4">
               <p className="text-xl font-bold text-blue-500 mb-2">
                 Herramientas agregadas
@@ -303,7 +363,7 @@ export const RegistroCreate = () => {
                       className="flex justify-between items-center border-b last:border-b-0 p-2"
                     >
                       <span>
-                        {tool.nombre} - {tool.codigo} - ${tool.modelo} - ${tool.marca} - ${tool.ubicacion} - ${tool.serie}
+                        {tool.nombre} - {tool.codigo} - {tool.modelo} - {tool.marca} - {tool.ubicacion} - {tool.serie}
                       </span>
                       <Button
                         className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg"
@@ -324,7 +384,9 @@ export const RegistroCreate = () => {
               )}
             </div>
 
+            {/* BOTON SUBMIT */}
             <Button
+              as="button"
               type="submit"
               disabled={loading}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full"

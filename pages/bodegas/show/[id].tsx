@@ -6,10 +6,7 @@ import { useAuth } from "../../../controllers/hooks/use_auth";
 import HttpClient from "../../../controllers/utils/http_client";
 import { Bodega, ResponseData } from "../../../models";
 import Sidebar from "../../components/sidebar";
-import {
-  ExcelExport,
-  ExcelExportColumn,
-} from "@progress/kendo-react-excel-export";
+import {  ExcelExport,  ExcelExportColumn,} from "@progress/kendo-react-excel-export";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -54,8 +51,8 @@ const InformacionBodega = () => {
 
     const headers = [
       [
+        "Orden",
         "Código",
-        "Estado",
         "Nombre",
         "N° Parte",
         "Serie",
@@ -64,12 +61,14 @@ const InformacionBodega = () => {
         "Ubicación",
         "Cantidad",
         "Observación",
+        "estado",
+        "calibracion",
       ],
     ];
 
     const data = bodega?.herramientas.map((h) => [
+      bodega.herramientas.indexOf(h) + 1,
       h.codigo,
-      h.estado,
       h.nombre,
       h.NParte,
       h.serie,
@@ -78,6 +77,8 @@ const InformacionBodega = () => {
       h.ubicacion,
       h.cantidad,
       h.observacion,
+      h.estado,
+      h.calibracion,
     ]);
 
     autoTable(doc, {
@@ -120,35 +121,41 @@ const InformacionBodega = () => {
 
           <div className="overflow-auto mb-6">
             <table className="min-w-full border border-gray-300">
-              <thead className="bg-blue-200 text-gray-700">
+              <thead className="bg-blue-200 text-gray-700 uppercase">
                 <tr>
-                  <th className="p-2 border">Imagen</th>
-                  <th className="p-2 border">Nombre</th>
+                  <th className="p-2 border">#</th>
                   <th className="p-2 border">Código</th>
+                  <th className="p-2 border">N° Parte</th>
+                  <th className="p-2 border">Nombre</th>
+                  <th className="p-2 border">Serie</th>
+                  <th className="p-2 border">Marca</th>                
                   <th className="p-2 border">Modelo</th>
                   <th className="p-2 border">Ubicación</th>
                   <th className="p-2 border">Estado</th>
                   <th className="p-2 border">Calibracion</th>
+                  <th className="p-2 border">Imagen</th>
                 </tr>
               </thead>
               <tbody>
                 {bodega?.herramientas.map((h, i) => (
-                  <tr key={i} className="text-sm text-center">
+                  <tr key={i} className="text-sm text-center uppercase ">
+                    <th className="p-2 border">{i+1}</th>
+                    <td className="p-2 border">{h.codigo}</td>
+                    <td className="p-2 border">{h.NParte}</td>
+                    <td className="p-2 border">{h.nombre}</td>
+                    <td className="p-2 border">{h.serie}</td>
+                    <td className="p-2 border">{h.marca}</td>                    
+                    <td className="p-2 border">{h.modelo}</td>
+                    <td className="p-2 border">{h.ubicacion}</td>
+                    <td className="p-2 border">{h.estado}</td>
+                    <td className="p-2 border">{h.calibracion}</td>
                     <td className="p-2 border">
                       <a
                         href={h.imagen}
                         target="_blank"
                         rel="noopener noreferrer"
-                      >
-                        Ver archivo
-                      </a>
+                      >Ver archivo</a>
                     </td>
-                    <td className="p-2 border">{h.nombre}</td>
-                    <td className="p-2 border">{h.codigo}</td>
-                    <td className="p-2 border">{h.modelo}</td>
-                    <td className="p-2 border">{h.ubicacion}</td>
-                    <td className="p-2 border">{h.estado}</td>
-                    <td className="p-2 border">{h.calibracion}</td>
                   </tr>
                 ))}
               </tbody>

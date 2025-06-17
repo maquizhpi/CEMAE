@@ -152,9 +152,19 @@ const SolicitudeSchema = new mongoose.Schema<Solicitude>(
   {
     number: { type: Number },
     fecha: { type: String },
-    bodeguero: { type: String },
+    bodeguero: {
+      nombre: { type: String },
+      identificacion: { type: String },
+      telefono: { type: String },
+      correo: { type: String },
+    },
     herramientas: { type: [HerramientaSchema] },
-    receptor: { type: String },
+    receptor: {
+      nombre: { type: String },
+      identificacion: { type: String },
+      telefono: { type: String },
+      correo: { type: String },
+    },
     estado: { type: String },
     observacion: { type: String, default: "" },
   },

@@ -99,7 +99,7 @@ const columnsRender = (cols: ColumnData[], index = "1_"): React.ReactNode => {
           cellRender={column.cellRender}
           width={column.width}
           minWidth={column.minWidth}
-          alignment="center"
+          alignment="left"
         />
       );
     }

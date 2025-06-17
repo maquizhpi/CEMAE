@@ -9,16 +9,21 @@ export type TableContainerProps = {
 };
 
  const TableContainer = styled.div<TableContainerProps>`
+  overflow-x: auto;
   .dx-treelist {
     font-size: 12px;
+    min-width: 600px;
   }
   .dx-treelist .dx-row > td {
     padding: 4px 6px;
+    white-space: nowrap;
   }
+
   .dx-treelist-headers {
-    ${({ headerBackground }: TableContainerProps) => {
-      if (headerBackground) return `background-color: ${headerBackground};`;
-    }}
+      background-color: ${({ headerBackground }) => headerBackground ?? theme.colors.blue};
+      color: ${({ headerColor }) => headerColor ?? "white"};
+  }
+
     ${({ headerColor }: TableContainerProps) => {
       if (headerColor) return `color: ${headerColor};`;
     }}
@@ -41,16 +46,25 @@ export type TableContainerProps = {
     opacity: 1;
   }
   .dx-treelist-headers {
-    border-color: ${theme.colors.blue};
+    border: 1px solid ${theme.colors.blue};
+    border-radius: 8px;
+    overflow: hidden;
+
   }
   .dx-treelist-headers td {
-    border-color: ${theme.colors.blue};
+    border: 1px solid ${theme.colors.blue};
+    border-radius: 8px;
+    overflow: hidden;
   }
   .dx-treelist-rowsview {
-    border-color: ${theme.colors.blue};
+    border: 1px solid ${theme.colors.blue};
+    border-radius: 8px;
+    overflow: hidden;
   }
   .dx-treelist-rowsview td {
-    border-color: ${theme.colors.blue};
+    border: 1px solid ${theme.colors.blue};
+    border-radius: 8px;
+    overflow: hidden;
   }
 `;
 export default TableContainer

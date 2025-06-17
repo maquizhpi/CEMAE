@@ -11,7 +11,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const solicitud = req.body as Calibracion;
+  const solicitud = req.body as Calibracion; //clave estudiar parta explicar todos los create//
   const userName = req.headers.username as string;
   const count: number = await BackupCalibracionModel.countDocuments();
   // fetch the posts

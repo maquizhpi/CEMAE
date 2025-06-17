@@ -7,7 +7,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const bodega = req.body as Bodega;
+  const bodega = req.body as Bodega; /// 
   const userName = req.headers.username as string;
 
   const newbodega = (): Bodega => {

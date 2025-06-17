@@ -18,7 +18,7 @@ export const BodegasPage = () => {
   const [itemToDelete, setItemToDelete] = useState<string>(null);
   const excelExporter = useRef<ExcelExport>(null);
 
-  // Cargar datos de herramientas
+  // Cargar datos de bodegas
   const loadData = async () => {
     setLoading(true);
     const response = await HttpClient(
@@ -45,7 +45,6 @@ export const BodegasPage = () => {
 
   useEffect(() => {
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const columns: ColumnData[] = [
@@ -82,54 +81,6 @@ export const BodegasPage = () => {
     }
   };
 
-  // ✅ Exportar a PDF corregido
-  //const exportToPDF = () => {
-  //  const doc = new jsPDF();
-  //  doc.text("Reporte de Herramientas", 14, 10);
-  //
-  //  const headers = [
-  //    [
-  //      "Código",
-  //      "Estado",
-  //      "Nombre",
-  //      "N° Parte",
-  //      "Serie",
-  //      "Modelo",
-  //      "Marca",
-  //      "Ubicación",
-  //      "Cantidad",
-  //      "Observación",
-  //    ],
-  //  ];
-  //
-  //  const data = tableData.herramientas.map((h) => [
-  //    h.codigo,
-  //    h.estado,
-  //    h.nombre,
-  //    h.NParte,
-  //    h.serie,
-  //    h.modelo,
-  //    h.marca,
-  //    h.ubicacion,
-  //    h.cantidad,
-  //    h.observacion,
-  //  ]);
-  //
-  //  autoTable(doc, {
-  //    //  Pasamos doc como argumento
-  //    head: headers,
-  //    body: data,
-  //    startY: 20,
-  //    styles: { fontSize: 8 },
-  //    headStyles: { fillColor: [22, 160, 133] }, // Verde para encabezados
-  //  });
-  //
-  //  doc.save("Reporte_Herramientas.pdf");
-  //};
-
-  const showConfirmModal = (factureId: string) => setItemToDelete(factureId);
-  const hideConfirmModal = () => setItemToDelete(null);
-
   const buttons = {
     edit: (rowData: Herramienta) =>
       CheckPermissions(auth, [0, 1])
@@ -158,23 +109,7 @@ export const BodegasPage = () => {
                 Todas las bodegas
               </p>
             </div>
-
-            {/* Botones de exportación */}
-            <div className="flex justify-center gap-4 mt-4">
-              {/* <Button
-                className="bg-green-500 text-white px-4 py-2 rounded"
-                onClick={exportToExcel}
-              >
-                Exportar a Excel
-              </Button> */}
-              {/* <Button
-                className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={exportToPDF}
-              >
-                Exportar a PDF
-              </Button> */}
-            </div>
-
+            {!CheckPermissions(auth, [1, 2]) && (
             <Button
               className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
               onClick={() =>
@@ -185,7 +120,7 @@ export const BodegasPage = () => {
             >
               Crear bodega
             </Button>
-
+            )}
             {/* Tabla de herramientas */}
             <div className="p-2">
               <TreeTable
@@ -204,44 +139,9 @@ export const BodegasPage = () => {
                 }
               />
             </div>
-
-            {/* Componente para exportar a Excel */}
-            {/* <ExcelExport
-              data={tableData.herramientas}
-              ref={excelExporter}
-              fileName="Inventario_Herramientas.xlsx"
-            >
-              <ExcelExportColumn field="codigo" title="Codigo" />
-              <ExcelExportColumn field="estado" title="Estado" />
-              <ExcelExportColumn field="nombre" title="Nombre" />
-              <ExcelExportColumn field="NParte" title="Numero de parte" />
-              <ExcelExportColumn field="serie" title="Serie" />
-              <ExcelExportColumn field="modelo" title="Modelo" />
-              <ExcelExportColumn field="marca" title="Marca" />
-              <ExcelExportColumn field="ubicacion" title="Ubicacion" />
-              <ExcelExportColumn field="cantidad" title="Cantidad" />
-              <ExcelExportColumn field="observacion" title="Observacion" />
-            </ExcelExport> */}
           </div>
         </div>
       </div>
-
-      {/* Modal de confirmación para eliminar herramientas */}
-      <ConfirmModal
-        visible={itemToDelete !== null}
-        close={() => setItemToDelete(null)}
-        onDone={async () => {
-          await HttpClient(
-            `/api/herramientas/${itemToDelete}`,
-            "DELETE",
-            auth.usuario,
-            auth.rol
-          );
-          setItemToDelete(null);
-          toast.success("Herramienta eliminada correctamente");
-          await loadData();
-        }}
-      />
     </>
   );
 };
