@@ -273,20 +273,20 @@ export const EditarCalibracion = () => {
                 ))}
               </ul>
             </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full mb-2"
-            >
-              {loading ? "Registrando..." : "Registrar herramientas calibradas"}
-            </Button>
-            <Button
-              type="button"
-              onClick={() => Router.back()}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full"
-            >
-              Cancelar
-            </Button>
+            <div className="flex justify-between space-x-4">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full mb-2"
+              > Registrar calibracion
+              </Button>
+              <Button
+                type="button"
+                onClick={() => Router.back()}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full"
+              >Cancelar
+              </Button>
+            </div>
           </form>
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   MdOutlineStickyNote2,
   MdMedicalInformation,
   MdBuild,
+  MdOutlineLocationCity,
 } from "react-icons/md";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useAuth } from "../../controllers/hooks/use_auth";
@@ -39,7 +40,7 @@ const Sidebar = () => {
   };
 
   const isActive = (path: string) => router.pathname === path;
-
+  
   return (
     <>
       {/* Botón de menú hamburguesa en móviles */}
@@ -121,13 +122,25 @@ const Sidebar = () => {
               <MdProductionQuantityLimits className="text-2xl" />
               <span>Bodegas</span>
             </a>
+
+          )}{!CheckPermissions(auth, [2]) && (
+            <a
+              href="/ubicaciones"
+              className={`flex items-center gap-4 mb-2 px-5 py-2 rounded-lg hover:bg-blue-500 hover:text-white ${
+                isActive("/ubicaciones") ? "bg-blue-500 text-white" : "text-gray-800"
+              }`}
+              onClick={e => { e.preventDefault(); handleChanges("/ubicaciones"); }}
+            >
+              <MdOutlineLocationCity className="text-2xl" />
+              <span>Ubicaciones</span>
+            </a>
           )}
 
           {!CheckPermissions(auth, [2]) && (
             <a
               href="/calibracion"
               className={`flex items-center gap-4 mb-2 px-5 py-2 rounded-lg hover:bg-blue-500 hover:text-white ${
-                isActive("/configuration")
+                isActive("/calibracion")
                   ? "bg-blue-500 text-white"
                   : "text-gray-800"
               }`}
@@ -137,7 +150,7 @@ const Sidebar = () => {
               <span>Calibración</span>
             </a>
           )}
-          {!CheckPermissions(auth, [1, 2]) && (
+          {!CheckPermissions(auth, [1,2]) && (
             <a
               href="/configuration"
               className={`flex items-center gap-4 mb-2 px-5 py-2 rounded-lg hover:bg-blue-500 hover:text-white ${

@@ -35,8 +35,7 @@ export const BodegasPage = () => {
         ? bodegas
         : bodegas.filter(
             (bodega) =>
-              bodega.bodegueroAsignado.toLowerCase() ===
-              auth.usuario.toLowerCase()
+              bodega.bodegueroAsignado?.identificacion === auth.identificacion
           );
 
     setTableData(bodegasFiltradas);
@@ -59,12 +58,14 @@ export const BodegasPage = () => {
       caption: "Bodeguero Asignado",
       alignment: "center",
       cssClass: "bold",
+      cellRender: (cellData: any) => cellData.value?.nombre || "N/A",
     },
     {
       dataField: "creador",
       caption: "Creador",
       alignment: "center",
       cssClass: "bold",
+      cellRender: (cellData: any) => cellData.value?.nombre || "N/A",
     },
     {
       dataField: "fechaDeCreacion",

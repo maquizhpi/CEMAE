@@ -220,9 +220,22 @@ export const EditarRegistro = () => {
               )}
             </div>
             {/* Botón para registrar la entrega */}
+          <div className="flex justify-between space-x-4">
             <Button type="submit" disabled={loading} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full">
               {loading ? "Registrando..." : "Registrar entrega"}
             </Button>
+
+            <Button
+              as="button"
+              type="button"
+              onClick={() => {
+                Router.push("/solicitudes");
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full"
+            >
+              Cancelar
+            </Button>
+          </div>        
           </form>
         </div>
       </div>

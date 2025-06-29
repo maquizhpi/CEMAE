@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { Button, Form } from "react-bootstrap";
 import Sidebar from "../components/sidebar";
 import { toast } from "react-toastify";
@@ -7,9 +8,11 @@ import HttpClient from "../../controllers/utils/http_client";
 import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import Router from "next/router";
+import { CheckPermissions } from "../../controllers/utils/check_permissions";
 
 export const herramientasPage = () => {
   const { auth } = useAuth();
+
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
   const [selectedBodega, setSelectedBodega] = useState<string>("");
   const [herramientas, setHerramientas] = useState<Array<Herramienta>>([]);
@@ -28,23 +31,20 @@ export const herramientasPage = () => {
     const bodegasData: Bodega[] = response.data ?? [];
 
     if (auth.rol === 0) {
-      // Admin: mostrar solo bodegas con herramientas
       const bodegasConHerramientas = bodegasData.filter(
         (b) => b.herramientas && b.herramientas.length > 0
       );
       setBodegas(bodegasConHerramientas);
 
-      // Unir todas las herramientas de esas bodegas
       const todasHerramientas: Herramienta[] = bodegasConHerramientas.flatMap(
         (b) => b.herramientas.map((h) => ({ ...h, nombreBodega: b.nombreBodega }))
       );
       setHerramientasAdmin(todasHerramientas);
     } else {
-      // Bodeguero: solo las bodegas asignadas
       const bodegasFiltradas = bodegasData.filter(
         (b) =>
           b.bodegueroAsignado &&
-          b.bodegueroAsignado.toLowerCase() === auth.usuario.toLowerCase()
+          b.bodegueroAsignado?.identificacion === auth.identificacion
       );
       setBodegas(bodegasFiltradas);
       if (bodegasFiltradas.length > 0) {
@@ -57,7 +57,6 @@ export const herramientasPage = () => {
 
   useEffect(() => {
     loadBodegas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -69,6 +68,46 @@ export const herramientasPage = () => {
     }
   }, [selectedBodega, bodegas]);
 
+  const handleDelete = (herramienta: Herramienta) => {
+    if (confirm(`¿Estás seguro de eliminar la herramienta "${herramienta.nombre}"?`)) {
+      deleteTool(herramienta);
+    }
+  };
+
+  const deleteTool = async (herramienta: Herramienta) => {
+    const bodega = bodegas.find(b =>
+      (b.herramientas ?? []).some(h => h._id === herramienta._id)
+    );
+
+    if (!bodega) {
+      toast.error("Bodega no encontrada.");
+      return;
+    }
+
+    const herramientasActualizadas = (bodega.herramientas ?? []).filter(h =>
+      h._id !== herramienta._id
+    );
+
+    const bodegaActualizada = {
+      ...bodega,
+      herramientas: herramientasActualizadas,
+    };
+
+    const response = await HttpClient(
+      "/api/bodegas",
+      "PUT",
+      auth.usuario,
+      auth.rol,
+      bodegaActualizada
+    );
+
+    if (response.success) {
+      toast.success(`Herramienta "${herramienta.nombre}" eliminada correctamente!`);
+      loadBodegas();
+    } else {
+      toast.error("Error al eliminar la herramienta.");
+    }
+  };
   const columns: ColumnData[] = [
     {
       dataField: "numero",
@@ -88,18 +127,24 @@ export const herramientasPage = () => {
       caption: "Nombre",
       alignment: "center",
       cssClass: "bold",
+      cellRender: (params: any) => (
+        <span className="uppercase">{params.data.nombre}</span>)
     },
     {
       dataField: "serie",
       caption: "Serie",
       alignment: "center",
       cssClass: "bold",
+      cellRender: (params: any) => (
+        <span className="uppercase">{params.data.serie}</span>)
     },
     {
       dataField: "modelo",
       caption: "Modelo",
       alignment: "center",
       cssClass: "bold",
+      cellRender: (params: any) => (
+        <span className="uppercase">{params.data.modelo}</span>)
     },
     {
       dataField: "marca",
@@ -137,12 +182,7 @@ export const herramientasPage = () => {
       alignment: "center",
       cssClass: "bold",
     },
-    {
-      dataField: "imagen",
-      caption: "imagen",
-      alignment: "center",
-      cssClass: "bold",
-    },
+
     ...(auth.rol === 0
       ? [
           {
@@ -154,6 +194,29 @@ export const herramientasPage = () => {
         ]
       : []),
   ];
+
+    const buttons = {
+      edit: (rowData: Herramienta) =>
+        CheckPermissions(auth, [0, 1])
+          ? Router.push({
+              pathname: "/herramientas/edit/" + (rowData.id as string),
+            })
+          : toast.error("No puedes acceder"),
+      show: (rowData: Herramienta) => {
+        if (rowData.imagen) {
+          window.open(rowData.imagen, "_blank");
+        } else {
+          toast.error("No hay imagen subida");
+        }
+      },
+      delete: (rowData: Herramienta) => {
+        if (CheckPermissions(auth, [0, 1])) {
+          handleDelete(rowData);
+        } else {
+          toast.error("No tienes permisos para eliminar");
+        }
+      }
+    };
 
   return (
     <>
@@ -170,6 +233,28 @@ export const herramientasPage = () => {
                   : "Herramientas por Bodega"}
               </p>
             </div>
+
+            {CheckPermissions(auth, [1]) && (
+              <>
+                <Button
+                  className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
+                  onClick={() =>
+                    Router.push({ pathname: "/herramientas/create" })
+                  }
+                >
+                  Crear registro
+                </Button>
+
+                <Button
+                  className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
+                  onClick={() =>
+                    Router.push({ pathname: "/herramientas/importar" })
+                  }
+                >
+                  Importar herramientas
+                </Button>
+              </>
+            )}
 
             {auth.rol !== 0 && (
               <div className="p-4">
@@ -196,16 +281,15 @@ export const herramientasPage = () => {
             <div className="p-2">
               <TreeTable
                 keyExpr="id"
-                dataSource={
-                  auth.rol === 0 ? herramientasAdmin : herramientas
-                }
+                dataSource={auth.rol === 0 ? herramientasAdmin : herramientas}
+                buttons={buttons}
                 columns={columns}
                 searchPanel={true}
                 buttonsFirst
                 paging
                 showNavigationButtons
                 showNavigationInfo
-                pageSize={100}
+                pageSize={15}
                 infoText={(actual, total, items) =>
                   `Página ${actual} de ${total} (${items} herramientas)`
                 }

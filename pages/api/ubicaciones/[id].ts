@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import read from "../../../controllers/mongo/ubicaciones/read";
+import remove from "../../../controllers/mongo/ubicaciones/delete";
 import dbConnect from "../../../database/connect/mongo";
 
 export default async function handler(
@@ -13,6 +14,8 @@ export default async function handler(
     switch (req.method) {
       case "GET":
         return await read(req, res);
+      case "DELETE":
+        return await remove(req, res);
       default:
         throw new Error("Invalid method");
     }

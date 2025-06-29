@@ -39,7 +39,7 @@ export const RegistroCreate = () => {
     const bodegas = response.data ?? [];
     const bodegasUsuario = bodegas.filter(
       (bodega) =>
-        bodega.bodegueroAsignado.toLowerCase() === auth.usuario.toLowerCase()
+        bodega.bodegueroAsignado?.identificacion === auth.identificacion
     );
 
     setBodegasDelUsuario(bodegasUsuario);
@@ -385,14 +385,25 @@ export const RegistroCreate = () => {
             </div>
 
             {/* BOTON SUBMIT */}
-            <Button
-              as="button"
-              type="submit"
-              disabled={loading}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full"
-            >
-              {loading ? "Enviando..." : "Enviar Registro"}
-            </Button>
+            <div className="flex justify-between space-x-4">
+              <Button
+                as="button"
+                type="submit"
+                disabled={loading}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg w-full">
+                {loading ? "Enviando..." : "Enviar Registro"}
+              </Button>
+
+              <Button
+                as="button"
+                type="button"
+                onClick={() => {
+                  Router.push("/solicitudes");
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full">
+                Cancelar
+              </Button>
+            </div>
           </form>
         </div>
       </div>

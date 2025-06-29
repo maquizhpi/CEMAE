@@ -11,6 +11,7 @@ import {
   Usuario,
   } from "../models";
 import { time } from "console";
+import { ObjectId } from "mongodb";
 
 ////////////// Modelo para los usuarios////////////////
 const UserSchema = new mongoose.Schema<Usuario>(
@@ -45,6 +46,13 @@ export const UserModel =
 const UbicacionesSchema = new mongoose.Schema<Ubicaciones>(
   {
     nombre: { type: String },
+    bodega: { type: String, ref: "Bodegas" },
+    bodegueroAsignado: {
+      nombre: { type: String },
+      identificacion: { type: String },
+      correo: { type: String },
+      telefono: { type: String },
+    },
   },
   { timestamps: true }
 );
@@ -125,13 +133,25 @@ const BodegaSchema = new mongoose.Schema<Bodega>(
   {
     number: { type: Number },
     fechaDeCreacion: { type: String },
-    bodegueroAsignado: { type: String },
+    bodegueroAsignado: {
+      nombre: { type: String },
+      identificacion: { type: String },
+      correo: { type: String },
+      telefono: { type: String },
+    },
+    creador: {
+      nombre: { type: String },
+      identificacion: { type: String },
+      correo: { type: String },
+      telefono: { type: String },
+    },
+    nombreBodega: { type: String },
+    ubicaciones: { type: [UbicacionesSchema] },
     herramientas: { type: [HerramientaSchema] },
-    creador: { type: String },
-    nombreBodega: { type: String },  
   },
   { timestamps: true }
 );
+
 
 // Duplicate the ID field.
 BodegaSchema.virtual("id").get(function () {

@@ -7,6 +7,7 @@ import HttpClient from "../../../controllers/utils/http_client";
 import { ResponseData, Solicitude, Herramienta, Usuario, Bodega } from "../../../models";
 import Sidebar from "../../components/sidebar";
 import { useReactToPrint } from "react-to-print";
+import { Button } from "react-bootstrap";
 
 // Componente principal para mostrar el reporte de una solicitud
 const ReporteRegistro = () => {
@@ -184,15 +185,24 @@ const ReporteRegistro = () => {
               </div>
 
             </div>
-
             {/* Botón para imprimir */}
-            <div className="text-center mt-6">
+            <div className="flex justify-center space-x-4 text-center mt-6">
               <button
                 onClick={handlePrint}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
               >
                 Imprimir Reporte
               </button>
+              <Button
+                as="button"
+                type="button"
+                onClick={() => {
+                  Router.push("/solicitudes");
+                }}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+              >
+                Cancelar
+              </Button>
             </div>
           </div>
         </div>

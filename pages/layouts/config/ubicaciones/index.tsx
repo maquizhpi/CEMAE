@@ -50,6 +50,10 @@ const UbicacionesPanel = () => {
       dataField: "nombre",
       caption: "Nombre",
     },
+    {
+      dataField: "bodega",
+      caption: "Bodega",
+    }
   ];
 
   const buttons = {

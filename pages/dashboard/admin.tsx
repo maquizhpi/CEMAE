@@ -6,7 +6,7 @@ import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
 import { Herramienta, Bodega,} from "../../models";
 import Sidebar from "../components/sidebar";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -139,84 +139,47 @@ export default function DashboardAdmin() {
               </ResponsiveContainer>
             </div>
 
-            {/* Lista de Bodegas */}
-            <div className="bg-white p-6 rounded-lg shadow mt-8">
-            <h2 className="text-xl font-bold mb-4 text-blue-800 text-center">Bodegas Registradas</h2>
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 text-sm">
-                <thead>
-                    <tr className="bg-gray-100 text-left">
-                    <th className="py-2 px-4 border-b">#</th>
-                    <th className="py-2 px-4 border-b">Nombre</th>
-                    <th className="py-2 px-4 border-b">Bodeguero Asignado</th>
-                    <th className="py-2 px-4 border-b">Creador</th>
-                    <th className="py-2 px-4 border-b">Fecha de creación</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {bodegas.map((bodega, index) => (
-                    <tr key={(bodega as any)._id}>
-                        <td className="py-2 px-4 border-b">{index + 1}</td>
-                        <td className="py-2 px-4 border-b">{bodega.nombreBodega}</td>
-                        <td className="py-2 px-4 border-b">{bodega.bodegueroAsignado || "Sin asignar"}</td>
-                        <td className="py-2 px-4 border-b">{bodega.creador || "N/A"}</td>
-                        <td className="py-2 px-4 border-b">{bodega.fechaDeCreacion || "N/A"}</td>
-                    </tr>
-                    ))}
-                </tbody>
-                </table>
-            </div>
-            </div>
-
             {/* Gráfica de Usuarios por Rol */}
             <div className="bg-white p-6 rounded-lg shadow mt-8">
-            <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Usuarios por Rol</h2>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={usuariosPorRol} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Usuarios por Rol</h2>
+              <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={usuariosPorRol}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                barCategoryGap="30%"
+              >
                 <XAxis dataKey="name" />
                 <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" fill="#34a853" />
-                </BarChart>
-            </ResponsiveContainer>
+                <Bar
+                dataKey="value"
+                fill="#34a853"
+                radius={[8, 8, 0, 0]}
+                label={{
+                  position: "insideTop",
+                  fill: "#fff",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                }}
+                >
+                {/* Colores diferentes para cada barra */}
+                {usuariosPorRol.map((entry, index) => (
+                  <Cell
+                  key={`cell-${index}`}
+                  fill={
+                    index === 0
+                    ? "#0072CC"
+                    : index === 1
+                    ? "#34a853"
+                    : "#fbbc05"
+                  }
+                  />
+                ))}
+                </Bar>
+              </BarChart>
+              </ResponsiveContainer>
             </div>
-
-            {/* Tabla Lista de Usuarios */}
-            <div className="bg-white p-6 rounded-lg shadow mt-8">
-            <h2 className="text-xl font-bold mb-4 text-blue-800 text-center">Lista de Usuarios</h2>
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 text-sm">
-                <thead>
-                    <tr className="bg-gray-100 text-left">
-                    <th className="py-2 px-4 border-b">#</th>
-                    <th className="py-2 px-4 border-b">Nombre</th>
-                    <th className="py-2 px-4 border-b">Usuario</th>
-                    <th className="py-2 px-4 border-b">Correo</th>
-                    <th className="py-2 px-4 border-b">Rol</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {usuarios.map((usuario, index) => (
-                    <tr key={usuario._id}>
-                        <td className="py-2 px-4 border-b">{index + 1}</td>
-                        <td className="py-2 px-4 border-b">{usuario.nombre || "Sin nombre"}</td>
-                        <td className="py-2 px-4 border-b">{usuario.usuario || "Sin usuario"}</td>
-                        <td className="py-2 px-4 border-b">{usuario.correo || "Sin correo"}</td>
-                        <td className="py-2 px-4 border-b">
-                        {usuario.rol === 0
-                            ? "AdministradorSistema"
-                            : usuario.rol === 1
-                            ? "Bodeguero"
-                            : "Cliente"}
-                        </td>
-                    </tr>
-                    ))}
-                </tbody>
-                </table>
-            </div>
-            </div>
-
 
             {/* Exportación */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">

@@ -49,6 +49,13 @@ export type CloudImage = {
 export type Ubicaciones = {
   id?: string;
   nombre: string;
+  bodega: string;
+  bodegueroAsignado: {
+    nombre: string;
+    identificacion: string;
+    correo: string;
+    telefono: string;
+  };
 };
 
 // Modelo para modelo de herramientas
@@ -59,7 +66,7 @@ export type ModelosHerramienta = {
 
 // Modelo para los productos
 export type Herramienta = {
-  _id: any;
+  _id: string | string[];
   id?: string;
   nombre: string;
   codigo: string;
@@ -79,17 +86,29 @@ export type Herramienta = {
 };
 
 // Modelo para las bodegas
-// Se ha añadido el campo "herramientas" como un array de Herramienta
+
 export type Bodega = {
-  
+  _id: string;
   id?: string;
   number: number;
+  ubicaciones: Array<Ubicaciones>;
   herramientas: Array<Herramienta>;
   fechaDeCreacion: string;
-  creador: string;
-  bodegueroAsignado: string;
+  creador: {
+    nombre: string;
+    identificacion: string;
+    correo: string;
+    telefono: string;
+  };
+  bodegueroAsignado: {
+    nombre: string;
+    identificacion: string;
+    correo: string;
+    telefono: string;
+  };
   nombreBodega: string;
 };
+
 
 // Modelo para las solicitudes
 export type Solicitude = {

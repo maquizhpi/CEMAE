@@ -36,7 +36,7 @@ export const RegistroCreate = () => {
       ? bodegas
       : bodegas.filter(
           (bodega) =>
-            bodega.bodegueroAsignado.toLowerCase() === auth.usuario.toLowerCase()
+            bodega.bodegueroAsignado?.identificacion === auth.identificacion
         );
 
     setBodegasDelUsuario(bodegasFiltradas);
@@ -251,34 +251,6 @@ export const RegistroCreate = () => {
                 </ul>
               </div>
             )}
-
-            {/* Fechas */}
-            <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Fecha de Calibración
-              </label>
-              <input
-                type="date"
-                name="fechaCalibracion"
-                value={formik.values.fechaCalibracion}
-                onChange={formik.handleChange}
-                className="border p-2 w-full rounded-lg"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">
-                Fecha Próxima Calibración
-              </label>
-              <input
-                type="date"
-                name="fechaProximaCalibracion"
-                value={formik.values.fechaProximaCalibracion}
-                onChange={formik.handleChange}
-                className="border p-2 w-full rounded-lg"
-              />
-            </div>
-
             {/* Empresa */}
             <div className="mb-4">
               <label className="block text-blue-500 font-bold mb-2">
@@ -308,6 +280,7 @@ export const RegistroCreate = () => {
             </div>
 
             {/* Botón Enviar */}
+          <div className="flex justify-between space-x-4">
             <Button
               type="submit"
               disabled={loading}
@@ -315,6 +288,17 @@ export const RegistroCreate = () => {
             >
               {loading ? "Enviando..." : "Enviar Registro"}
             </Button>
+            <Button
+              as="button"
+              type="button"
+              onClick={() => {
+                Router.push("/calibracion"); 
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg w-full"
+            >
+              Cancelar
+            </Button>
+          </div>
           </form>
         </div>
       </div>

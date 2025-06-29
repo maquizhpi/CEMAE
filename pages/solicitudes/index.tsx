@@ -218,7 +218,7 @@ export const SolicitudePage = (props: Props) => {
                 paging
                 showNavigationButtons
                 showNavigationInfo
-                pageSize={16}
+                pageSize={10}
                 infoText={(actual, total, items) =>
                   `Página ${actual} de ${total} (${items} solicitudes)`
                 }

@@ -15,6 +15,12 @@ const InformacionBodega = () => {
   const [loading, setLoading] = useState(false);
   const [bodega, setBodega] = useState<Bodega | null>(null);
   const excelExporter = useRef<any>(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const elementosPorPagina = 10;
+  const herramientas = bodega?.herramientas ?? [];
+  const totalPaginas = Math.ceil(herramientas.length / elementosPorPagina);
+  const herramientasPaginadas = herramientas.slice((paginaActual - 1) * elementosPorPagina, paginaActual * elementosPorPagina);
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -39,7 +45,7 @@ const InformacionBodega = () => {
     loadData();
   }, [auth]);
 
-  const exportToExcel = () => {
+    const exportToExcel = () => {
     if (excelExporter.current) {
       excelExporter.current.save();
     }
@@ -94,8 +100,10 @@ const InformacionBodega = () => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-      <div className="w-full bg-blue-100 p-8 overflow-y-auto">
+      <div className="md:w-1/6 max-w-none">
+        <Sidebar />
+      </div>
+      <div className="w-12/12 md:w-5/6 bg-blue-100 p-">
         <div className="bg-white rounded-lg shadow p-6 max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">
             Información de la Bodega: {bodega?.nombreBodega}
@@ -104,10 +112,10 @@ const InformacionBodega = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div>
               <p>
-                <strong>Creador:</strong> {bodega?.creador}
+                <strong>Creador:</strong> {bodega?.creador?.nombre}
               </p>
               <p>
-                <strong>Bodeguero Asignado:</strong> {bodega?.bodegueroAsignado}
+                <strong>Bodeguero Asignado:</strong> {bodega?.bodegueroAsignado.nombre}
               </p>
               <p>
                 <strong>Fecha de Creación:</strong> {bodega?.fechaDeCreacion}
@@ -137,30 +145,41 @@ const InformacionBodega = () => {
                 </tr>
               </thead>
               <tbody>
-                {bodega?.herramientas.map((h, i) => (
-                  <tr key={i} className="text-sm text-center uppercase ">
-                    <th className="p-2 border">{i+1}</th>
+                {herramientasPaginadas.map((h, i) => (
+                  <tr key={i} className="text-sm text-center uppercase">
+                    <th className="p-2 border">{(paginaActual - 1) * elementosPorPagina + i + 1}</th>
                     <td className="p-2 border">{h.codigo}</td>
                     <td className="p-2 border">{h.NParte}</td>
                     <td className="p-2 border">{h.nombre}</td>
                     <td className="p-2 border">{h.serie}</td>
-                    <td className="p-2 border">{h.marca}</td>                    
+                    <td className="p-2 border">{h.marca}</td>
                     <td className="p-2 border">{h.modelo}</td>
                     <td className="p-2 border">{h.ubicacion}</td>
                     <td className="p-2 border">{h.estado}</td>
                     <td className="p-2 border">{h.calibracion}</td>
                     <td className="p-2 border">
-                      <a
-                        href={h.imagen}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >Ver archivo</a>
+                      <a href={h.imagen} target="_blank" rel="noopener noreferrer">Ver archivo</a>
                     </td>
                   </tr>
                 ))}
+
               </tbody>
             </table>
           </div>
+          <div className="flex justify-center mt-4 gap-2">
+            {Array.from({ length: totalPaginas }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPaginaActual(i + 1)}
+                className={`px-3 py-1 rounded border ${
+                  paginaActual === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+
 
           <div className="flex gap-4 justify-end">
             <button
@@ -171,9 +190,17 @@ const InformacionBodega = () => {
             </button>
             <button
               onClick={exportToPDF}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Exportar a PDF
+            </button>
+                        <button
+              onClick={() => {
+                Router.push("/bodegas");
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Cancelar
             </button>
           </div>
 

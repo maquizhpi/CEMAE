@@ -5,43 +5,46 @@ import { useAuth } from "../../../controllers/hooks/use_auth";
 import { useFormik } from "formik";
 import Router from "next/router";
 import { toast } from "react-toastify";
-import {
-  Bodega,
-  Herramienta,
-  ModelosHerramienta,
-  ResponseData,
-  Ubicaciones,
-  Usuario,
-} from "../../../models";
+import { Bodega, Usuario } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
 import { useEffect, useState } from "react";
 import FormatedDate from "../../../controllers/utils/formated_date";
 
 export const BodegasCreate = () => {
   const { auth } = useAuth();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [initialValues, _setInitialValues] = useState<Bodega>({
-    number: 0,
-    fechaDeCreacion: FormatedDate(),
-    creador: auth.nombre,
-    herramientas: [],
-    bodegueroAsignado: "",
-    nombreBodega: ""
-  });
+  const [loading, setLoading] = useState(false);
+  const [usuarioBodeguero, setUsuarioBodeguero] = useState<Usuario[]>([]);
 
-  const [usuarioBodeguero, setusuarioBodeguero] = useState<Array<Usuario>>([]);
+const initialValues: Bodega = {
+  number: 0,
+  fechaDeCreacion: FormatedDate(),
+  creador: {
+    nombre: auth.nombre,
+    identificacion: auth.identificacion,
+    correo: auth.correo,
+    telefono: auth.telefono,
+  },
+  bodegueroAsignado: {
+    nombre: "",
+    identificacion: "",
+    correo: "",
+    telefono: "",
+  },
+  nombreBodega: "",
+};
+
 
   const loadUserBod = async () => {
     setLoading(true);
     const response = await HttpClient(
-      "/api/user",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
-    const data: Array<Usuario> = response.data ?? [];
+      "/api/user", 
+      "GET", 
+      auth.usuario, 
+      auth.rol);
+
+    const data: Usuario[] = response.data ?? [];
     const bodegueros = data.filter((usuario) => usuario.rol === 1);
-    setusuarioBodeguero(bodegueros);
+    setUsuarioBodeguero(bodegueros);
     setLoading(false);
   };
 
@@ -50,29 +53,25 @@ export const BodegasCreate = () => {
   }, []);
 
   const formik = useFormik<Bodega>({
-    enableReinitialize: true,
-    validateOnMount: true,
-    validateOnBlur: true,
-    validateOnChange: true,
     initialValues,
-    onSubmit: async (formData) => {
+    onSubmit: async (values) => {
+      if (!values.nombreBodega.trim()) {
+        toast.warning("Debe ingresar un nombre para la bodega");
+        return;
+      }
+      if (!values.bodegueroAsignado?.nombre) {
+        toast.warning("Debe seleccionar un bodeguero asignado");
+        return;
+      }
       setLoading(true);
-      try {
-        const response = await HttpClient(
-          "/api/bodegas",
-          "POST",
-          auth.usuario,
-          auth.rol,
-          formData
-        );
+      const response = await HttpClient("/api/bodegas", "POST", auth.usuario, auth.rol, values);
+      if (response.success) {
         toast.success("Bodega guardada exitosamente.");
         Router.back();
-      } catch (error) {
-        console.error("Error al guardar la bodega:", error);
+      } else {
         toast.error("Error al guardar la bodega.");
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     },
   });
 
@@ -107,9 +106,9 @@ export const BodegasCreate = () => {
               </label>
               <input
                 type="text"
-                name="creador"
-                value={formik.values.creador}
-                onChange={formik.handleChange}
+                name="creador.nombre"
+                value={formik.values.creador.nombre}
+                disabled
                 className="w-full p-2 border border-gray-300 rounded-lg shadow-sm"
               />
             </div>
@@ -122,9 +121,8 @@ export const BodegasCreate = () => {
                 type="text"
                 name="fechaDeCreacion"
                 value={formik.values.fechaDeCreacion}
-                onChange={formik.handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg shadow-sm"
                 disabled
+                className="w-full p-2 border border-gray-300 rounded-lg shadow-sm"
               />
             </div>
 
@@ -134,13 +132,22 @@ export const BodegasCreate = () => {
               </label>
               <select
                 name="bodegueroAsignado"
-                value={formik.values.bodegueroAsignado}
-                onChange={formik.handleChange}
+                onChange={(e) => {
+                  const selected = usuarioBodeguero.find(c => c.id === e.target.value);
+                  if (selected) {
+                    formik.setFieldValue("bodegueroAsignado", {
+                      nombre: selected.nombre,
+                      identificacion: selected.identificacion,
+                      correo: selected.correo,
+                      telefono: selected.telefono
+                    });
+                  }
+                }}
                 className="w-full p-2 border border-gray-300 rounded-lg shadow-sm"
               >
                 <option value="">Seleccione un bodeguero</option>
                 {usuarioBodeguero.map((usuario) => (
-                  <option key={usuario.id} value={usuario.nombre}>
+                  <option key={usuario.id} value={usuario.id}>
                     {usuario.nombre} - {usuario.identificacion} - {usuario.correo}
                   </option>
                 ))}
