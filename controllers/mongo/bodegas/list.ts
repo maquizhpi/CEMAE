@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { BodegaModel, HerramientaModel } from "../../../database/schemas";
-import { Bodega, Herramienta } from "../../../models";
+import { BodegaModel} from "../../../database/schemas";
+import { Bodega} from "../../../models";
 
 
 export default async function handler(

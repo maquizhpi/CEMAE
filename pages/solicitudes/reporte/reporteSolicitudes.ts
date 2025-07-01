@@ -22,7 +22,7 @@ export const generateReporteSolicitudes = (title: string, solicitudes: any[]) =>
   doc.setTextColor(0, 0, 0);
 
   // Encabezado de tabla
-  const headers = [["#", "Receptor", "Herramientas", "fecha","bodeguero", "Estado", "Observacion",]];
+  const headers = [["#", "Receptor", "Herramientas", "fecha","bodeguero", "Estado","Bodega","Ubicacion", "Observacion",]];
 
   const body = solicitudes.map((solicitud, index) => {
     const receptor = solicitud.receptor?.nombre || "Sin nombre";
@@ -32,6 +32,10 @@ export const generateReporteSolicitudes = (title: string, solicitudes: any[]) =>
     const fecha = solicitud.fecha ?? "Desconocido";
     const bodeguero = solicitud.bodeguero?.nombre;
     const estado = solicitud.estado ?? "Desconocido";
+    const bodega = solicitud.bodega ?? "Desconocido";
+    const ubicacion = (solicitud.herramientas ?? [])
+      .map((h: any) => h.ubicacion?.toUpperCase())
+      .join(",\n"); // salto de línea para cada herramienta 
     const observacion = solicitud.observacion ?? "";
 
     return [
@@ -41,6 +45,8 @@ export const generateReporteSolicitudes = (title: string, solicitudes: any[]) =>
       fecha,
       bodeguero,
       estado.toUpperCase(),
+      bodega,
+      ubicacion,
       observacion,
     ];
   });
@@ -55,8 +61,8 @@ export const generateReporteSolicitudes = (title: string, solicitudes: any[]) =>
       body: body,
       startY: 65,
       styles: {
-        fontSize: 9,
-        cellPadding: 3
+        fontSize: 7,
+        cellPadding: 2
       },
       headStyles: {
         fillColor: [0, 0, 200],

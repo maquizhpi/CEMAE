@@ -46,7 +46,10 @@ export const generateReporteHerramienta = (title: string, herramientas: Herramie
       head: headers,
       body: body,
       startY: 65,
-      styles: { fontSize: 9 },
+      styles: {
+        fontSize: 7,
+        cellPadding: 2
+      },
       headStyles: {
         fillColor: [0, 112, 192],
         textColor: 255,

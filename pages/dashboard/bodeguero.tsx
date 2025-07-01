@@ -9,11 +9,6 @@ import { generateReporteSolicitudes } from "../solicitudes/reporte/reporteSolici
 import { generateReporteCalibraciones } from "../calibracion/reporte/reporteCalibraciones";
 import { generateReporteHerramienta } from "../bodegas/reporte/reporteHerramientas";
 
-console.log("FUNC:", generateReporteHerramienta);
-console.log("FUNC:", generateReporteCalibraciones);
-console.log("FUNC:", generateReporteSolicitudes);
-
-
 export default function DashboardBodeguero() {
   const { auth } = useAuth();
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);

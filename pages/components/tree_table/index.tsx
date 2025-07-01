@@ -8,6 +8,7 @@ import TreeList, {
   Paging,
   Pager,
   Selection,
+  ContentReadyEvent,
 } from "devextreme-react/tree-list";
 import { useEffect, useState } from "react";
 import { loadMessages } from "devextreme/localization";
@@ -69,6 +70,7 @@ type Props = {
   showNavigationInfo?: boolean;
   showLines?: boolean;
   onSelectedRows?: (values: Array<any>) => void;
+  onFilteredDataChange?: (filteredData: any[]) => void;
 };
 
 const columnsRender = (cols: ColumnData[], index = "1_"): React.ReactNode => {
@@ -220,13 +222,19 @@ const TreeTable = ({
   showNavigationInfo = false,
   showLines = true,
   onSelectedRows,
+  onFilteredDataChange,
 }: Props) => {
   const [tableData, setTableData] = useState<any[]>(dataSource);
   const [selectedRowKeys, setSelectedRowsKeys] = useState([]);
 
   const onSelectionChanged = (e: any) => {
     setSelectedRowsKeys(e.selectedRowKeys);
-    onSelectedRows(e.selectedRowsData);
+    onSelectedRows?.(e.selectedRowsData);
+  };
+
+  const onContentReady = (e: any) => {
+    const filteredData = e.component.getVisibleRows().map((r: any) => r.data);
+    onFilteredDataChange?.(filteredData);
   };
 
   useEffect(() => setTableData(dataSource), [dataSource]);
@@ -245,11 +253,12 @@ const TreeTable = ({
         keyExpr={keyExpr}
         rowAlternationEnabled={true}
         style={style}
-        onRowRemoved={(e) => onRow.removed(e.data)}
-        onRowUpdated={(e) => onRow.updated(e.data)}
-        onRowInserted={(e) => onRow.inserted(e.data)}
+        onRowRemoved={(e) => onRow?.removed(e.data)}
+        onRowUpdated={(e) => onRow?.updated(e.data)}
+        onRowInserted={(e) => onRow?.inserted(e.data)}
         selectedRowKeys={selectedRowKeys}
         onSelectionChanged={onSelectionChanged}
+        onContentReady={onContentReady}
       >
         {onSelectedRows && <Selection mode="multiple" />}
         {(scrolling || paging) && <Scrolling mode="standard" />}

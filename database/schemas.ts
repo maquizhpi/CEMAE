@@ -10,9 +10,6 @@ import {
   Ubicaciones,
   Usuario,
   } from "../models";
-import { time } from "console";
-import { ObjectId } from "mongodb";
-
 ////////////// Modelo para los usuarios////////////////
 const UserSchema = new mongoose.Schema<Usuario>(
   {
@@ -148,6 +145,7 @@ const BodegaSchema = new mongoose.Schema<Bodega>(
     nombreBodega: { type: String },
     ubicaciones: { type: [UbicacionesSchema] },
     herramientas: { type: [HerramientaSchema] },
+    ubicacionesBodega: {type: String },
   },
   { timestamps: true }
 );
@@ -186,6 +184,7 @@ const SolicitudeSchema = new mongoose.Schema<Solicitude>(
       correo: { type: String },
     },
     estado: { type: String },
+    bodega: { type: String },
     observacion: { type: String, default: "" },
   },
   { timestamps: true }

@@ -18,7 +18,7 @@ const LoginPage = () => {
 
   // valores del formulario
   const [initialValues, _setInitialValues] = useState<LoginData>({
-    usuario: "",
+    correo: "",
     contraseña: "",
   });
 
@@ -86,15 +86,15 @@ const LoginPage = () => {
             <form onSubmit={formik.handleSubmit} className="w-full">
               <div className="mb-6">
                 <label
-                  htmlFor="userName"
+                  htmlFor="correo"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Nombre de Usuario
+                  Correo electronico
                 </label>
                 <input
                   type="text"
-                  name="usuario"
-                  value={formik.values.usuario}
+                  name="correo"
+                  value={formik.values.correo}
                   onChange={formik.handleChange}
                   placeholder="Ingrese su usuario"
                   className="mt-1 block w-full h-12 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

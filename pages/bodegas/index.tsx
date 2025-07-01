@@ -10,15 +10,16 @@ import ConfirmModal from "../components/modals/confirm";
 import { ExcelExport } from "@progress/kendo-react-excel-export";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import Router from "next/router";
+import { generateReporteBodegas } from "./reporte/reporteBodegas";
 
 export const BodegasPage = () => {
   const { auth } = useAuth();
   const [tableData, setTableData] = useState<Array<Bodega>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [itemToDelete, setItemToDelete] = useState<string>(null);
+  const [filterText, setFilterText] = useState<string>("");
   const excelExporter = useRef<ExcelExport>(null);
 
-  // Cargar datos de bodegas
   const loadData = async () => {
     setLoading(true);
     const response = await HttpClient(
@@ -29,14 +30,16 @@ export const BodegasPage = () => {
     );
     const bodegas = response.data ?? [];
 
-    // Si el rol es 0, mostrar todas las bodegas
-    const bodegasFiltradas =
-      auth.rol === 0
-        ? bodegas
-        : bodegas.filter(
-            (bodega) =>
-              bodega.bodegueroAsignado?.identificacion === auth.identificacion
-          );
+    const bodegasFiltradas = (auth.rol === 0
+      ? bodegas
+      : bodegas.filter(
+          (bodega) =>
+            bodega.bodegueroAsignado?.identificacion === auth.identificacion
+        )).map((bodega) => ({
+      ...bodega,
+      bodegueroAsignadoNombre: bodega.bodegueroAsignado?.nombre || "N/A",
+      creadorNombre: bodega.creador?.nombre || "N/A",
+    }));
 
     setTableData(bodegasFiltradas);
     setLoading(false);
@@ -54,46 +57,48 @@ export const BodegasPage = () => {
       cssClass: "bold",
     },
     {
-      dataField: "bodegueroAsignado",
+      dataField: "bodegueroAsignadoNombre",
       caption: "Bodeguero Asignado",
       alignment: "center",
       cssClass: "bold",
-      cellRender: (cellData: any) => cellData.value?.nombre || "N/A",
     },
     {
-      dataField: "creador",
+      dataField: "creadorNombre",
       caption: "Creador",
       alignment: "center",
       cssClass: "bold",
-      cellRender: (cellData: any) => cellData.value?.nombre || "N/A",
     },
     {
       dataField: "fechaDeCreacion",
-      caption: "Fecha de creacion ",
+      caption: "Fecha de creación",
       alignment: "center",
       cssClass: "bold",
     },
   ];
 
-  // Exportar a Excel
   const exportToExcel = () => {
     if (excelExporter.current) {
       excelExporter.current.save();
     }
   };
 
+  const exportToPDF = () => {
+    const bodegasFiltradas = tableData.filter((b) =>
+      b.nombreBodega?.toLowerCase().includes(filterText.toLowerCase()) ||
+      b.bodegueroAsignadoNombre?.toLowerCase().includes(filterText.toLowerCase()) ||
+      b.creadorNombre?.toLowerCase().includes(filterText.toLowerCase())
+    );
+    generateReporteBodegas("REPORTE DE SOLICITUDES FILTRADAS", bodegasFiltradas);
+  };
+
   const buttons = {
     edit: (rowData: Herramienta) =>
       CheckPermissions(auth, [0, 1])
-        ? Router.push({
-            pathname: "/bodegas/editar/" + (rowData.id as string),
-          })
+        ? Router.push({ pathname: "/bodegas/editar/" + (rowData.id as string) })
         : toast.error("No puedes acceder"),
     show: (rowData: Herramienta) =>
       CheckPermissions(auth, [0, 1])
-        ? Router.push({
-            pathname: "/bodegas/show/" + (rowData.id as string),
-          })
+        ? Router.push({ pathname: "/bodegas/show/" + (rowData.id as string) })
         : toast.error("No puedes acceder"),
   };
 
@@ -111,18 +116,17 @@ export const BodegasPage = () => {
               </p>
             </div>
             {!CheckPermissions(auth, [1, 2]) && (
-            <Button
-              className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
-              onClick={() =>
-                CheckPermissions(auth, [0])
-                  ? Router.push({ pathname: "/bodegas/create" })
-                  : toast.info("No puede ingresar bodegas")
-              }
-            >
-              Crear bodega
-            </Button>
+              <Button
+                className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
+                onClick={() =>
+                  CheckPermissions(auth, [0])
+                    ? Router.push({ pathname: "/bodegas/create" })
+                    : toast.info("No puede ingresar bodegas")
+                }
+              >
+                Crear bodega
+              </Button>
             )}
-            {/* Tabla de herramientas */}
             <div className="p-2">
               <TreeTable
                 keyExpr="id"
@@ -139,6 +143,14 @@ export const BodegasPage = () => {
                   `Página ${actual} de ${total} (${items} bodegas)`
                 }
               />
+            </div>
+            <div className="px-8 pb-8">
+              <Button
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
+                onClick={exportToPDF}
+              >
+                Exportar reporte PDF
+              </Button>
             </div>
           </div>
         </div>

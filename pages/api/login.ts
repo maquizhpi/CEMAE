@@ -8,7 +8,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { usuario, contraseña } = req.body;
+    const { correo, contraseña } = req.body;
     console.log(req.body)
     // connect to the database
     await dbConnect();
@@ -16,7 +16,7 @@ export default async function handler(
     if (req.method === "POST") {
       // fetch the posts
       const user = await UserModel.findOne(
-        { usuario, contraseña },
+        { correo, contraseña },
         { password: 0 }
       );
       console.log(user);

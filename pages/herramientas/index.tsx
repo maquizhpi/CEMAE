@@ -9,6 +9,7 @@ import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import Router from "next/router";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
+import { generateReporteHerramienta } from "../bodegas/reporte/reporteHerramientas";
 
 export const herramientasPage = () => {
   const { auth } = useAuth();
@@ -17,6 +18,7 @@ export const herramientasPage = () => {
   const [selectedBodega, setSelectedBodega] = useState<string>("");
   const [herramientas, setHerramientas] = useState<Array<Herramienta>>([]);
   const [herramientasAdmin, setHerramientasAdmin] = useState<Array<Herramienta>>([]);
+  const [filteredHerramientas, setFilteredHerramientas] = useState<Array<Herramienta>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const loadBodegas = async () => {
@@ -40,6 +42,7 @@ export const herramientasPage = () => {
         (b) => b.herramientas.map((h) => ({ ...h, nombreBodega: b.nombreBodega }))
       );
       setHerramientasAdmin(todasHerramientas);
+      setFilteredHerramientas(todasHerramientas);
     } else {
       const bodegasFiltradas = bodegasData.filter(
         (b) =>
@@ -62,9 +65,12 @@ export const herramientasPage = () => {
   useEffect(() => {
     if (selectedBodega) {
       const bodegaSeleccionada = bodegas.find((b) => b.id === selectedBodega);
-      setHerramientas(bodegaSeleccionada?.herramientas ?? []);
+      const herramientasFiltradas = bodegaSeleccionada?.herramientas ?? [];
+      setHerramientas(herramientasFiltradas);
+      setFilteredHerramientas(herramientasFiltradas);
     } else {
       setHerramientas([]);
+      setFilteredHerramientas([]);
     }
   }, [selectedBodega, bodegas]);
 
@@ -108,6 +114,7 @@ export const herramientasPage = () => {
       toast.error("Error al eliminar la herramienta.");
     }
   };
+
   const columns: ColumnData[] = [
     {
       dataField: "numero",
@@ -182,7 +189,6 @@ export const herramientasPage = () => {
       alignment: "center",
       cssClass: "bold",
     },
-
     ...(auth.rol === 0
       ? [
           {
@@ -195,28 +201,26 @@ export const herramientasPage = () => {
       : []),
   ];
 
-    const buttons = {
-      edit: (rowData: Herramienta) =>
-        CheckPermissions(auth, [0, 1])
-          ? Router.push({
-              pathname: "/herramientas/edit/" + (rowData.id as string),
-            })
-          : toast.error("No puedes acceder"),
-      show: (rowData: Herramienta) => {
-        if (rowData.imagen) {
-          window.open(rowData.imagen, "_blank");
-        } else {
-          toast.error("No hay imagen subida");
-        }
-      },
-      delete: (rowData: Herramienta) => {
-        if (CheckPermissions(auth, [0, 1])) {
-          handleDelete(rowData);
-        } else {
-          toast.error("No tienes permisos para eliminar");
-        }
+  const buttons = {
+    edit: (rowData: Herramienta) =>
+      CheckPermissions(auth, [0, 1])
+        ? Router.push({ pathname: "/herramientas/edit/" + (rowData.id as string) })
+        : toast.error("No puedes acceder"),
+    show: (rowData: Herramienta) => {
+      if (rowData.imagen) {
+        window.open(rowData.imagen, "_blank");
+      } else {
+        toast.error("No hay imagen subida");
       }
-    };
+    },
+    delete: (rowData: Herramienta) => {
+      if (CheckPermissions(auth, [0, 1])) {
+        handleDelete(rowData);
+      } else {
+        toast.error("No tienes permisos para eliminar");
+      }
+    },
+  };
 
   return (
     <>
@@ -293,7 +297,22 @@ export const herramientasPage = () => {
                 infoText={(actual, total, items) =>
                   `Página ${actual} de ${total} (${items} herramientas)`
                 }
+                onFilteredDataChange={setFilteredHerramientas}
               />
+            </div>
+
+            <div className="px-8 pb-8">
+              <Button
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
+                onClick={() =>
+                  generateReporteHerramienta(
+                    "REPORTE DE BODEGA - DATOS FILTRADOS",
+                    filteredHerramientas
+                  )
+                }
+              >
+                Exportar reporte PDF
+              </Button>
             </div>
           </div>
         </div>

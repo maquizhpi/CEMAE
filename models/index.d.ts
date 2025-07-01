@@ -16,7 +16,7 @@ export type ResponseData = {
 
 //Datos del login
 export type LoginData = {
-  usuario: string;
+  correo: string;
   contraseña: string;
 };
 
@@ -107,6 +107,9 @@ export type Bodega = {
     telefono: string;
   };
   nombreBodega: string;
+  ubicacionesBodega: {
+    nombre: string;
+  }
 };
 
 
@@ -132,6 +135,7 @@ export type Solicitude = {
     telefono: string;
   }
   estado: string;
+  bodega: string;
   observacion: string;
 };
 

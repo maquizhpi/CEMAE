@@ -5,10 +5,12 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import HttpClient from "../../controllers/utils/http_client";
-import { Calibracion, Solicitude } from "../../models";
+import { Calibracion } from "../../models";
 import Sidebar from "../components/sidebar";
 import TreeTable, { ColumnData } from "../components/tree_table";
-import dayjs from "dayjs"
+import dayjs from "dayjs";
+import { generateReporteCalibraciones } from "./reporte/reporteCalibraciones";
+
 type Props = {
   dates: Array<string>;
   sm?: number;
@@ -21,20 +23,18 @@ type Props = {
 export const CalibracionPage = (props: Props) => {
   const { auth } = useAuth();
   const [tableData, setTableData] = useState<Array<Calibracion>>([]);
+  const [filteredData, setFilteredData] = useState<Array<Calibracion>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const loadData = async () => {
     setLoading(true);
-
-    var response = await HttpClient(
+    const response = await HttpClient(
       "/api/calibracion",
       "GET",
       auth.usuario,
       auth.rol
     );
-
     const calibracion: Array<Calibracion> = response.data ?? [];
-    console.log(calibracion);
     setTableData(calibracion);
     setLoading(false);
   };
@@ -43,7 +43,6 @@ export const CalibracionPage = (props: Props) => {
     loadData();
   }, []);
 
-  // Definición de las columnas para el TreeTable
   const columns: ColumnData[] = [
     {
       dataField: "",
@@ -57,20 +56,14 @@ export const CalibracionPage = (props: Props) => {
       caption: "Herramienta",
       alignment: "center",
       cssClass: "bold",
-      cellRender: (cellData: any) => {
-        const value = cellData.value;
-        return value ? value.toUpperCase() : "";
-      },
+      cellRender: (cellData: any) => cellData.value?.toUpperCase() ?? "",
     },
     {
       dataField: "herramientas[0].serie",
       caption: "Número de Serie",
       alignment: "center",
       cssClass: "bold",
-      cellRender: (cellData: any) => {
-        const value = cellData.value;
-        return value ? value.toUpperCase() : "";
-      },
+      cellRender: (cellData: any) => cellData.value?.toUpperCase() ?? "",
     },
     {
       dataField: "fechaCalibracion",
@@ -83,6 +76,12 @@ export const CalibracionPage = (props: Props) => {
       caption: "Fecha Próxima Calibración",
       alignment: "center",
       cssClass: "bold",
+    },
+    {
+      dataField: "empresaDeCalibracion",
+      caption: "Empresa",
+      alignment: "center",
+      cssClass: "bold",   
     },
     {
       dataField: "documentoCalibracion",
@@ -109,7 +108,7 @@ export const CalibracionPage = (props: Props) => {
           </button>
         );
       },
-    },  
+    },
     {
       dataField: "estado",
       caption: "Estado",
@@ -118,10 +117,8 @@ export const CalibracionPage = (props: Props) => {
       cellRender: (cellData: any) => {
         const rowData = cellData.data;
         const estado = cellData.value;
-
         const hoy = dayjs();
         const fechaProxima = dayjs(rowData.fechaProximaCalibracion);
-
         const estaVencido = fechaProxima.isBefore(hoy, "day");
 
         if (estaVencido) {
@@ -131,7 +128,6 @@ export const CalibracionPage = (props: Props) => {
             </span>
           );
         }
-
         if (estado === "Herramientas calibradas") {
           return (
             <span className="inline-block bg-green-500 text-white font-bold py-1 px-3 rounded-lg">
@@ -153,43 +149,29 @@ export const CalibracionPage = (props: Props) => {
         }
       },
     },
-
   ];
 
-
-
   const buttons = {
+    
     edit: (rowData: Calibracion) => {
-      // Verificar permisos del usuario
       if (!CheckPermissions(auth, [0, 1])) {
         toast.error("No tienes permisos para editar esta solicitud");
         return;
       }
+      Router.push({ pathname: "/calibracion/edit/" + rowData.id });
+    },
+    show: (rowData: Calibracion) => {
+      Router.push({ pathname: '/calibracion/reporte/reporteCalibracionIndividual', query: { id: rowData.id } });
 
-      // Redireccionar a la edición si pasa ambas validaciones
-      Router.push({
-        pathname: "/calibracion/edit/" + (rowData.id as string),
-      });
     },
     delete: (rowData: Calibracion) => {
-      // Verificar permisos del usuario
       if (!CheckPermissions(auth, [0, 1])) {
         toast.error("No tienes permisos para eliminar este registro");
         return;
       }
-
-      if (
-        window.confirm(
-          "¿Estás seguro de que deseas eliminar este registro de calibración? Esta acción no se puede deshacer."
-        )
-      ) {
+      if (confirm("¿Estás seguro de que deseas eliminar este registro de calibración?")) {
         setLoading(true);
-        HttpClient(
-          `/api/calibracion/${rowData.id}`,
-          "DELETE",
-          auth.usuario,
-          auth.rol
-        )
+        HttpClient(`/api/calibracion/${rowData.id}`, "DELETE", auth.usuario, auth.rol)
           .then(() => {
             toast.success("Registro de calibración eliminado correctamente");
             loadData();
@@ -199,8 +181,9 @@ export const CalibracionPage = (props: Props) => {
             setLoading(false);
           });
       }
-    }
+    },
   };
+
   return (
     <>
       <div className="flex h-screen">
@@ -217,16 +200,11 @@ export const CalibracionPage = (props: Props) => {
             {CheckPermissions(auth, [0, 1]) && (
               <Button
                 className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
-                onClick={() =>
-                  CheckPermissions(auth, [0, 1])
-                    ? Router.push({ pathname: "/calibracion/create" })
-                    : toast.info("No puede ingresar solicitudes")
-                }
+                onClick={() => Router.push({ pathname: "/calibracion/create" })}
               >
                 Crear registro
               </Button>
             )}
-
             <div className="p-2">
               <TreeTable
                 keyExpr="id"
@@ -241,9 +219,23 @@ export const CalibracionPage = (props: Props) => {
                 showNavigationInfo
                 pageSize={10}
                 infoText={(actual, total, items) =>
-                  `Página ${actual} de ${total} (${items} solicitudes de calibracion)`
+                  `Página ${actual} de ${total} (${items} solicitudes de calibración)`
                 }
+                onFilteredDataChange={(filtered: Calibracion[]) => setFilteredData(filtered)}
               />
+            </div>
+            <div className="px-8 pb-8">
+              <Button
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
+                onClick={() =>
+                  generateReporteCalibraciones(
+                    "REPORTE DE CALIBRACIONES FILTRADAS",
+                    filteredData
+                  )
+                }
+              >
+                Exportar reporte PDF
+              </Button>
             </div>
           </div>
         </div>

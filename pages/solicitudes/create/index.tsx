@@ -112,10 +112,11 @@ export const RegistroCreate = () => {
       correo: "",
     },
     estado: "NO ENTREGADO",
+    bodega: "",
     observacion: ""
   };
 
-  const formik = useFormik({
+    const formik = useFormik({
     initialValues,
     onSubmit: async (values) => {
       if (!values.receptor?.nombre?.trim()) {
@@ -128,6 +129,11 @@ export const RegistroCreate = () => {
       }
 
       setLoading(true);
+
+      // ASIGNAR BODEGA SELECCIONADA ANTES DE GUARDAR
+      const bodegaSeleccionadaObj = bodegasDelUsuario.find(b => b.id === bodegaSeleccionada);
+        values.bodega = bodegaSeleccionadaObj?.nombreBodega || "Bodega no encontrada";
+
 
       const response = await HttpClient(
         "/api/solicitudes",

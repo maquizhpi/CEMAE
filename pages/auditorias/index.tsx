@@ -27,6 +27,12 @@ const AuditoryPage = () => {
 
   const columns: ColumnData[] = [
     {
+      dataField: "id",
+      caption: "N°",
+      alignment: "center",
+      cellRender: ({ rowIndex }) => rowIndex + 1,
+    },
+    {
       dataField: "date",
       caption: "Fecha y Hora",
       alignment: "center",

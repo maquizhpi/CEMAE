@@ -2,9 +2,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import {
   AuditoryModel,
   BackupBodegaModel,
-  BackupSolicitudesModel,
   BodegaModel,
-} from "../../../database/schemas";
+} from "../../../database/schemas"; 
 import { Bodega } from "../../../models";
 import FormatedDate from "../../utils/formated_date";
 

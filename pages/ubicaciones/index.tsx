@@ -54,8 +54,15 @@ const UbicacionesPanel = () => {
     // Definición de columnas para la tabla.
     const columns: ColumnData[] = [
         {
+            dataField: "index",
+            caption: "#",
+            cellRender: (params: any) => (params.rowIndex ?? 0) + 1,
+            width: 60,
+        },
+        
+        {
             dataField: "nombre",
-            caption: "Nombre",
+            caption: "Nombre Ubicación",
         },
         {
             dataField: "bodega",

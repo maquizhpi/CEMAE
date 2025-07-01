@@ -24,6 +24,7 @@ const LoadingContainer = (props: Props): JSX.Element => {
         width="300"
         height="300"
         priority={false}
+        unoptimized
       />
     </GifContainer>
   ) : (
