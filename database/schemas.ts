@@ -148,43 +148,33 @@ export const BodegaModel =
 
 
 // //////////////Modelo para las solicitudes//////////////////
-const SolicitudeSchema = new mongoose.Schema<Solicitude>(
-  {
-    number: { type: Number },
-    fecha: { type: String },
-    bodeguero: {
-      nombre: { type: String },
-      identificacion: { type: String },
-      telefono: { type: String },
-      correo: { type: String },
-    },
-    herramientas: { type: [HerramientaSchema] },
-    receptor: {
-      nombre: { type: String },
-      identificacion: { type: String },
-      telefono: { type: String },
-      correo: { type: String },
-    },
-    estado: { type: String },
-    observacion: { type: String, default: "" },
+const SolicitudeSchema = new mongoose.Schema({
+  number: { type: Number },
+  fecha: { type: String },
+  bodeguero: {
+    nombre: String,
+    identificacion: String,
+    telefono: String,
+    correo: String,
   },
-  { timestamps: true }
-);
+  herramientas: [HerramientaSchema],
+  receptor: {
+    nombre: String,
+    identificacion: String,
+    telefono: String,
+    correo: String,
+  },
+  estado: String,
+  observacion: { type: String, default: "" },
+}, { timestamps: true });
 
-// Duplicate the ID field.
 SolicitudeSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
 SolicitudeSchema.set("toJSON", {
   virtuals: true,
 });
-
-type SolicitudeType = mongoose.InferSchemaType<typeof SolicitudeSchema>;
-
-export const SolicitudeModel = mongoose.models.Solicitudes || mongoose.model<SolicitudeType>("Solicitudes", SolicitudeSchema);
-
 //////////////////////Modelo para calibracion//////////////////////////
 const CalibracionSchema = new mongoose.Schema<Calibracion>(
   {
