@@ -181,9 +181,9 @@ SolicitudeSchema.set("toJSON", {
   virtuals: true,
 });
 
-export const SolicitudeModel =
-  mongoose.models.Solicitudes ||
-  mongoose.model("Solicitudes", SolicitudeSchema);
+type SolicitudeType = mongoose.InferSchemaType<typeof SolicitudeSchema>;
+
+export const SolicitudeModel = mongoose.models.Solicitudes || mongoose.model<SolicitudeType>("Solicitudes", SolicitudeSchema);
 
 //////////////////////Modelo para calibracion//////////////////////////
 const CalibracionSchema = new mongoose.Schema<Calibracion>(
