@@ -24,6 +24,7 @@ const EditarBodega = () => {
   const [initialValues, setInitialValues] = useState<Bodega | null>(null);
   const [editingToolIndex, setEditingToolIndex] = useState<number | null>(null);
   const [toolTemp, setToolTemp] = useState<Herramienta>({
+    _id: "",
     nombre: "",
     codigo: "",
     descripcion: "",
