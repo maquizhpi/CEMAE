@@ -93,9 +93,6 @@ export type Bodega = {
 
 // Modelo para las solicitudes
 export type Solicitude = {
-  correo: string;
-  identificacion: string;
-  nombre: string;
   id?: string;
   number: number;
   herramientas: Array<Herramienta>;
