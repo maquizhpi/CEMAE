@@ -93,7 +93,7 @@ export type Bodega = {
 
 // Modelo para las solicitudes
 export type Solicitude = {
-  id?: string;
+  _id?: string;
   number: number;
   herramientas: Array<Herramienta>;
   fecha: string;
