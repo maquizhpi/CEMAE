@@ -11,7 +11,7 @@ export const generateReporteBodegas = (title: string, bodegas: any[]) => {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Encabezado institucional
-  doc.addImage('/image/logo1.jpeg', 'JPEG', pageWidth / 2 - 15, 10, 30, 20);
+  doc.addImage('/image/logo2.jpeg', 'JPEG', pageWidth / 2 - 15, 10, 30, 20);
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
   doc.text('ESCUDARÓN DE ASALTO SUPER PUMA', pageWidth / 2, 35, { align: 'center' });

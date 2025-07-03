@@ -64,19 +64,22 @@ export const SolicitudePage = (props: Props) => {
       dataField: "number",
       caption: "Nº Solicitud",
       alignment: "left",
-      cssClass: "bold",
+      cssClass: "bold hidden md:table-cell",
+      minWidth: 30,
+      width: 80,
     },
     {
       dataField: "receptorNombre",
       caption: "Receptor",
       alignment: "left",
-      cssClass: "bold",
+      cssClass: "bold table-cell",
+      minWidth: 80,
     },
     {
       dataField: "herramientas",
       caption: "Herramientas",
       alignment: "left",
-      cssClass: "bold",
+      cssClass: "bold hidden md:table-cell",
       cellRender: (cellData: any) => {
         const herramientas = cellData.value ?? [];
         if (herramientas.length === 0) return "sin herramientas";
@@ -93,7 +96,8 @@ export const SolicitudePage = (props: Props) => {
       dataField: "estado",
       caption: "Estado",
       alignment: "left",
-      cssClass: "bold",
+      cssClass: "bold ",
+      minWidth: 80,
       cellRender: (cellData: any) => {
         const estado = cellData.value?.toLowerCase();
         let colorClass = "";
@@ -132,12 +136,12 @@ export const SolicitudePage = (props: Props) => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       <div className="md:w-1/6 max-w-none">
         <Sidebar />
       </div>
       <div className="w-12/12 md:w-5/6 bg-blue-100">
-        <div className="bg-white w-5/6 h-5/6 mx-auto">
+        <div className="bg-white w-[95%] md:w-5/6 mx-auto mt-4 mb-4 p-4 rounded-lg shadow-md">
           <p className="md:text-4xl text-xl text-center pt-5 font-extrabold text-blue-500 mt-6">
             Registro de solicitudes generadas
           </p>
@@ -151,6 +155,7 @@ export const SolicitudePage = (props: Props) => {
             </Button>
           )}
 
+            {/* PARA SOLICITAR HERRAMIENTA EL CLIENTE  NO DISPONIBLE
           {CheckPermissions(auth, [2]) && (
             <Button
               className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
@@ -159,6 +164,7 @@ export const SolicitudePage = (props: Props) => {
               Crear registro como cliente
             </Button>
           )}
+            */}
 
           {CheckPermissions(auth, [0]) && (
             <Button
@@ -180,7 +186,7 @@ export const SolicitudePage = (props: Props) => {
             </Button>
           )}
 
-          <div className="p-2">
+          <div className="w-full overflow-x-auto px-2">
             <TreeTable
               keyExpr="id"
               dataSource={tableData}

@@ -120,7 +120,7 @@ export const herramientasPage = () => {
       dataField: "numero",
       caption: "#",
       alignment: "center",
-      cssClass: "bold",
+      cssClass: " bold",
       cellRender: (params: any) => params.rowIndex + 1,
     },
     {

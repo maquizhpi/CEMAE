@@ -77,7 +77,6 @@ const columnsRender = (cols: ColumnData[], index = "1_"): React.ReactNode => {
   return cols.map((column, columnindex) => {
     if (column.subColumns !== undefined) {
       return (
-        //@ts-ignore
         <Column
           cssClass={column.cssClass}
           key={index + columnindex}
@@ -113,12 +112,11 @@ const allButtons = (
   defaultActions?: DefaultActions
 ) => {
   return buttons ? (
-    //@ts-ignore
     <Column type="buttons" caption="Acciones" cssClass={buttons.cssClass}>
       {buttons.show && (
         <Button
-          text="mostar"
-          hint="mostar"
+          text="mostrar"
+          hint="mostrar"
           icon="/show.svg"
           onClick={({ row }: any) => buttons.show!(row.data)}
           cssClass="actionButtonShow"
@@ -163,7 +161,6 @@ const allButtons = (
     </Column>
   ) : (
     defaultActions && (
-      //@ts-ignore
       <Column type="buttons" caption="Acciones">
         <Button
           name="edit"
@@ -238,63 +235,65 @@ const TreeTable = ({
   };
 
   useEffect(() => setTableData(dataSource), [dataSource]);
+
   return (
     <TableContainer {...colors}>
-      {/* @ts-ignore */}
-      <TreeList
-        id={id}
-        dataSource={tableData}
-        columnAutoWidth={columnAutoWidth}
-        showBorders={showLines}
-        showRowLines={showLines}
-        noDataText="No hay datos ingresados..."
-        dataStructure="plain"
-        rootValue="-1"
-        keyExpr={keyExpr}
-        rowAlternationEnabled={true}
-        style={style}
-        onRowRemoved={(e) => onRow?.removed(e.data)}
-        onRowUpdated={(e) => onRow?.updated(e.data)}
-        onRowInserted={(e) => onRow?.inserted(e.data)}
-        selectedRowKeys={selectedRowKeys}
-        onSelectionChanged={onSelectionChanged}
-        onContentReady={onContentReady}
-      >
-        {onSelectedRows && <Selection mode="multiple" />}
-        {(scrolling || paging) && <Scrolling mode="standard" />}
-        <Paging enabled={paging} defaultPageSize={pageSize} />
-        <Pager
-          showNavigationButtons={showNavigationButtons}
-          infoText={infoText && infoText("{0}", "{1}", "{2}")}
-          showInfo={showNavigationInfo}
-        />
-        {searchPanel && <SearchPanel visible={true} width={250} />}
-        {headerFilter && (
-          <HeaderFilter
-            visible={true}
-            texts={{
-              cancel: "Cancelar",
-              ok: "Filtrar",
-              emptyValue: "Sin asignar",
-            }}
+      <div className="w-full overflow-x-auto">
+        <TreeList
+          id={id}
+          dataSource={tableData}
+          columnAutoWidth={columnAutoWidth}
+          showBorders={showLines}
+          showRowLines={showLines}
+          noDataText="No hay datos ingresados..."
+          dataStructure="plain"
+          rootValue="-1"
+          keyExpr={keyExpr}
+          rowAlternationEnabled={true}
+          style={style}
+          onRowRemoved={(e) => onRow?.removed(e.data)}
+          onRowUpdated={(e) => onRow?.updated(e.data)}
+          onRowInserted={(e) => onRow?.inserted(e.data)}
+          selectedRowKeys={selectedRowKeys}
+          onSelectionChanged={onSelectionChanged}
+          onContentReady={onContentReady}
+        >
+          {onSelectedRows && <Selection mode="multiple" />}
+          {(scrolling || paging) && <Scrolling mode="standard" />}
+          <Paging enabled={paging} defaultPageSize={pageSize} />
+          <Pager
+            showNavigationButtons={showNavigationButtons}
+            infoText={infoText && infoText("{0}", "{1}", "{2}")}
+            showInfo={showNavigationInfo}
           />
-        )}
-        {buttonsFirst && allButtons(buttons, defaultActions)}
-        {columnsRender(columns)}
-        {!buttonsFirst && allButtons(buttons, defaultActions)}
-        {defaultActions && (
-          <Editing
-            allowUpdating={defaultActions?.updating ?? false}
-            allowDeleting={defaultActions?.deleting ?? false}
-            allowAdding={defaultActions?.adding ?? false}
-            texts={{
-              confirmDeleteMessage:
-                "¿Estas seguro que deseas eliminar este dato?",
-            }}
-            mode="row"
-          />
-        )}
-      </TreeList>
+          {searchPanel && <SearchPanel visible={true} width={250} />}
+          {headerFilter && (
+            <HeaderFilter
+              visible={true}
+              texts={{
+                cancel: "Cancelar",
+                ok: "Filtrar",
+                emptyValue: "Sin asignar",
+              }}
+            />
+          )}
+          {buttonsFirst && allButtons(buttons, defaultActions)}
+          {columnsRender(columns)}
+          {!buttonsFirst && allButtons(buttons, defaultActions)}
+          {defaultActions && (
+            <Editing
+              allowUpdating={defaultActions?.updating ?? false}
+              allowDeleting={defaultActions?.deleting ?? false}
+              allowAdding={defaultActions?.adding ?? false}
+              texts={{
+                confirmDeleteMessage:
+                  "¿Estas seguro que deseas eliminar este dato?",
+              }}
+              mode="row"
+            />
+          )}
+        </TreeList>
+      </div>
     </TableContainer>
   );
 };

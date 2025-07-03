@@ -29,21 +29,28 @@ export const BodegasPage = () => {
       auth.rol
     );
     const bodegas = response.data ?? [];
+      console.log("Todas las bodegas:", bodegas);
+      console.log("Usuario autenticado:", auth);
 
     const bodegasFiltradas = (auth.rol === 0
       ? bodegas
       : bodegas.filter(
           (bodega) =>
-            bodega.bodegueroAsignado?.identificacion === auth.identificacion
-        )).map((bodega) => ({
+            bodega.bodegueroAsignado?.identificacion === auth?.identificacion
+        )
+        
+    ).map((bodega) => ({
       ...bodega,
       bodegueroAsignadoNombre: bodega.bodegueroAsignado?.nombre || "N/A",
       creadorNombre: bodega.creador?.nombre || "N/A",
     }));
 
+    console.log("Bodegas filtradas:", bodegasFiltradas);
+
     setTableData(bodegasFiltradas);
     setLoading(false);
   };
+
 
   useEffect(() => {
     loadData();
@@ -85,10 +92,10 @@ export const BodegasPage = () => {
   const exportToPDF = () => {
     const bodegasFiltradas = tableData.filter((b) =>
       b.nombreBodega?.toLowerCase().includes(filterText.toLowerCase()) ||
-      b.bodegueroAsignadoNombre?.toLowerCase().includes(filterText.toLowerCase()) ||
+      b.bodegueroAsignado?.toLowerCase().includes(filterText.toLowerCase()) ||
       b.creadorNombre?.toLowerCase().includes(filterText.toLowerCase())
     );
-    generateReporteBodegas("REPORTE DE SOLICITUDES FILTRADAS", bodegasFiltradas);
+    generateReporteBodegas("REPORTE DE BODEGAS", bodegasFiltradas);
   };
 
   const buttons = {

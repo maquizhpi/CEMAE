@@ -1,5 +1,5 @@
 import { Modal, Button as BootstrapButton } from "react-bootstrap";
-import { Herramienta, ModelosHerramienta, Ubicaciones } from "../../models";
+import { Herramienta, ModelosHerramienta, Ubicaciones } from "../../../models";
 
 interface Props {
   show: boolean;

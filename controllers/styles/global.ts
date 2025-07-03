@@ -73,6 +73,10 @@ const GlobalStyle = createGlobalStyle`
     .print-area {
       padding: 0 !important;
     }
+      .custom-modal {
+  max-width: 750px !important;
+}
+
   }
 `;
 

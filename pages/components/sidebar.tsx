@@ -10,6 +10,7 @@ import {
   MdMedicalInformation,
   MdBuild,
   MdOutlineLocationCity,
+  MdCollections,
 } from "react-icons/md";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useAuth } from "../../controllers/hooks/use_auth";
@@ -176,7 +177,19 @@ const Sidebar = () => {
               <span>Auditorias</span>
             </a>
           )}
-
+          
+          {!CheckPermissions(auth, [1,0]) && (
+            <a
+              href="/herramientas/catalogo"
+              className={`flex items-center gap-4 mb-2 px-5 py-2 rounded-lg hover:bg-blue-500 hover:text-white ${
+                isActive("/herramientas/catalogo") ? "bg-blue-500 text-white" : "text-gray-800"
+              }`}
+              onClick={e => { e.preventDefault(); handleChanges("/herramientas/catalogo"); }}
+            >
+              <MdCollections className="text-2xl" />
+              <span>Herramientas</span>
+            </a>
+          )}
           <button
             onClick={handleLogout}
             className="flex items-center gap-4 px-5 py-2 mt-4 rounded-lg hover:bg-blue-500 hover:text-white text-gray-800"
