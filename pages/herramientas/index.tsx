@@ -8,7 +8,7 @@ import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import Router from "next/router";
 
-export const herramientasPage = () => {
+export const HerramientasPage = () => {
   const { auth } = useAuth();
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
   const [selectedBodega, setSelectedBodega] = useState<string>("");
@@ -218,4 +218,4 @@ export const herramientasPage = () => {
   );
 };
 
-export default herramientasPage;
+export default HerramientasPage;
