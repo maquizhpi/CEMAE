@@ -166,6 +166,7 @@ const EditarBodega = () => {
 
     formik.setFieldValue("herramientas", herramientas);
     setToolTemp({
+      _id: "",
       nombre: "",
       codigo: "",
       descripcion: "",
