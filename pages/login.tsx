@@ -7,7 +7,6 @@ import HttpClient from "../controllers/utils/http_client";
 import { LoginData } from "../models";
 import LoadingContainer from "./components/loading_container";
 import Router from "next/router";
-import Cookies from "js-cookie";
 
 const currentYear = new Date().getFullYear();
 // login de la app

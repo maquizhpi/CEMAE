@@ -184,26 +184,18 @@ const SolicitudeSchema = new mongoose.Schema<Solicitude>(
       correo: { type: String },
     },
     estado: { type: String },
-    bodega: { type: String },
     observacion: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// Duplicate the ID field.
 SolicitudeSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialised.
 SolicitudeSchema.set("toJSON", {
   virtuals: true,
 });
-
-export const SolicitudeModel =
-  mongoose.models.Solicitudes ||
-  mongoose.model("Solicitudes", SolicitudeSchema);
-
 //////////////////////Modelo para calibracion//////////////////////////
 const CalibracionSchema = new mongoose.Schema<Calibracion>(
   {

@@ -8,10 +8,28 @@ import { toast } from "react-toastify";
 
 const VerBodega = () => {
   const { auth } = useAuth();
-  const router = useRouter();
-  const { id } = router.query;
-  const [bodega, setBodega] = useState<Bodega | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialValues, setInitialValues] = useState<Bodega | null>(null);
+  const [editingToolIndex, setEditingToolIndex] = useState<number | null>(null);
+  const [toolTemp, setToolTemp] = useState<Herramienta>({
+    nombre: "",
+    codigo: "",
+    descripcion: "",
+    serie: "",
+    modelo: "",
+    marca: "",
+    NParte: "",
+    ubicacion: "",
+    estado: "",
+    imagen: "",
+    tipo: "",
+    cantidad: 1,
+    observacion: "",
+    calibracion: "",
+  });
+  const [image, setImage] = useState<File | null>(null);
+  const [modelos, setmodelos] = useState<Array<ModelosHerramienta>>([]);
+  const [ubicaciones, setubicaciones] = useState<Array<Ubicaciones>>([]);
 
   const loadBodega = async () => {
     if (!id) return;
@@ -32,8 +50,109 @@ const VerBodega = () => {
   };
 
   useEffect(() => {
-    loadBodega();
-  }, [id]);
+    loadData();
+    loadModelos();
+    loadUbiciones();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const formik = useFormik<Bodega>({
+    enableReinitialize: true,
+    initialValues: initialValues || {
+      number: 0,
+      creador: "",
+      fechaDeCreacion: "",
+      bodegueroAsignado: "",
+      nombreBodega: "",
+      herramientas: [],
+    },
+    onSubmit: async (formData) => {
+      setLoading(true);
+      const response: ResponseData = await HttpClient(
+        `/api/bodegas`,
+        "PUT",
+        auth.usuario,
+        auth.rol,
+        formData
+      );
+
+      if (response.success) {
+        toast.success("Bodega actualizada correctamente!");
+        Router.push(`/bodegas`);
+      } else {
+        toast.warning(response.message);
+      }
+      setLoading(false);
+    },
+  });
+
+  const handleToolSave = async () => {
+    if (!toolTemp.nombre || !toolTemp.codigo) {
+      toast.warning("Faltan campos obligatorios.");
+      return;
+    }
+
+    let imageUrl = toolTemp.imagen;
+    if (image) {
+      try {
+        const storageRef = ref(storage, `herramientas/${image.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            () => {},
+            (error) => reject(error),
+            async () => {
+              imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve();
+            }
+          );
+        });
+      } catch (error) {
+        toast.error("Error subiendo la imagen");
+        return;
+      }
+    }
+
+    const nueva = { ...toolTemp, imagen: imageUrl };
+    const herramientas = [...formik.values.herramientas];
+
+    if (editingToolIndex !== null) {
+      herramientas[editingToolIndex] = nueva;
+    } else {
+      herramientas.push(nueva);
+    }
+
+    formik.setFieldValue("herramientas", herramientas);
+    setToolTemp({
+      nombre: "",
+      codigo: "",
+      descripcion: "",
+      serie: "",
+      modelo: "",
+      marca: "",
+      NParte: "",
+      ubicacion: "",
+      estado: "",
+      imagen: "",
+      tipo: "",
+      cantidad: 1,
+      observacion: "",
+      calibracion: "",
+    });
+    setImage(null);
+    setEditingToolIndex(null);
+  };
+
+  const handleToolEdit = (index: number) => {
+    setEditingToolIndex(index);
+    setToolTemp(formik.values.herramientas[index]);
+  };
+
+  const handleToolDelete = (index: number) => {
+    const updated = formik.values.herramientas.filter((_, i) => i !== index);
+    formik.setFieldValue("herramientas", updated);
+  };
 
   return (
     <div className="flex h-screen">

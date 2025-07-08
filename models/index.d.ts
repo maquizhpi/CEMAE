@@ -122,7 +122,6 @@ export type Bodega = {
 
 // Modelo para las solicitudes
 export type Solicitude = {
-  telefono: any;
   correo: string;
   identificacion: string;
   nombre: string;

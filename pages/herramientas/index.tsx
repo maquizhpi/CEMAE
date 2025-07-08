@@ -11,7 +11,7 @@ import Router from "next/router";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import { generateReporteHerramienta } from "../bodegas/reporte/reporteHerramientas";
 
-export const herramientasPage = () => {
+export const HerramientasPage = () => {
   const { auth } = useAuth();
 
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
@@ -321,4 +321,4 @@ export const herramientasPage = () => {
   );
 };
 
-export default herramientasPage;
+export default HerramientasPage;
