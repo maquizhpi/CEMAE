@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useFormik } from "formik";
 import { toast } from "react-toastify";
-import { useAuth } from "../controllers/hooks/use_auth";
-import HttpClient from "../controllers/utils/http_client";
-import { LoginData } from "../models";
-import LoadingContainer from "./components/loading_container";
+import { useAuth } from "../../../controllers/hooks/use_auth";
+import HttpClient from "../../../controllers/utils/http_client";
+import { LoginData } from "../../../models";
+import LoadingContainer from "../../components/loading_container";
 import Router from "next/router";
 
 const currentYear = new Date().getFullYear();
@@ -24,7 +24,12 @@ const LoginPage = () => {
   // envia los datos del formulario
   const onSubmit = async (formData: LoginData) => {
     setLoading(true);
-    const response = await HttpClient("/api/login", "POST", "", -1, formData);
+    const response = await HttpClient(
+      "/api/login", 
+      "POST", 
+      "", 
+      -1, 
+      formData);
     if (response.success) {
       const data = response.data;
       login(data);

@@ -2,7 +2,7 @@ import { useAuth } from "../../controllers/hooks/use_auth";
 import { useEffect, useState } from "react";
 import LoadingContainer from "../components/loading_container";
 import { useRouter } from "next/router";
-import LoginPage from "../login";
+import LoginPage from "./login/login";
 
 
 type Props = {

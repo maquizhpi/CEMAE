@@ -8,17 +8,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+
   const user = req.body as Usuario;
   const userName = req.headers.username as string;
-  // fetch the posts
-  const soli = new UserModel(user)
+  const soli = new UserModel(user);
 
-  await soli.save()
+  await soli.save();
 
   const auditory = new AuditoryModel({
     date: FormatedDate(),
     user: userName,
-    action: "Creo un Usuario: "+soli.name,
+    action: "Creo un Usuario: " + soli.name,
   });
   await auditory.save();
 

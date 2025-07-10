@@ -8,7 +8,6 @@ import { ResponseData, Solicitude, Herramienta, Usuario, Bodega } from "../../..
 import Sidebar from "../../components/sidebar";
 import { useReactToPrint } from "react-to-print";
 import { Button } from "react-bootstrap";
-import { enviarReportePorWhatsApp } from "../../../controllers/utils/compartir";
 
 const ReporteRegistro = () => {
   const { auth } = useAuth();
@@ -32,7 +31,11 @@ const ReporteRegistro = () => {
         auth.rol
       );
 
-      const bodegasResponse = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+      const bodegasResponse = await HttpClient(
+        "/api/bodegas", 
+        "GET", 
+        auth.usuario, 
+        auth.rol);
 
       if (response.success) {
         const solicitud = response.data;
@@ -54,52 +57,12 @@ const ReporteRegistro = () => {
     loadData();
   }, []);
 
-    const handleSendEmail = async () => {
-      try {
-        const res = await HttpClient(
-          "/api/solicitudes/enviarCorreo",
-          "POST",
-          auth.usuario,
-          auth.rol,
-          { id: registro?._id } // solo mandas el ID
-        );
-        if (res.success) toast.success("Correo enviado correctamente");
-        else toast.error("No se pudo enviar el correo");
-      } catch (error) {
-        toast.error("Error al enviar el correo");
-      }
-    };
-
-
+    
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: `Reporte_${registro?._id ?? "sin_id"}`,
   });
-
-    const handleEnviarWhatsApp = () => {
-    if (!registro || herramientasDetalles.length === 0) {
-      toast.warning("No hay información suficiente para enviar.");
-      return;
-    }
-
-    const h = herramientasDetalles[0];
-    const numero = receptor?.telefono
-
-    enviarReportePorWhatsApp(numero, {
-      nombre: registro.receptor.nombre,
-      fecha: registro.fecha,
-      observacion: registro.observacion,
-      estado: registro.estado,
-      herramientas: registro.herramientas.map((h: any) => ({
-        nombre: h.nombre,
-        serie: h.serie,
-        ubicacion: h.ubicacion,
-        estado: h.estado
-      }))
-    });
-  };
-
-
+  
  // verifiacar estado de herramientas
   const verificarEstadoHerramienta = (herramienta: Herramienta) => {
     for (const bodega of bodegas) {
@@ -223,21 +186,6 @@ const ReporteRegistro = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                onClick={handleSendEmail}
-              >
-                Enviar por correo
-              </Button>
-              <Button
-                className="bg-green-600 text-white font-bold px-4 py-2 rounded hover:bg-green-700"
-                onClick={handleEnviarWhatsApp}
-              >
-                Enviar por WhatsApp
-              </Button>
-
-
-
             </div>
           </div>
         </div>

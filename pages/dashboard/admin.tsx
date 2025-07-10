@@ -1,112 +1,160 @@
-/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
-
 import { useState, useEffect } from "react";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
-import { Herramienta, Bodega,} from "../../models";
 import Sidebar from "../components/sidebar";
+import { Herramienta, Bodega } from "../../models";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { generateReporteSolicitudes } from "../solicitudes/reporte/reporteSolicitudes";
+import { generateReporteCalibraciones } from "../calibracion/reporte/reporteCalibraciones";
+import { generateReporteHerramienta } from "../bodegas/reporte/reporteHerramientas";
+import { generateReporteBodegas } from "../bodegas/reporte/reporteBodegas";
 
-export default function DashboardAdmin() {
+export default function DashboardGlobal() {
   const { auth } = useAuth();
-  const [tableData, setTableData] = useState<Array<Herramienta>>([]);
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
+  const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  const [calibraciones, setCalibraciones] = useState<any[]>([]);
 
   const loadData = async () => {
-    setLoading(true);
-    const responseHerr = await HttpClient("/api/herramientas", "GET", auth.usuario, auth.rol);
     const responseBod = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
-    const responseUsers = await HttpClient("/api/user", "GET", auth.usuario, auth.rol);
+    const responseSol = await HttpClient("/api/solicitudes", "GET", auth.usuario, auth.rol);
+    const responseCal = await HttpClient("/api/calibracion", "GET", auth.usuario, auth.rol);
 
-    setTableData(responseHerr.data ?? []);
-    setBodegas(responseBod.data ?? []);
-    setLoading(false);
-    setUsuarios(responseUsers.data ?? []);
+    const allBodegas = responseBod.data ?? [];
+    setBodegas(allBodegas);
+
+    const herramientasPorBodega = bodegas.map((bodega) => ({
+      name: bodega.nombreBodega,
+      value: bodega.herramientas?.length || 0,
+    }));
+
+
+    const allHerramientas = allBodegas.flatMap((b: Bodega) => b.herramientas ?? []);
+    setHerramientas(allHerramientas);
+
+    setSolicitudes(responseSol.data ?? []);
+    setCalibraciones(responseCal.data ?? []);
   };
-  
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const totalHerramientas = tableData.length;
-  const disponibles = tableData.filter(h => h.estado === "Disponible");
-  const enUso = tableData.filter(h => h.estado === "En uso");
-  const calibradas = tableData.filter(h => h.calibracion === "Calibrada");
-  const noCalibradas = tableData.filter(h => h.calibracion === "No calibrada");
-  const [usuarios, setUsuarios] = useState<Array<any>>([]);
-
-  const usuariosPorRol = [
-    {
-        name: "AdministradorSistema",
-        value: usuarios.filter(u => u.rol === 0).length,
-    },
-    {
-        name: "Bodeguero",
-        value: usuarios.filter(u => u.rol === 1).length,
-    },
-    {
-        name: "Cliente",
-        value: usuarios.filter(u => u.rol === 2).length,
-    },
-    ];
-
-
-
-
   const herramientasPorBodega = bodegas.map((bodega) => ({
-    name: bodega.nombreBodega,
-    value: bodega.herramientas?.length || 0,
-    }));
+  name: bodega.nombreBodega,
+  value: bodega.herramientas?.length || 0,
+  }));
+// Filtrar herramientas por estado y calibración
+  const total = herramientas.length;
+  const disponibles = herramientas.filter(h => h.estado === "Disponible");
+  const enUso = herramientas.filter(h => h.estado === "En uso");
+  const calibradas = herramientas.filter(h => h.calibracion === "Calibrada");
+  const noCalibradas = herramientas.filter(h => h.calibracion === "No calibrada");
 
+  // Filtrar solicitudes por estado
+  const solicitudesRealizadas = solicitudes.length;
+  const solicitudesEntregadas = solicitudes.filter(s => s.estado === "ENTREGADO");
+  const solicitudesNoEntregadas = solicitudes.filter(s => s.estado == "NO ENTREGADO");
+  const solicitudesPendientes = solicitudes.filter(s => s.estado == "PENDIENTE");
 
-  const generatePDF = (title: string, herramientas: Herramienta[]) => {
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(title, 14, 10);
+  // Filtrar calibraciones por estado
+  const calibracionesSolicitadas = calibraciones.length;
+  const calibracionesRealizadas = calibraciones.filter(c => c.estado === "Herramientas calibradas");
+  const calibracionesPendientes = calibraciones.filter(c => c.estado == "En calibracion");
+  const calibracionVencida = calibraciones.filter(c => {
+    if (!c.fechaProximaCalibracion) return false;
+    return new Date(c.fechaProximaCalibracion) < new Date();
+  });
 
-    if (herramientas.length === 0) {
-      doc.text("No hay herramientas registradas en esta categoría.", 14, 20);
-    } else {
-      const headers = [["Nombre", "Código", "Marca", "Serie", "Ubicación", "Cantidad"]];
-      const data = herramientas.map(h => [h.nombre, h.codigo, h.marca, h.serie, h.ubicacion, h.cantidad]);
+  // Preparar datos para las gráficas
+  const data = [
+    { name: "Disponibles", value: disponibles.length },
+    { name: "En Uso", value: enUso.length },
+    { name: "Calibradas", value: calibradas.length },
+    { name: "No Calibradas", value: noCalibradas.length },
+  ];
 
-      autoTable(doc, {
-        head: headers,
-        body: data,
-        startY: 20,
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [0, 122, 204] },
-      });
-    }
+  const dataSolicitud = [
+    { name: "Solicitudes Realizadas", value: solicitudesRealizadas },
+    { name: "Entregadas", value: solicitudesEntregadas.length },
+    { name: "No Entregadas", value: solicitudesNoEntregadas.length },
+    { name: "Pendientes", value: solicitudesPendientes.length },
+  ];
 
-    doc.save(`${title}.pdf`);
+  const dataCalibraciones = [
+    { name: "Solicitadas", value: calibracionesSolicitadas },
+    { name: "Realizadas", value: calibracionesRealizadas.length },
+    { name: "Pendientes", value: calibracionesPendientes.length },
+    { name: "Vencidas", value: calibracionVencida.length },
+  ];
+
+  // Componente para sección colapsable
+  const Section = ({ title, children }: { title: string, children: React.ReactNode }) => {
+    const [open, setOpen] = useState(true);
+    return (
+      <div className="mb-6 border rounded-lg shadow-md bg-white">
+        <div
+          onClick={() => setOpen(!open)}
+          className="cursor-pointer px-6 py-4 bg-blue-200 font-semibold text-blue-800 text-xl flex justify-between items-center"
+        >
+          <span>{title}</span>
+          <span>{open ? "▲" : "▼"}</span>
+        </div>
+        {open && <div className="p-6">{children}</div>}
+      </div>
+    );
   };
 
+// pagina principal del dashboard global del administrador
+return (
+  <div className="flex h-screen">
+    <div className="md:w-1/6 max-w-none">
+      <Sidebar />
+    </div>
+    <div className="w-12/12 md:w-5/6 bg-blue-100 overflow-y-scroll">
+      <div className="flex-1 p-6">
+        <div className="bg-white w-full rounded-xl shadow-2xl p-6 mb-8">
+          <h2 className="text-3xl text-center text-blue-800 font-bold mb-6">
+            Dashboard Global del Administrador
+          </h2>
 
-  return (
-    <div className="flex h-screen">
-      <div className="md:w-1/6 max-w-none">
-        <Sidebar />
-      </div>
-      <div className="w-12/12 md:w-5/6 bg-blue-100 overflow-y-scroll">
-        <div className="flex-1 p-6">
-          <div className="bg-white w-full rounded-xl shadow-2xl p-8 mb-8">
-            <p className="text-3xl text-center text-blue-800 font-bold mb-4">
-              Dashboard del Administrador
-            </p>
+          <Section title="Bodegas y Herramientas Registradas">
+            {/* Cards de bodegas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {bodegas.map((bodega, index) => (
+                <div
+                  key={bodega.id}
+                  className={`p-4 rounded-lg text-center shadow-md ${
+                    index % 3 === 0
+                      ? 'bg-green-200'
+                      : index % 3 === 1
+                      ? 'bg-blue-200'
+                      : 'bg-yellow-200'
+                  }`}
+                >
+                  <p className="text-lg font-semibold text-blue-800 uppercase">{bodega.nombreBodega}</p>
+                  <p className="text-sm mt-1">Herramientas Registradas:</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {bodega.herramientas?.length || 0}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Section>
 
-            {/* Métricas Globales */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-              <div className="bg-blue-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{totalHerramientas}</p>
+          <Section title="Métricas de Herramientas">
+                       <h3 className="text-3xl text-center text-blue-900 mb-6">
+              Métricas herramientas
+            </h3>
+            {/* Métricas herramientas*/}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">              
+              <div className="bg-green-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{total}</p>
                 <p className="text-sm">Total Herramientas</p>
               </div>
-              <div className="bg-green-200 p-4 rounded-lg text-center">
+              <div className="bg-blue-200 p-4 rounded-lg text-center">
                 <p className="text-xl font-bold">{disponibles.length}</p>
                 <p className="text-sm">Disponibles</p>
               </div>
@@ -118,91 +166,151 @@ export default function DashboardAdmin() {
                 <p className="text-xl font-bold">{calibradas.length}</p>
                 <p className="text-sm">Calibradas</p>
               </div>
-              <div className="bg-gray-300 p-4 rounded-lg text-center">
+              <div className="bg-gray-200 p-4 rounded-lg text-center">
                 <p className="text-xl font-bold">{noCalibradas.length}</p>
                 <p className="text-sm">No Calibradas</p>
               </div>
             </div>
-            
-
-            {/* Gráfica por Bodega */}
-            <div className="bg-white p-6 rounded-lg shadow mb-8">
-              <h2 className="text-center text-xl font-bold mb-4">Herramientas por Bodega</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={herramientasPorBodega} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#0072CC" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Gráfica de Usuarios por Rol */}
-            <div className="bg-white p-6 rounded-lg shadow mt-8">
-              <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Usuarios por Rol</h2>
-              <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={usuariosPorRol}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                barCategoryGap="30%"
-              >
+            <h3 className="text-3xl text-center text-blue-900 mb-6">
+              Gráfico de herramientas
+            </h3>
+            {/* Gráficas */}
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
+                <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar
-                dataKey="value"
-                fill="#34a853"
-                radius={[8, 8, 0, 0]}
-                label={{
-                  position: "insideTop",
-                  fill: "#fff",
-                  fontWeight: "bold",
-                  fontSize: 16,
-                }}
-                >
-                {/* Colores diferentes para cada barra */}
-                {usuariosPorRol.map((entry, index) => (
-                  <Cell
-                  key={`cell-${index}`}
-                  fill={
-                    index === 0
-                    ? "#0072CC"
-                    : index === 1
-                    ? "#34a853"
-                    : "#fbbc05"
-                  }
-                  />
-                ))}
+                <Bar dataKey="value">
+                  {data.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.name === "Disponibles" ? "#3B82F6" :
+                        entry.name === "En Uso" ? "#EF4444" :
+                        entry.name === "Calibradas" ? "#FACC15" :
+                        "#9CA3AF"
+                      }
+                    />
+                  ))}
                 </Bar>
               </BarChart>
-              </ResponsiveContainer>
-            </div>
+            </ResponsiveContainer>
+          </Section>
 
-            {/* Exportación */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-              <button onClick={() => generatePDF("Reporte General de Herramientas", tableData)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-                Exportar Reporte General
-              </button>
-              <button onClick={() => generatePDF("Herramientas Disponibles", disponibles)} className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                Exportar Disponibles
-              </button>
-              <button onClick={() => generatePDF("Herramientas en Uso", enUso)} className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
-                Exportar En Uso
-              </button>
-              <button onClick={() => generatePDF("Herramientas Calibradas", calibradas)} className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                Exportar Calibradas
-              </button>
-              <button onClick={() => generatePDF("Herramientas No Calibradas", noCalibradas)} className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                Exportar No Calibradas
-              </button>
+          <Section title="Métricas de Solicitudes">
+                        <h3 className="text-3xl text-center text-blue-900 mb-6">
+              Métricas de solicitudes
+            </h3>
+            {/* Métricas Solicitudes*/}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">              
+              <div className="bg-blue-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{solicitudesRealizadas}</p>
+                <p className="text-sm">Solicitudes Realizadas</p>
+              </div>
+              <div className="bg-green-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
+                <p className="text-sm">Entregadas</p>
+              </div>
+              <div className="bg-red-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
+                <p className="text-sm">No Entregadas</p>
+              </div>
+              <div className="bg-yellow-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
+                <p className="text-sm">Pendientes</p>
+              </div>   
             </div>
+            <h3 className="text-3xl text-center text-blue-900 mb-6">
+              Gráfico de solicitudes
+            </h3>
+            <ResponsiveContainer width="100%" height={300} className="mt-8">
+              <BarChart data={dataSolicitud} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value">
+                  {dataSolicitud.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.name === "Solicitudes Realizadas" ? "#3B82F6" :
+                        entry.name === "Entregadas" ? "#10B981" :
+                        entry.name === "No Entregadas" ? "#EF4444" :
+                        "#9CA3AF"
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Section>
 
-          </div>
+          <Section title="Métricas de Calibraciones">
+                        <h3 className="text-3xl text-center text-blue-900 mb-6">
+              Métricas de calibraciones
+            </h3>
+            {/* Métricas Calibraciones*/}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+
+              <div className="bg-blue-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
+                <p className="text-sm">Solicitadas</p>
+              </div>
+              <div className="bg-green-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{calibracionesRealizadas.length}</p>
+                <p className="text-sm">Realizadas</p>
+              </div>
+              <div className="bg-yellow-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
+                <p className="text-sm">Pendientes</p>
+              </div>
+              <div className="bg-red-200 p-4 rounded-lg text-center">
+                <p className="text-xl font-bold">{calibracionVencida.length}</p>
+                <p className="text-sm">Vencidas</p>
+              </div> 
+            </div>
+            <h3 className="text-3xl text-center text-blue-900 mb-6">
+              Gráfico de calibraciones
+            </h3>
+            <ResponsiveContainer width="100%" height={300} className="mt-8">
+              <BarChart data={dataCalibraciones} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value">
+                  {dataCalibraciones.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.name === "Solicitadas" ? "#3B82F6" :
+                        entry.name === "Realizadas" ? "#10B981" :
+                        entry.name === "Pendientes" ? "#F59E0B" :
+                        "#EF4444"
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Section>
+
+          <Section title="Exportar Reportes">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              <button onClick={() => generateReporteHerramienta("Reporte Global Herramientas", herramientas)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Exportar Herramientas</button>
+              <button onClick={() => generateReporteSolicitudes("Reporte Global Solicitudes", solicitudes)} className="bg-green-600 text-white px-4 py-2 rounded-lg">Exportar Solicitudes</button>
+              <button onClick={() => generateReporteCalibraciones("Reporte Global Calibraciones", calibraciones)} className="bg-purple-600 text-white px-4 py-2 rounded-lg">Exportar Calibraciones</button>
+              <button onClick={() => generateReporteBodegas("Reporte Global Bodegas", bodegas)} className="bg-yellow-600 text-white px-4 py-2 rounded-lg">Exportar Bodegas</button>
+            </div>
+          </Section>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
+
+
+

@@ -10,7 +10,7 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    const { _id } = req.body; // Se espera que el body tenga el _id de la bodega a eliminar
+    const { _id } = req.body; 
     const userName = req.headers.username as string;
 
     // Buscar la bodega

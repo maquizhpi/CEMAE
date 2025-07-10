@@ -37,7 +37,8 @@ UserSchema.set("toJSON", {
 });
 
 export const UserModel =
-  mongoose.models.Users || mongoose.model("Users", UserSchema);
+  mongoose.models.Users || 
+  mongoose.model("Users", UserSchema);
 
 //////////////////////Modelo para los ubicaciones//////////////////////////
 const UbicacionesSchema = new mongoose.Schema<Ubicaciones>(
@@ -149,18 +150,14 @@ const BodegaSchema = new mongoose.Schema<Bodega>(
   },
   { timestamps: true }
 );
-
-
 // Duplicate the ID field.
 BodegaSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
-
 // Ensure virtual fields are serialised.
 BodegaSchema.set("toJSON", {
   virtuals: true,
 });
-
 export const BodegaModel =
   mongoose.models.Bodegas || mongoose.model("Bodegas", BodegaSchema);
 
@@ -196,6 +193,11 @@ SolicitudeSchema.virtual("id").get(function () {
 SolicitudeSchema.set("toJSON", {
   virtuals: true,
 });
+
+export const SolicitudeModel =
+  mongoose.models.Solicitudes || mongoose.model("Solicitudes", SolicitudeSchema);
+
+
 //////////////////////Modelo para calibracion//////////////////////////
 const CalibracionSchema = new mongoose.Schema<Calibracion>(
   {

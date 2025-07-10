@@ -72,7 +72,7 @@ export const RegistroCreate = () => {
   // Cargar bodegas solo al inicio
   useEffect(() => {
     loadBodegas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, []);
 
   const initialValues: Calibracion = {

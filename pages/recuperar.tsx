@@ -89,8 +89,6 @@ const RecuperarClave = () => {
     const response = await HttpClient("/api/user", "GET", "", -1);
     const data: Array<Usuario> = response.data ?? [];
 
-    // Filtrar usuarios con rol === 1
-
     console.log(data);
     setusuarioBodeguero(data);
     setLoading(false);
@@ -98,7 +96,7 @@ const RecuperarClave = () => {
 
   useEffect(() => {
     loadUserBod();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   return (

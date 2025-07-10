@@ -46,6 +46,11 @@ const UsersPanel = () => {
 
   const columns: ColumnData[] = [
     {
+      dataField: "id",
+      caption: "N°",
+      cellRender: ({ rowIndex }) => rowIndex + 1,
+    },
+    {
       dataField: "nombre",
       caption: "Nombre",
     },

@@ -59,7 +59,12 @@ const Register = () => {
 
   const onSubmit = async (formData: Usuario) => {
     setLoading(true);
-    const response = await HttpClient("/api/user", "POST", "", -1, formData);
+    const response = await HttpClient(
+      "/api/user", 
+      "POST", 
+      "", -1, 
+      formData);
+      
     if (response.success) {
       const data = response.data;
       login(data);
@@ -77,7 +82,7 @@ const Register = () => {
     validateOnBlur: true,
     validateOnChange: true,
     initialValues,
-    validate, // <-- Se conecta la validación aquí
+    validate,
     onSubmit,
   });
 

@@ -1,3 +1,4 @@
+// Importaciones de componentes de DevExtreme y React
 import TreeList, {
   Column,
   HeaderFilter,
@@ -14,6 +15,7 @@ import { useEffect, useState } from "react";
 import { loadMessages } from "devextreme/localization";
 import TableContainer, { TableContainerProps } from "./styles";
 
+// Tipado para las columnas de la tabla
 export type ColumnData = {
   dataField: string;
   caption: string;
@@ -27,6 +29,7 @@ export type ColumnData = {
   cssClass?: string;
 };
 
+// Tipado para los botones de acción por fila
 export type TableButtons = {
   cssClass?: string;
   show?: (rowData: any) => void;
@@ -36,12 +39,14 @@ export type TableButtons = {
   download?: (rowData: any) => void;
 };
 
+// Tipado para habilitar acciones CRUD por defecto
 export type DefaultActions = {
   updating: boolean;
   deleting: boolean;
   adding: boolean;
 };
 
+// Tipado completo para las props del componente
 type Props = {
   id?: string;
   keyExpr?: string;
@@ -73,6 +78,7 @@ type Props = {
   onFilteredDataChange?: (filteredData: any[]) => void;
 };
 
+// Función recursiva para renderizar columnas del TreeList (soporta subcolumnas anidadas)
 const columnsRender = (cols: ColumnData[], index = "1_"): React.ReactNode => {
   return cols.map((column, columnindex) => {
     if (column.subColumns !== undefined) {
@@ -107,6 +113,7 @@ const columnsRender = (cols: ColumnData[], index = "1_"): React.ReactNode => {
   });
 };
 
+// Renderiza la columna de botones personalizados o por defecto según se definan
 const allButtons = (
   buttons?: TableButtons,
   defaultActions?: DefaultActions
@@ -188,6 +195,7 @@ const allButtons = (
   );
 };
 
+// Traducción de algunos textos por defecto de DevExtreme al español
 loadMessages({
   en: {
     Yes: "Si",
@@ -196,6 +204,7 @@ loadMessages({
   },
 });
 
+// Componente principal que representa la tabla en forma de árbol (TreeList)
 const TreeTable = ({
   id = "treeTable",
   keyExpr = "id",
@@ -213,7 +222,7 @@ const TreeTable = ({
   onRow,
   scrolling = false,
   paging = false,
-  pageSize = 20,
+  pageSize = 40,
   showNavigationButtons = false,
   infoText,
   showNavigationInfo = false,
@@ -221,19 +230,24 @@ const TreeTable = ({
   onSelectedRows,
   onFilteredDataChange,
 }: Props) => {
+  // Estado para los datos a renderizar en la tabla
   const [tableData, setTableData] = useState<any[]>(dataSource);
+  // Estado para filas seleccionadas
   const [selectedRowKeys, setSelectedRowsKeys] = useState([]);
 
+  // Manejador de cambio de selección de filas
   const onSelectionChanged = (e: any) => {
     setSelectedRowsKeys(e.selectedRowKeys);
     onSelectedRows?.(e.selectedRowsData);
   };
 
+  // Manejador para obtener los datos filtrados visibles actualmente
   const onContentReady = (e: any) => {
     const filteredData = e.component.getVisibleRows().map((r: any) => r.data);
     onFilteredDataChange?.(filteredData);
   };
 
+  // Efecto para actualizar los datos de la tabla si cambia el prop dataSource
   useEffect(() => setTableData(dataSource), [dataSource]);
 
   return (
@@ -258,7 +272,9 @@ const TreeTable = ({
           onSelectionChanged={onSelectionChanged}
           onContentReady={onContentReady}
         >
+          {/* Si se habilita selección múltiple */}
           {onSelectedRows && <Selection mode="multiple" />}
+          {/* Configuración de scroll o paginación */}
           {(scrolling || paging) && <Scrolling mode="standard" />}
           <Paging enabled={paging} defaultPageSize={pageSize} />
           <Pager
@@ -266,7 +282,9 @@ const TreeTable = ({
             infoText={infoText && infoText("{0}", "{1}", "{2}")}
             showInfo={showNavigationInfo}
           />
+          {/* Panel de búsqueda */}
           {searchPanel && <SearchPanel visible={true} width={250} />}
+          {/* Filtro por columnas */}
           {headerFilter && (
             <HeaderFilter
               visible={true}
@@ -277,9 +295,13 @@ const TreeTable = ({
               }}
             />
           )}
+          {/* Botones antes de las columnas */}
           {buttonsFirst && allButtons(buttons, defaultActions)}
+          {/* Renderizado dinámico de columnas */}
           {columnsRender(columns)}
+          {/* Botones después de las columnas */}
           {!buttonsFirst && allButtons(buttons, defaultActions)}
+          {/* Configuración de acciones CRUD */}
           {defaultActions && (
             <Editing
               allowUpdating={defaultActions?.updating ?? false}

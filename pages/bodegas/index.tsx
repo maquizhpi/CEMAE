@@ -99,14 +99,32 @@ export const BodegasPage = () => {
   };
 
   const buttons = {
-    edit: (rowData: Herramienta) =>
-      CheckPermissions(auth, [0, 1])
-        ? Router.push({ pathname: "/bodegas/editar/" + (rowData.id as string) })
-        : toast.error("No puedes acceder"),
     show: (rowData: Herramienta) =>
       CheckPermissions(auth, [0, 1])
         ? Router.push({ pathname: "/bodegas/show/" + (rowData.id as string) })
         : toast.error("No puedes acceder"),
+
+    delete: (rowData: Bodega) => {
+      if (!CheckPermissions(auth, [0, 1])) {
+        toast.error("No tienes permisos para eliminar este registro");
+        return;
+      }
+      if (confirm("¿Estás seguro de que deseas eliminar esta BODEGA?")) {
+        setLoading(true);
+        HttpClient(`/api/bodegas/${rowData.id}`, 
+          "DELETE", 
+          auth.usuario, 
+          auth.rol)
+          .then(() => {
+            toast.success("Registro de calibración eliminado correctamente");
+            loadData();
+          })
+          .catch(() => {
+            toast.error("Error al eliminar el registro de calibración");
+            setLoading(false);
+          });
+      }
+    },
   };
 
   return (
@@ -122,11 +140,11 @@ export const BodegasPage = () => {
                 Todas las bodegas
               </p>
             </div>
-            {!CheckPermissions(auth, [1, 2]) && (
+            {!CheckPermissions(auth, [2]) && (
               <Button
                 className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
                 onClick={() =>
-                  CheckPermissions(auth, [0])
+                  CheckPermissions(auth, [1,0])
                     ? Router.push({ pathname: "/bodegas/create" })
                     : toast.info("No puede ingresar bodegas")
                 }

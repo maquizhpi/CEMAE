@@ -32,6 +32,7 @@ export default function ImportarHerramientas() {
     loadBodegas();
   }, []);
 
+  // Maneja la carga del archivo Excel
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -59,7 +60,7 @@ export default function ImportarHerramientas() {
           tipo: row["Tipo"] ?? "",
           cantidad: 1,
           observacion: row["Observación"] ?? "",
-          imagen: "", // Puedes dejar vacío o poner default
+          imagen: "", 
         };
 
         const bodegaNombre = row["Bodega"]?.trim();
@@ -92,7 +93,7 @@ export default function ImportarHerramientas() {
           // Insertar nueva
           herramientas.push({
             ...herramienta,
-            nombre: herramienta.nombre ?? "", // aseguramos que nombre no sea undefined
+            nombre: herramienta.nombre ?? "", 
             codigo: herramienta.codigo ?? "",
             descripcion: herramienta.descripcion ?? "",
             serie: herramienta.serie ?? "",
@@ -106,7 +107,7 @@ export default function ImportarHerramientas() {
             cantidad: herramienta.cantidad ?? 1,
             observacion: herramienta.observacion ?? "",
             imagen: herramienta.imagen ?? "",
-            _id: undefined, // para que mongoose genere uno
+            _id: undefined,
           } as Herramienta);
         }
 

@@ -4,7 +4,6 @@ import { Usuario, ModalProps } from "../../../models";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../controllers/hooks/use_auth";
 import theme from "../../../controllers/styles/theme";
-import HttpClient from "../../../controllers/utils/http_client";
 
 const initialUser: Usuario = {
   id: null,
@@ -178,9 +177,9 @@ const UserModal = (props: Props) => {
                   name="rol"
                   onChange={(e) => {
                     const value = parseInt(e.target.value, 10);
-                    formik.setFieldValue("rol", value); // Actualiza el valor del rol
+                    formik.setFieldValue("rol", value); 
                     if (value !== 3) {
-                      formik.setFieldValue("medico", null); // Limpia el médico si no es rol médico
+                      formik.setFieldValue("sin rol", null);
                     }
                   }}
                   value={formik.values.rol}
@@ -232,3 +231,4 @@ const UserModal = (props: Props) => {
   );
 };
 export default UserModal;
+

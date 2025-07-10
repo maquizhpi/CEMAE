@@ -27,12 +27,22 @@ export const EditarRegistro = () => {
       setLoading(true);
       const solicitudeId = Router.query.id as string; // Obtener el id de la solicitud desde la URL
       // Obtener datos de la solicitud
-      const response = await HttpClient(`/api/solicitudes/${solicitudeId}`, "GET", auth.usuario, auth.rol);
+      const response = await HttpClient(
+        `/api/solicitudes/${solicitudeId}`, 
+        "GET", 
+        auth.usuario, 
+        auth.rol);
+
       const solicitud = response.data;
       const herramientasSolicitud = Array.isArray(solicitud.herramientas) ? solicitud.herramientas : [];
 
       // Obtener datos de las bodegas
-      const bodegasResponse = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+      const bodegasResponse = await HttpClient(
+        "/api/bodegas", 
+        "GET", 
+        auth.usuario, 
+        auth.rol);
+
       const bodegasData: Bodega[] = bodegasResponse.data ?? [];
       setBodegas(bodegasData);
 
@@ -134,7 +144,12 @@ export const EditarRegistro = () => {
                 };
               }
               const bodegaActualizada = { ...bodega, herramientas: herramientasActualizadas };
-              return HttpClient("/api/bodegas/", "PUT", auth.usuario, auth.rol, bodegaActualizada);
+              return HttpClient(
+                "/api/bodegas/"
+                , "PUT", 
+                auth.usuario, 
+                auth.rol, 
+                bodegaActualizada);
             })
           );
 
@@ -244,3 +259,4 @@ export const EditarRegistro = () => {
 };
 
 export default EditarRegistro;
+

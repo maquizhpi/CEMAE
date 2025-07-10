@@ -27,6 +27,7 @@ const Register = () => {
     estado: "Activo",
   });
 
+  
   // envia los datos del formulario
   const onSubmit = async (formData: Usuario) => {
     setLoading(true);

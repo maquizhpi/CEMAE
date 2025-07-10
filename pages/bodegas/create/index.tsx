@@ -64,7 +64,13 @@ const initialValues: Bodega = {
         return;
       }
       setLoading(true);
-      const response = await HttpClient("/api/bodegas", "POST", auth.usuario, auth.rol, values);
+      const response = await HttpClient(
+        "/api/bodegas", 
+        "POST", 
+        auth.usuario, 
+        auth.rol, 
+        values);
+        
       if (response.success) {
         toast.success("Bodega guardada exitosamente.");
         Router.back();
@@ -169,3 +175,4 @@ const initialValues: Bodega = {
 };
 
 export default BodegasCreate;
+

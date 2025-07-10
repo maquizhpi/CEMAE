@@ -18,7 +18,8 @@ export default async function handler(
     {
       _id: herramienta.id,
     },
-    newherramienta()
+    { $set: newherramienta() },
+    { new: true }
   );
 
   const auditory = new AuditoryModel({

@@ -12,7 +12,7 @@ export default async function handler(
   const herramienta = await HerramientaModel.findById(id);
 
   return res.status(200).json({
-    message: "un herramienta",
+    message: "una herramienta",
     data: herramienta as Herramienta,
     success: true,
   });

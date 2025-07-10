@@ -133,6 +133,27 @@ export const SolicitudePage = (props: Props) => {
       }
       Router.push({ pathname: "/solicitudes/edit/" + (rowData.id as string) });
     },
+        delete: (rowData: Solicitude) => {
+          if (!CheckPermissions(auth, [0, 1])) {
+            toast.error("No tienes permisos para eliminar este registro");
+            return;
+          }
+          if (confirm("¿Estás seguro de que deseas eliminar este registro de solicitud?")) {
+            setLoading(true);
+            HttpClient(`/api/solicitudes/${rowData.id}`, 
+              "DELETE", 
+              auth.usuario, 
+              auth.rol)
+              .then(() => {
+                toast.success("Registro de calibración eliminado correctamente");
+                loadData();
+              })
+              .catch(() => {
+                toast.error("Error al eliminar el registro de calibración");
+                setLoading(false);
+              });
+          }
+        },
   };
 
   return (
@@ -154,37 +175,7 @@ export const SolicitudePage = (props: Props) => {
               Crear registro
             </Button>
           )}
-
-            {/* PARA SOLICITAR HERRAMIENTA EL CLIENTE  NO DISPONIBLE
-          {CheckPermissions(auth, [2]) && (
-            <Button
-              className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
-              onClick={() => Router.push({ pathname: "/solicitudes/createForClient" })}
-            >
-              Crear registro como cliente
-            </Button>
-          )}
-            */}
-
-          {CheckPermissions(auth, [0]) && (
-            <Button
-              className="text-white bg-gray-400 hover:bg-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-gray-900"
-              onClick={async () => {
-                setLoading(true);
-                const response = await HttpClient(
-                  "/api/solicitudes",
-                  "GET",
-                  auth.usuario,
-                  auth.rol
-                );
-                const solicitudes: Array<Solicitude> = response.data ?? [];
-                setTableData(solicitudes);
-                setLoading(false);
-              }}
-            >
-              Mostrar todas las solicitudes
-            </Button>
-          )}
+      
 
           <div className="w-full overflow-x-auto px-2">
             <TreeTable

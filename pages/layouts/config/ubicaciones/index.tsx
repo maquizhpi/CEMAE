@@ -47,6 +47,11 @@ const UbicacionesPanel = () => {
 
   const columns: ColumnData[] = [
     {
+      dataField: "id",
+      caption: "N°",
+      cellRender: ({ rowIndex }) => rowIndex + 1,
+    },
+    {
       dataField: "nombre",
       caption: "Nombre",
     },
@@ -60,6 +65,16 @@ const UbicacionesPanel = () => {
     edit: (rowData: any) => {
       setEditingUbicaciones(rowData);
       showModal();
+    },
+    delete: async (rowData: any) => {
+      await HttpClient(
+        "/api/ubicaciones/" + rowData.id,
+        "DELETE",
+        auth.usuario,
+        auth.rol
+      );
+      toast.success("ubicacion eliminada");
+      await loadData();
     },
   };
 

@@ -34,11 +34,7 @@ export type Usuario = {
   usuario: string;
   contraseña: string;
   nombre: string;
-  correo: {
-    type: String,
-    required: true,
-    unique: true,
-  };
+  correo: string;
   telefono: string;
   rol: UserRole;
   estado: string;
@@ -122,10 +118,6 @@ export type Bodega = {
 
 // Modelo para las solicitudes
 export type Solicitude = {
-  correo: string;
-  identificacion: string;
-  nombre: string;
-  id?: string;
   number: number;
   herramientas: Array<Herramienta>;
   fecha: string;

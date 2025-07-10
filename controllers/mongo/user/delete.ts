@@ -9,7 +9,6 @@ export default async function handler(
   const id = req.query.id as string;
   const userName = req.headers.username as string;
   const resp = await UserModel.findByIdAndRemove(id);
-  //{ acknowledged: true, deletedCount: 1 }
 
   const auditory = new AuditoryModel({
     date: FormatedDate(),

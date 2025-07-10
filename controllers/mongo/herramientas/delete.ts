@@ -1,31 +1,40 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { AuditoryModel, HerramientaModel,  } from "../../../database/schemas";
+import { AuditoryModel, HerramientaModel } from "../../../database/schemas";
 import FormatedDate from "../../utils/formated_date";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const id = req.query.id as string;
-  const userName = req.headers.username as string;
-  const resp = await HerramientaModel.findByIdAndRemove(id);
-  //{ acknowledged: true, deletedCount: 1 }
+  try {
+    const id = req.query.id as string;
+    const userName = req.headers.username as string;
 
-  const auditory = new AuditoryModel({
-    date: FormatedDate(),
-    user: userName,
-    action: "Elimino una herramienta: "+ resp.nombre,
-  });
-  await auditory.save();
+    const deleted = await HerramientaModel.findByIdAndRemove(id);
 
-  if (resp.deletedCount === 1)
+    if (!deleted) {
+      return res.status(404).json({
+        message: "herramienta no encontrada",
+        success: false,
+      });
+    }
+
+    const auditory = new AuditoryModel({
+      date: FormatedDate(),
+      user: userName,
+      action: "Eliminó la herramienta: " + deleted.nombre,
+    });
+    await auditory.save();
+
     return res.status(200).json({
-      message: "Eliminado!",
+      message: "herramienta eliminada",
       success: true,
     });
-
-  return res.status(500).json({
-    message: "Error inesperado",
-    success: false,
-  });
+  } catch (error) {
+    console.error("Error al eliminar herramienta:", error);
+    return res.status(500).json({
+      message: "Error inesperado",
+      success: false,
+    });
+  }
 }

@@ -5,8 +5,6 @@ import { useAuth } from "../../../../controllers/hooks/use_auth";
 import { ResponseData, ModelosHerramienta } from "../../../../models";
 import HttpClient from "../../../../controllers/utils/http_client";
 import TreeTable, { ColumnData } from "../../../components/tree_table";
-import UbicacionesModal from "../../../components/modals/modalUbicaciones";
-import ModelosModal from "../../../components/modals/modalUbicaciones";
 import ModalModelos from "../../../components/modals/modalModelos";
 
 const ModelosPanel = () => {
@@ -49,6 +47,13 @@ const ModelosPanel = () => {
 
   const columns: ColumnData[] = [
     {
+      dataField: "id",
+      caption: "N°",
+      cellRender: ({ rowIndex }) => rowIndex + 1,
+      width: 50,
+      minWidth: 100,
+    },
+    {
       dataField: "nombre",
       caption: "Nombre",
     },
@@ -59,10 +64,20 @@ const ModelosPanel = () => {
       setEditingUbicaciones(rowData);
       showModal();
     },
+    delete: async (rowData: any) => {
+      await HttpClient(
+        "/api/modelos/" + rowData.id,
+        "DELETE",
+        auth.usuario,
+        auth.rol
+      );
+      toast.success("ubicacion eliminada");
+      await loadData();
+    },
   };
 
   return (
-    <div style={{ padding: "40px 0" }}>
+    <div style={{ padding: "90px 0" }}>
       <button
         className="text-center bg-transparent hover:bg-blue-600 text-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
         onClick={showModal}

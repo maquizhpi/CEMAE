@@ -4,7 +4,6 @@ import {
   MdOutlineSettings,
   MdOutlineLogout,
   MdStore,
-  MdMedicalServices,
   MdProductionQuantityLimits,
   MdOutlineStickyNote2,
   MdMedicalInformation,
@@ -199,7 +198,7 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
-      {/* Fondo oscuro cuando el menú está abierto en móviles */}
+
       {menuAbierto && (
         <div
           className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-10 lg:hidden"
