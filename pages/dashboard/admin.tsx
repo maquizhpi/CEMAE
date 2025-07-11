@@ -37,7 +37,7 @@ export default function DashboardGlobal() {
     setSolicitudes(responseSol.data ?? []);
     setCalibraciones(responseCal.data ?? []);
   };
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
   }, []);

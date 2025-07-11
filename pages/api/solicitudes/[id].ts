@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import read from "../../../controllers/mongo/solicitudes/read";
 import remove from "../../../controllers/mongo/solicitudes/delete";
 import dbConnect from "../../../database/connect/mongo";
+import update from "../../../controllers/mongo/solicitudes/update";
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,6 +17,8 @@ export default async function handler(
         return await read(req, res);
       case "DELETE":
         return await remove(req, res);
+      case "PUT":
+        return await update(req, res);
       default:
         throw new Error("Invalid method");
     }

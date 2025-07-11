@@ -15,6 +15,8 @@ import HttpClient from "../../../controllers/utils/http_client";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../../controllers/firebase/config";
 import Router, { useRouter } from "next/router";
+import Image from "next/image";
+
 
 export const EditarHerramienta = () => {
   const { auth } = useAuth();
@@ -84,13 +86,14 @@ export const EditarHerramienta = () => {
     );
     setUbicaciones(response.data ?? []);
   };
-
+ // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadBodegas();
     loadModelos();
     loadUbicaciones();
   }, []);
 
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (id && bodegasDelUsuario.length > 0) {
       const herramienta = bodegasDelUsuario
@@ -319,12 +322,14 @@ export const EditarHerramienta = () => {
             />
             <div className="flex justify-center">
               <div className="border-2 border-gray-300 rounded-lg shadow-md overflow-hidden w-60 h-60 bg-white flex items-center justify-center">
-                <img
+                <Image
                   src={
                     previewImage ??
                     "https://firebasestorage.googleapis.com/v0/b/tuProyecto.appspot.com/o/default-placeholder.png?alt=media"
                   }
                   alt="Imagen seleccionada"
+                  width={300}
+                  height={300}
                   className="object-contain w-full h-full"
                 />
               </div>

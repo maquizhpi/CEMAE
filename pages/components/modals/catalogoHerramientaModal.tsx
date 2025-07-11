@@ -1,6 +1,7 @@
 import React from "react";
 import { Herramienta } from "../../../models";
 import theme from "../../../controllers/styles/theme";
+import Image from "next/image";
 
 interface Props {
   visible: boolean;
@@ -30,11 +31,14 @@ const CatalogoHerramientaModal = ({ visible, close, herramienta }: Props) => {
 
           <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mb-3 mt-4">
             <div className="flex justify-center">
-              <img
-                src={herramienta.imagen || "/no-image.png"}
-                alt="Imagen herramienta"
-                className="w-full max-w-xs max-h-60 object-contain rounded border shadow"
+              <Image
+                src={herramienta.imagen || "/no-imagen.jpg"} 
+                alt="imagen herramienta"
+                width={64}
+                height={64}
+                className="w-full max-w-xs max-h-60 object-contain rounded border shadow" 
               />
+            
             </div>
             <div className="space-y-2 text-gray-700 text-sm">
               <p><strong>Nombre:</strong> {herramienta.nombre}</p>

@@ -86,7 +86,7 @@ export const RegistroHerramientaCreate = () => {
     );
     setUbicaciones(response.data ?? []);
   };
-
+ //// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadBodegas();
     loadModelos();

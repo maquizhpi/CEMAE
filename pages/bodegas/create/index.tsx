@@ -16,6 +16,7 @@ export const BodegasCreate = () => {
   const [usuarioBodeguero, setUsuarioBodeguero] = useState<Usuario[]>([]);
 
 const initialValues: Bodega = {
+  _id: "",
   number: 0,
   fechaDeCreacion: FormatedDate(),
   creador: {
@@ -31,6 +32,10 @@ const initialValues: Bodega = {
     telefono: "",
   },
   nombreBodega: "",
+  creadorNombre: auth.nombre,
+  herramientas: [],
+  ubicaciones: [],
+  ubicacionesBodega: { nombre: "" },
 };
 
 
@@ -175,4 +180,3 @@ const initialValues: Bodega = {
 };
 
 export default BodegasCreate;
-

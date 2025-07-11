@@ -16,6 +16,7 @@ import { useAuth } from "../../controllers/hooks/use_auth";
 import { useCallback, useState } from "react";
 import Router, { useRouter } from "next/router";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
+import Image from "next/image";
 
 
 const Sidebar = () => {
@@ -64,11 +65,12 @@ const Sidebar = () => {
           ×
         </button>
         {/* Imagen del logo */}
-        <img src="/image/logo1.jpeg" alt="Bienvenido" className="w-32 mx-auto mb-4" />
+        <Image src="/image/logo2.jpeg" alt="Logo" width={100} height={100} />
         {/* Nombre del usuario */}
         <p className="text-center mb-4">
           <strong>{auth?.nombre}</strong>
         </p>
+
 
         {/* Menú */}
         <div className="flex flex-col justify-start">

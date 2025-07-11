@@ -38,7 +38,7 @@ export const CalibracionPage = (props: Props) => {
     setTableData(calibracion);
     setLoading(false);
   };
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
   }, []);

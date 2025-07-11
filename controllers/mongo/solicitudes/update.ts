@@ -10,22 +10,14 @@ export default async function handler(
   const solicitud = req.body as Solicitude;
   const userName = req.headers.username as string;
 
-  const updateFields = {
-    number: solicitud.number,
-    fecha: solicitud.fecha,
-    bodeguero: solicitud.bodeguero,
-    receptor: solicitud.receptor,
-    estado: solicitud.estado,
-    herramientas: solicitud.herramientas,
-    observacion: solicitud.observacion ?? "",
-  };
-
+  // Actualizar solicitud por ID
   const resp = await SolicitudeModel.findOneAndUpdate(
     { _id: solicitud.id },
-    updateFields,
+    solicitud,
     { new: true }
   );
 
+  // Guardar auditoría
   const auditory = new AuditoryModel({
     date: FormatedDate(),
     user: userName,
@@ -33,6 +25,7 @@ export default async function handler(
   });
   await auditory.save();
 
+  // Verificar si no se encontró
   if (resp === null)
     return res.status(500).json({
       message: "Solicitud no encontrada",

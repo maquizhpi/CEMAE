@@ -8,24 +8,35 @@ export default async function handler(
 ) {
   const id = req.query.id as string;
   const userName = req.headers.username as string;
-  const resp = await SolicitudeModel.findByIdAndRemove(id);
-  //{ acknowledged: true, deletedCount: 1 }
 
-  const auditory = new AuditoryModel({
-    date: FormatedDate(),
-    user: userName,
-    action: "Elimino una solicitud: "+ resp.number,
-  });
-  await auditory.save();
+  try {
+    const resp = await SolicitudeModel.findByIdAndRemove(id);
 
-  if (resp.deletedCount === 1)
+    if (!resp) {
+      return res.status(404).json({
+        message: "Solicitud no encontrada",
+        success: false,
+      });
+    }
+
+    const auditory = new AuditoryModel({
+      date: FormatedDate(),
+      user: userName,
+      action: "Eliminó una solicitud: " + resp.number,
+    });
+
+    await auditory.save();
+
     return res.status(200).json({
-      message: "Eliminado!",
+      message: "Solicitud eliminada correctamente",
       success: true,
     });
 
-  return res.status(500).json({
-    message: "Error inesperado",
-    success: false,
-  });
+  } catch (error) {
+    console.error("Error al eliminar solicitud:", error);
+    return res.status(500).json({
+      message: "Error inesperado",
+      success: false,
+    });
+  }
 }

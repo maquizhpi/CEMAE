@@ -6,11 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import HttpClient from "../../controllers/utils/http_client";
 import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
-import ConfirmModal from "../components/modals/confirm";
-import { ExcelExport } from "@progress/kendo-react-excel-export";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import Router from "next/router";
-import { generateReporteBodegas } from "./reporte/reporteBodegas";
+
 
 export const BodegasPage = () => {
   const { auth } = useAuth();
@@ -18,7 +16,7 @@ export const BodegasPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [itemToDelete, setItemToDelete] = useState<string>(null);
   const [filterText, setFilterText] = useState<string>("");
-  const excelExporter = useRef<ExcelExport>(null);
+
 
   const loadData = async () => {
     setLoading(true);
@@ -51,7 +49,7 @@ export const BodegasPage = () => {
     setLoading(false);
   };
 
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
   }, []);
@@ -83,9 +81,24 @@ export const BodegasPage = () => {
     },
   ];
 
-  const exportToExcel = () => {
-    if (excelExporter.current) {
-      excelExporter.current.save();
+  const handleDelete = (rowData: Bodega) => {
+    if (itemToDelete === rowData.id) {
+      HttpClient(
+        `/api/bodegas/${rowData.id}`,
+        "DELETE",
+        auth.usuario,
+        auth.rol
+      ).then((response) => {
+        if (response.success) {
+          toast.success("Bodega eliminada correctamente");
+          loadData();
+          setItemToDelete(null);
+        } else {
+          toast.error("Error al eliminar la bodega");
+        }
+      });
+    } else {
+      setItemToDelete(rowData.id);
     }
   };
 
@@ -103,28 +116,22 @@ export const BodegasPage = () => {
       CheckPermissions(auth, [0, 1])
         ? Router.push({ pathname: "/bodegas/show/" + (rowData.id as string) })
         : toast.error("No puedes acceder"),
-
+    
     delete: (rowData: Bodega) => {
-      if (!CheckPermissions(auth, [0, 1])) {
-        toast.error("No tienes permisos para eliminar este registro");
-        return;
-      }
-      if (confirm("¿Estás seguro de que deseas eliminar esta BODEGA?")) {
-        setLoading(true);
-        HttpClient(`/api/bodegas/${rowData.id}`, 
-          "DELETE", 
-          auth.usuario, 
-          auth.rol)
-          .then(() => {
-            toast.success("Registro de calibración eliminado correctamente");
-            loadData();
-          })
-          .catch(() => {
-            toast.error("Error al eliminar el registro de calibración");
-            setLoading(false);
-          });
+      if (CheckPermissions(auth, [0, 1])) {
+        setItemToDelete(rowData.id as string);
+        handleDelete(rowData);
+      } else {
+        toast.error("No puedes eliminar bodegas");
       }
     },
+    edit: (rowData: Bodega) => {
+      if (CheckPermissions(auth, [0, 1])) {
+        Router.push({ pathname: "/bodegas/editar/" + (rowData.id as string) });
+      } else {
+        toast.error("No puedes editar bodegas");
+      }
+    }
   };
 
   return (
@@ -185,3 +192,11 @@ export const BodegasPage = () => {
 };
 
 export default BodegasPage;
+function generateReporteBodegas(arg0: string, bodegasFiltradas: Bodega[]) {
+  throw new Error("Function not implemented.");
+}
+
+function handleDelete(rowData: Bodega) {
+  throw new Error("Function not implemented.");
+}
+

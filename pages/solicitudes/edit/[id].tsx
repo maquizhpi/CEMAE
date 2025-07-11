@@ -5,7 +5,7 @@ import { useAuth } from "../../../controllers/hooks/use_auth";
 import { useFormik } from "formik";
 import Router from "next/router";
 import { toast } from "react-toastify";
-import { Solicitude, Herramienta, ResponseData, Bodega } from "../../../models";
+import { Herramienta, ResponseData, Bodega } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
 import { useEffect, useState } from "react";
 
@@ -78,7 +78,6 @@ export const EditarRegistro = () => {
       setLoading(false);
     }
   };
-
   // Cargar datos cuando cambie el id de la solicitud en la URL
   useEffect(() => {
     if (Router.query.id) loadData();
@@ -96,14 +95,17 @@ export const EditarRegistro = () => {
       estado: "",
       observacion: ""
     },
-    // Función que se ejecuta al enviar el formulario
+    
     onSubmit: async (values) => {
       setLoading(true);
 
       // Calcular cuántas herramientas fueron entregadas
-      const entregadas = values.herramientas.filter(h => h.estadoActual === "Disponible" || h.entregada !== false).length;
-      // Actualizar estado de la solicitud según herramientas entregadas
+      const entregadas = values.herramientas.filter(
+        h => h.estadoActual === "Disponible" || h.entregada !== false).length;
+      
+        // Actualizar estado de la solicitud según herramientas entregadas
       values.estado = entregadas === values.herramientas.length ? "ENTREGADO" : "PENDIENTE";
+      
       // Actualizar estado de entrega de cada herramienta
       values.herramientas = values.herramientas.map(h => ({ ...h, entregada: h.entregada !== false }));
 
@@ -259,4 +261,3 @@ export const EditarRegistro = () => {
 };
 
 export default EditarRegistro;
-

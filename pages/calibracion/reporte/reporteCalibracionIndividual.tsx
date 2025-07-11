@@ -8,6 +8,7 @@ import { ResponseData, Calibracion } from "../../../models";
 import Sidebar from "../../components/sidebar";
 import { useReactToPrint } from "react-to-print";
 import { Button } from "react-bootstrap";
+import Image from "next/image";
 
 const ReporteCalibracionIndividual = () => {
   const { auth } = useAuth();
@@ -64,7 +65,7 @@ const ReporteCalibracionIndividual = () => {
 
             {/* Sección imprimible */}
             <div ref={printRef} className="print-area p-4 border mt-4">
-              <img src="/image/logo2.jpeg" alt="Logo" className="w-32 mx-auto mb-4" />
+              <Image src="/image/logo2.jpeg" alt="Logo" width={100} height={100} />
               <div className="text-center">
                 <p className="font-bold text-lg">BRIGADA DE AVIACIÓN DEL EJÉRCITO BAE 15 "PAQUISHA"</p>
                 <p className="text-sm">ESCUDARÓN DE ASALTO SUPER PUMA</p>

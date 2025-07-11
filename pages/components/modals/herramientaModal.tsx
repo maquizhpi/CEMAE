@@ -1,14 +1,15 @@
 import { Modal, Button as BootstrapButton } from "react-bootstrap";
 import { Herramienta, ModelosHerramienta, Ubicaciones } from "../../../models";
+import { useEffect, useState } from "react";
 
 interface Props {
   show: boolean;
   onClose: () => void;
   onSave: () => void;
-  toolTemp: Herramienta;
+  toolTemp: Herramienta | null;
   setToolTemp: (tool: Herramienta) => void;
-  modelos: Array<ModelosHerramienta>;
-  ubicaciones: Array<Ubicaciones>;
+  modelos?: Array<ModelosHerramienta>; 
+  ubicaciones?: Array<Ubicaciones>; 
   setImage: (file: File | null) => void;
   editingToolIndex: number | null;
 }
@@ -19,11 +20,24 @@ const HerramientaModal = ({
   onSave,
   toolTemp,
   setToolTemp,
-  modelos,
-  ubicaciones,
+  modelos = [],
+  ubicaciones = [],
   setImage,
   editingToolIndex,
 }: Props) => {
+  const [localTool, setLocalTool] = useState<Herramienta | null>(null);
+
+  useEffect(() => {
+    setLocalTool(toolTemp);
+  }, [toolTemp]);
+
+  const handleChange = (key: keyof Herramienta, value: any) => {
+    if (!localTool) return;
+    const updatedTool = { ...localTool, [key]: value };
+    setLocalTool(updatedTool);
+    setToolTemp(updatedTool);
+  };
+
   return (
     <Modal show={show} onHide={onClose} size="lg">
       <Modal.Header closeButton>
@@ -34,35 +48,35 @@ const HerramientaModal = ({
       <Modal.Body>
         <div className="grid grid-cols-2 gap-4">
           <input
-            value={toolTemp.nombre}
+            value={localTool?.nombre || ""}
             placeholder="Nombre"
-            onChange={(e) => setToolTemp({ ...toolTemp, nombre: e.target.value })}
+            onChange={(e) => handleChange("nombre", e.target.value)}
             className="p-2 border rounded"
           />
           <input
-            value={toolTemp.codigo}
+            value={localTool?.codigo || ""}
             placeholder="Código"
-            onChange={(e) => setToolTemp({ ...toolTemp, codigo: e.target.value })}
+            onChange={(e) => handleChange("codigo", e.target.value)}
             className="p-2 border rounded"
           />
           <input
-            value={toolTemp.descripcion}
+            value={localTool?.descripcion || ""}
             placeholder="Descripción"
-            onChange={(e) => setToolTemp({ ...toolTemp, descripcion: e.target.value })}
+            onChange={(e) => handleChange("descripcion", e.target.value)}
             className="p-2 border rounded"
           />
           <input
-            value={toolTemp.serie}
+            value={localTool?.serie || ""}
             placeholder="Serie"
-            onChange={(e) => setToolTemp({ ...toolTemp, serie: e.target.value })}
+            onChange={(e) => handleChange("serie", e.target.value)}
             className="p-2 border rounded"
           />
           <select
-            value={toolTemp.modelo}
-            onChange={(e) => setToolTemp({ ...toolTemp, modelo: e.target.value })}
+            value={localTool?.modelo || ""}
+            onChange={(e) => handleChange("modelo", e.target.value)}
             className="p-2 border rounded"
           >
-            <option value="">Seleccione una Marca</option>
+            <option value="">Seleccione un modelo</option>
             {modelos.map((m) => (
               <option key={m.id} value={m.nombre}>
                 {m.nombre}
@@ -70,20 +84,20 @@ const HerramientaModal = ({
             ))}
           </select>
           <input
-            value={toolTemp.marca}
-            placeholder="Modelo"
-            onChange={(e) => setToolTemp({ ...toolTemp, marca: e.target.value })}
+            value={localTool?.marca || ""}
+            placeholder="Marca"
+            onChange={(e) => handleChange("marca", e.target.value)}
             className="p-2 border rounded"
           />
           <input
-            value={toolTemp.NParte}
+            value={localTool?.NParte || ""}
             placeholder="N° Parte"
-            onChange={(e) => setToolTemp({ ...toolTemp, NParte: e.target.value })}
+            onChange={(e) => handleChange("NParte", e.target.value)}
             className="p-2 border rounded"
           />
           <select
-            value={toolTemp.ubicacion}
-            onChange={(e) => setToolTemp({ ...toolTemp, ubicacion: e.target.value })}
+            value={localTool?.ubicacion || ""}
+            onChange={(e) => handleChange("ubicacion", e.target.value)}
             className="p-2 border rounded"
           >
             <option value="">Seleccione ubicación</option>
@@ -94,8 +108,8 @@ const HerramientaModal = ({
             ))}
           </select>
           <select
-            value={toolTemp.estado}
-            onChange={(e) => setToolTemp({ ...toolTemp, estado: e.target.value })}
+            value={localTool?.estado || ""}
+            onChange={(e) => handleChange("estado", e.target.value)}
             className="p-2 border rounded"
           >
             <option value="">Seleccione estado</option>
@@ -103,25 +117,25 @@ const HerramientaModal = ({
             <option value="En uso">En uso</option>
           </select>
           <select
-            value={toolTemp.calibracion}
-            onChange={(e) => setToolTemp({ ...toolTemp, calibracion: e.target.value })}
+            value={localTool?.calibracion || ""}
+            onChange={(e) => handleChange("calibracion", e.target.value)}
             className="p-2 border rounded"
           >
-            <option value="">Seleccione Calibracion</option>
+            <option value="">Seleccione Calibración</option>
             <option value="Calibrada">Calibrada</option>
             <option value="No calibrada">No calibrada</option>
             <option value="No necesita">No necesita</option>
           </select>
           <input
-            value={toolTemp.tipo}
+            value={localTool?.tipo || ""}
             placeholder="Tipo"
-            onChange={(e) => setToolTemp({ ...toolTemp, tipo: e.target.value })}
+            onChange={(e) => handleChange("tipo", e.target.value)}
             className="p-2 border rounded"
           />
           <input
-            value={toolTemp.observacion}
+            value={localTool?.observacion || ""}
             placeholder="Observación"
-            onChange={(e) => setToolTemp({ ...toolTemp, observacion: e.target.value })}
+            onChange={(e) => handleChange("observacion", e.target.value)}
             className="p-2 border rounded"
           />
           <input

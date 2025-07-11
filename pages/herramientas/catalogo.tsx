@@ -24,7 +24,7 @@ const CatalogoHerramientas = () => {
     );
     setHerramientas(todasHerramientas);
   };
-
+ //// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadHerramientas();
   }, []);

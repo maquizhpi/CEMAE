@@ -82,7 +82,7 @@ export default function DashboardBodeguero() {
     }
   };
 
-  // Cargar datos al montar el componente
+  //// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
     loadSolicitudes();

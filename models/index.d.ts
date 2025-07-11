@@ -67,7 +67,6 @@ export type ModelosHerramienta = {
 // Modelo para los productos
 export type Herramienta = {
   nombreBodega: ReactNode;
-  _id: string | string[];
   id?: string;
   nombre: string;
   codigo: string;
@@ -87,7 +86,6 @@ export type Herramienta = {
 };
 
 // Modelo para las bodegas
-
 export type Bodega = {
   creadorNombre: any;
   _id: string;
@@ -103,7 +101,6 @@ export type Bodega = {
     telefono: string;
   };
   bodegueroAsignado: {
-    toLowerCase(): unknown;
     nombre: string;
     identificacion: string;
     correo: string;
@@ -115,9 +112,10 @@ export type Bodega = {
   }
 };
 
-
 // Modelo para las solicitudes
 export type Solicitude = {
+  _id?: string;
+  id?: string;
   number: number;
   herramientas: Array<Herramienta>;
   fecha: string;

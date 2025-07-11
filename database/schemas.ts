@@ -93,7 +93,7 @@ export const ModeloHerramientaModel =
 
 //////////////////////Modelo para herramientas//////////////////////////
 const HerramientaSchema = new mongoose.Schema<Herramienta>(
-  {
+  {    
     nombre: { type: String },
     codigo: { type: String },
     descripcion: { type: String },
@@ -114,7 +114,9 @@ const HerramientaSchema = new mongoose.Schema<Herramienta>(
 
 // Duplicate the ID field.
 HerramientaSchema.virtual("id").get(function () {
-  return this._id.toHexString();
+  return typeof this._id === "object" && this._id.toHexString
+    ? this._id.toHexString()
+    : this._id;
 });
 
 // Ensure virtual fields are serialised.
@@ -123,8 +125,7 @@ HerramientaSchema.set("toJSON", {
 });
 
 export const HerramientaModel =
-  mongoose.models.Herramienta ||
-  mongoose.model("Herramienta", HerramientaSchema);
+  mongoose.models.herramienta || mongoose.model("herramienta", HerramientaSchema);
 
 //////////////////////Modelo para los bodegas//////////////////////////
 const BodegaSchema = new mongoose.Schema<Bodega>(

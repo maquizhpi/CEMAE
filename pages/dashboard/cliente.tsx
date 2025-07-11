@@ -23,7 +23,7 @@ export default function DashboardCliente() {
       console.error("Error al cargar datos desde la base de datos:", error);
     }
   };
-
+ //// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
   }, []);

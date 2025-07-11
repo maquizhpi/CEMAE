@@ -11,6 +11,7 @@ import { Solicitude } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import { generateReporteSolicitudes } from "./reporte/reporteSolicitudes";
 
+
 type Props = {
   dates: Array<string>;
   sm?: number;
@@ -57,7 +58,7 @@ export const SolicitudePage = (props: Props) => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loading]);
 
   const columns: ColumnData[] = [
     {
@@ -200,10 +201,7 @@ export const SolicitudePage = (props: Props) => {
             <Button
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
               onClick={() =>
-                generateReporteSolicitudes(
-                  "REPORTE DE SOLICITUDES FILTRADAS",
-                  filteredData.length > 0 ? filteredData : tableData
-                )
+                generateReporteSolicitudes("REPORTE DE SOLICITUDES FILTRADAS", filteredData.length > 0 ? filteredData : tableData)
               }
             >
               Exportar reporte PDF
