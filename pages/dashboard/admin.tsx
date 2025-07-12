@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
 import Sidebar from "../components/sidebar";
@@ -17,7 +17,7 @@ export default function DashboardGlobal() {
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
   const [calibraciones, setCalibraciones] = useState<any[]>([]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const responseBod = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const responseSol = await HttpClient("/api/solicitudes", "GET", auth.usuario, auth.rol);
     const responseCal = await HttpClient("/api/calibracion", "GET", auth.usuario, auth.rol);
@@ -25,27 +25,23 @@ export default function DashboardGlobal() {
     const allBodegas = responseBod.data ?? [];
     setBodegas(allBodegas);
 
-    const herramientasPorBodega = bodegas.map((bodega) => ({
-      name: bodega.nombreBodega,
-      value: bodega.herramientas?.length || 0,
-    }));
-
-
     const allHerramientas = allBodegas.flatMap((b: Bodega) => b.herramientas ?? []);
     setHerramientas(allHerramientas);
 
     setSolicitudes(responseSol.data ?? []);
     setCalibraciones(responseCal.data ?? []);
-  };
-// eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
+
 
   const herramientasPorBodega = bodegas.map((bodega) => ({
-  name: bodega.nombreBodega,
-  value: bodega.herramientas?.length || 0,
+    name: bodega.nombreBodega,
+    value: bodega.herramientas?.length || 0,
   }));
+
 // Filtrar herramientas por estado y calibración
   const total = herramientas.length;
   const disponibles = herramientas.filter(h => h.estado === "Disponible");

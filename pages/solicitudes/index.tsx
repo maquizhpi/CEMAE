@@ -5,12 +5,11 @@ import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import Router from "next/router";
 import { toast } from "react-toastify";
 import { useAuth } from "../../controllers/hooks/use_auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import HttpClient from "../../controllers/utils/http_client";
 import { Solicitude } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import { generateReporteSolicitudes } from "./reporte/reporteSolicitudes";
-
 
 type Props = {
   dates: Array<string>;
@@ -27,15 +26,9 @@ export const SolicitudePage = (props: Props) => {
   const [filteredData, setFilteredData] = useState<Array<any>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
-    const response = await HttpClient(
-      "/api/solicitudes",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
-
+    const response = await HttpClient("/api/solicitudes", "GET", auth.usuario, auth.rol);
     let solicitudes: Array<Solicitude> = response.data ?? [];
 
     if (auth.rol !== 0) {
@@ -54,11 +47,12 @@ export const SolicitudePage = (props: Props) => {
 
     setTableData(solicitudesNormalizadas);
     setLoading(false);
-  };
+  }, [auth.usuario, auth.rol, auth.nombre]);
 
   useEffect(() => {
     loadData();
-  }, [loading]);
+  }, [loadData]);
+
 
   const columns: ColumnData[] = [
     {

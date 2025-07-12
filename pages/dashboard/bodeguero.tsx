@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
 import Sidebar from "../components/sidebar";
@@ -15,112 +15,75 @@ export default function DashboardBodeguero() {
   const [bodegaSeleccionada, setBodegaSeleccionada] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Función para cargar las bodegas asignadas al usuario actual
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
-    const responseBod = await HttpClient(
-      "/api/bodegas", 
-      "GET", 
-      auth.usuario, 
-      auth.rol);
-
-      console.log("Nombre del usuario autenticado:", auth.nombre);
-
-
-    const bodegasFiltradas = (responseBod.data ?? []).filter((b: Bodega) => b.bodegueroAsignado?.nombre === auth.nombre);
+    const responseBod = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+    const bodegasFiltradas = (responseBod.data ?? []).filter(
+      (b: Bodega) => b.bodegueroAsignado?.nombre === auth.nombre
+    );
     setBodegas(bodegasFiltradas);
-    // Selecciona la primera bodega por defecto
     setBodegaSeleccionada(bodegasFiltradas[0]?._id || "");
     setLoading(false);
-  };
+  }, [auth]);
 
-  //Función para cargar las solicitudes asignadas al usuario actual
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
-  const loadSolicitudes = async () => {
+  const loadSolicitudes = useCallback(async () => {
     if (!auth?.usuario) return;
     try {
-      const response = await HttpClient(
-        "/api/solicitudes",
-        "GET",
-        auth.usuario,
-        auth.rol
-      );
-      // Filtra las solicitudes realizadas por el usuario actual
+      const response = await HttpClient("/api/solicitudes", "GET", auth.usuario, auth.rol);
       const solicitudesUsuario = (response.data ?? []).filter(
         (s: any) => s.bodeguero?.nombre === auth.nombre
       );
-      console.log("Todas las solicitudes:", response.data);
-
       setSolicitudes(solicitudesUsuario);
-      console.log("Solicitudes cargadas:", solicitudesUsuario);
     } catch (error) {
       setSolicitudes([]);
     }
-  };
+  }, [auth]);
 
-  // Función para cargar las calibraciones asignadas al usuario actual
   const [calibraciones, setCalibraciones] = useState<any[]>([]);
-  const loadCalibraciones = async () => {
+  const loadCalibraciones = useCallback(async () => {
     if (!auth?.usuario) return;
     try {
-      const response = await HttpClient(
-        "/api/calibracion",
-        "GET",
-        auth.usuario,
-        auth.rol
-      );
-      // Filtra las calibraciones asignadas al usuario actual
+      const response = await HttpClient("/api/calibracion", "GET", auth.usuario, auth.rol);
       const calibracionesUsuario = (response.data ?? []).filter(
         (c: any) => c.bodeguero?.trim().toLowerCase() === auth.nombre?.trim().toLowerCase()
-);
-      console.log("Todas las calibraciones:", response.data);
-
+      );
       setCalibraciones(calibracionesUsuario);
-      console.log("Calibraciones cargadas:", calibracionesUsuario);
     } catch (error) {
       setCalibraciones([]);
     }
-  };
+  }, [auth]);
 
-  //// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
     loadSolicitudes();
     loadCalibraciones();
-  }, []);
+  }, [loadData, loadSolicitudes, loadCalibraciones]);
 
-  // Encuentra la bodega seleccionada
   const bodegaActual = bodegas.find(b => b.id === bodegaSeleccionada);
-  // Herramientas de la bodega seleccionada
   const herramientasPorBodega: Herramienta[] = bodegaActual?.herramientas ?? [];
 
-  // Estadísticas de herramientas
   const total = herramientasPorBodega.length;
   const disponibles = herramientasPorBodega.filter(h => h.estado === "Disponible");
   const enUso = herramientasPorBodega.filter(h => h.estado === "En uso");
   const calibradas = herramientasPorBodega.filter(h => h.calibracion === "Calibrada");
   const noCalibradas = herramientasPorBodega.filter(h => h.calibracion === "No calibrada");
 
-  // Estadísticas de solicitudes
   const solicitudesRealizadas = solicitudes.length;
   const solicitudesEntregadas = solicitudes.filter(s => s.estado === "ENTREGADO");
   const solicitudesNoEntregadas = solicitudes.filter(s => s.estado == "NO ENTREGADO");
   const solicitudesPendientes = solicitudes.filter(s => s.estado == "PENDIENTE");
 
-  // Estadísticas de solicitudes de calibraciones
   const calibracionesSolicitadas = calibraciones.length;
   const calibracionesRealizadas = calibraciones.filter(c => c.estado === "Herramientas calibradas");
   const calibracionesPendientes = calibraciones.filter(c => c.estado == "En calibracion");
-  // Calibraciones vencidas: aquellas cuya fecha de próxima calibración es anterior a hoy
   const calibracionVencida = calibraciones.filter(c => {
     if (!c.fechaProximaCalibracion) return false;
     const proxima = new Date(c.fechaProximaCalibracion);
     const hoy = new Date();
-    // Si la fecha de próxima calibración ya pasó, se considera caducado
     return proxima < hoy;
   });
 
-  // Datos para la gráfica herramientas
   const data = [
     { name: "Disponibles", value: disponibles.length },
     { name: "En Uso", value: enUso.length },
@@ -128,7 +91,6 @@ export default function DashboardBodeguero() {
     { name: "No Calibradas", value: noCalibradas.length },
   ];
 
-    // Datos para la gráfica herramientas
   const dataSolicitud = [
     { name: "Solicitudes Realizadas", value: solicitudesRealizadas },
     { name: "Solicitudes Entregadas", value: solicitudesEntregadas.length },
@@ -136,14 +98,12 @@ export default function DashboardBodeguero() {
     { name: "Solicitudes Pendientes", value: solicitudesPendientes.length },
   ];
 
-  // Datos para la gráfica calibraciones  
   const dataCalibraciones = [
-    { name: "Calibraciones Solicitadas", value: calibracionesSolicitadas},
+    { name: "Calibraciones Solicitadas", value: calibracionesSolicitadas },
     { name: "Calibraciones Realizadas", value: calibracionesRealizadas.length },
     { name: "Calibraciones Pendientes", value: calibracionesPendientes.length },
     { name: "Calibracion Vencida", value: calibracionVencida.length },
   ];
-
   return (
     <div className="flex h-screen">
       {/* Barra lateral */}

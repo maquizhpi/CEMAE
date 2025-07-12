@@ -1,10 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Herramienta } from "../../models";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import HttpClient from "../../controllers/utils/http_client";
 import Sidebar from "../components/sidebar";
 import CatalogoHerramientaModal from "../components/modals/catalogoHerramientaModal";
+import Image from "next/image";
 
 const CatalogoHerramientas = () => {
   const { auth } = useAuth();
@@ -13,7 +14,8 @@ const CatalogoHerramientas = () => {
   const [herramientaSeleccionada, setHerramientaSeleccionada] = useState<Herramienta | null>(null);
   const [busqueda, setBusqueda] = useState("");
 
-  const loadHerramientas = async () => {
+  // 👇 Se usa useCallback para evitar warning de dependencia
+  const loadHerramientas = useCallback(async () => {
     const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegas = response.data ?? [];
     const todasHerramientas: Herramienta[] = bodegas.flatMap((b) =>
@@ -23,11 +25,11 @@ const CatalogoHerramientas = () => {
       }))
     );
     setHerramientas(todasHerramientas);
-  };
- //// eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
+
   useEffect(() => {
     loadHerramientas();
-  }, []);
+  }, [loadHerramientas]);
 
   const abrirModal = (herramienta: Herramienta) => {
     setHerramientaSeleccionada(herramienta);
@@ -71,23 +73,25 @@ const CatalogoHerramientas = () => {
           {herramientasFiltradas
             .sort((a, b) => a.nombre.localeCompare(b.nombre))
             .map((h) => (
-
-            <div
-              key={h.id}
-              className="bg-white shadow-md rounded-lg p-4 cursor-pointer hover:shadow-xl transition duration-300"
-              onClick={() => abrirModal(h)}
-            >
-              <img
-                src={h.imagen || "/image/no-image.png"}
-                alt="imagen"
-                className="w-full h-40 object-cover rounded-md mb-2"
-              />
-              <h3 className="text-lg font-semibold uppercase text-blue-600">{h.nombre}</h3>
-              <p className="text-sm text-gray-600">Modelo: {h.modelo}</p>
-              <p className="text-sm text-gray-600">Estado: {h.estado}</p>
-              <p className="text-sm text-gray-600">Bodega: {h.nombreBodega}</p>
-            </div>
-          ))}
+              <div
+                key={h.id}
+                className="bg-white shadow-md rounded-lg p-4 cursor-pointer hover:shadow-xl transition duration-300"
+                onClick={() => abrirModal(h)}
+              >
+                <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
+                  <Image
+                    src={h.imagen || "/image/no-image.png"}
+                    alt={`Imagen de ${h.nombre}`}
+                    layout="fill"
+                    objectFit="cover"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold uppercase text-blue-600">{h.nombre}</h3>
+                <p className="text-sm text-gray-600">Modelo: {h.modelo}</p>
+                <p className="text-sm text-gray-600">Estado: {h.estado}</p>
+                <p className="text-sm text-gray-600">Bodega: {h.nombreBodega}</p>
+              </div>
+            ))}
         </div>
 
         {/* Modal de detalle */}

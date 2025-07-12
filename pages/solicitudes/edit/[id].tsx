@@ -7,69 +7,69 @@ import Router from "next/router";
 import { toast } from "react-toastify";
 import { Herramienta, ResponseData, Bodega } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/router";
 
-// Tipo extendido para incluir estado de entrega y estado actual de la herramienta
+
 type HerramientaConEntrega = Herramienta & {
   entregada?: boolean;
   estadoActual?: string;
 };
 
 export const EditarRegistro = () => {
-  const { auth } = useAuth(); // Hook de autenticación
-  const [loading, setLoading] = useState(false); // Estado de carga
-  const [initialValues, setInitialValues] = useState(null); // Valores iniciales del formulario
-  const [bodegas, setBodegas] = useState<Bodega[]>([]); // Lista de bodegas
+  const { auth } = useAuth(); 
+  const [loading, setLoading] = useState(false);
+  const [initialValues, setInitialValues] = useState(null); 
+  const [bodegas, setBodegas] = useState<Bodega[]>([]); 
 
   // Función para cargar los datos de la solicitud y las bodegas
-  const loadData = async () => {
+  const router = useRouter();
+  const id = router.query.id as string;
+  const loadData = useCallback(async () => {
+    if (!id) return;
     try {
       setLoading(true);
-      const solicitudeId = Router.query.id as string; // Obtener el id de la solicitud desde la URL
-      // Obtener datos de la solicitud
+
       const response = await HttpClient(
-        `/api/solicitudes/${solicitudeId}`, 
-        "GET", 
-        auth.usuario, 
-        auth.rol);
+        `/api/solicitudes/${id}`,
+        "GET",
+        auth.usuario,
+        auth.rol
+      );
 
       const solicitud = response.data;
-      const herramientasSolicitud = Array.isArray(solicitud.herramientas) ? solicitud.herramientas : [];
+      const herramientasSolicitud = Array.isArray(solicitud.herramientas)
+        ? solicitud.herramientas
+        : [];
 
-      // Obtener datos de las bodegas
       const bodegasResponse = await HttpClient(
-        "/api/bodegas", 
-        "GET", 
-        auth.usuario, 
-        auth.rol);
+        "/api/bodegas",
+        "GET",
+        auth.usuario,
+        auth.rol
+      );
 
       const bodegasData: Bodega[] = bodegasResponse.data ?? [];
       setBodegas(bodegasData);
 
-      // Actualizar estado de cada herramienta según su estado en la bodega
       const herramientasActualizadas = herramientasSolicitud.map((h: HerramientaConEntrega) => {
         let estadoActual = "No encontrada";
-
         for (const bodega of bodegasData) {
-          const herramienta = bodega.herramientas?.find(item => item.nombre === h.nombre && item.codigo === h.codigo);
+          const herramienta = bodega.herramientas?.find(
+            item => item.nombre === h.nombre && item.codigo === h.codigo
+          );
           if (herramienta) {
             estadoActual = herramienta.estado;
             break;
           }
         }
-
-        return {
-          ...h,
-          entregada: estadoActual === "En uso",
-          estadoActual
-        };
+        return { ...h, entregada: estadoActual === "En uso", estadoActual };
       });
 
-      // Establecer valores iniciales para el formulario
       setInitialValues({
         ...solicitud,
         herramientas: herramientasActualizadas,
-        observacion: solicitud.observacion || ""
+        observacion: solicitud.observacion || "",
       });
     } catch (error) {
       console.error("Error cargando la solicitud:", error);
@@ -77,11 +77,11 @@ export const EditarRegistro = () => {
     } finally {
       setLoading(false);
     }
-  };
-  // Cargar datos cuando cambie el id de la solicitud en la URL
+  }, [auth.usuario, auth.rol, id]); // sin router.query.id
+
   useEffect(() => {
-    if (Router.query.id) loadData();
-  }, [Router.query.id]);
+    if (id) loadData();
+  }, [id, loadData]);
 
   // Configuración de Formik para el formulario
   const formik = useFormik({
@@ -101,12 +101,8 @@ export const EditarRegistro = () => {
 
       // Calcular cuántas herramientas fueron entregadas
       const entregadas = values.herramientas.filter(
-        h => h.estadoActual === "Disponible" || h.entregada !== false).length;
-      
-        // Actualizar estado de la solicitud según herramientas entregadas
+        h => h.estadoActual === "Disponible" || h.entregada !== false).length;      
       values.estado = entregadas === values.herramientas.length ? "ENTREGADO" : "PENDIENTE";
-      
-      // Actualizar estado de entrega de cada herramienta
       values.herramientas = values.herramientas.map(h => ({ ...h, entregada: h.entregada !== false }));
 
       // Actualizar la solicitud en el backend

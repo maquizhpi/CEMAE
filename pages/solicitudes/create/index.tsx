@@ -12,7 +12,7 @@ import {
   Usuario,
 } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import FormatedDate from "../../../controllers/utils/formated_date";
 import Select from "react-select";
 
@@ -26,73 +26,34 @@ export const RegistroCreate = () => {
   const [bodegaSeleccionada, setBodegaSeleccionada] = useState<string>("");
 
   // Cargar bodegas
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
-
-    const response = await HttpClient(
-      "/api/bodegas",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
-
+    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegas = response.data ?? [];
     const bodegasUsuario = bodegas.filter(
-      (bodega) =>
-        bodega.bodegueroAsignado?.identificacion === auth.identificacion
+      (bodega) => bodega.bodegueroAsignado?.identificacion === auth.identificacion
     );
-
     setBodegasDelUsuario(bodegasUsuario);
-
-    // Si no hay seleccionada, selecciona la primera
     if (bodegasUsuario.length > 0 && !bodegaSeleccionada) {
       setBodegaSeleccionada(bodegasUsuario[0].id);
     }
-
     setLoading(false);
-  };
+  }, [auth.usuario, auth.rol, auth.identificacion, bodegaSeleccionada]);
 
-  // Cargar clientes
-  const loadClient = async () => {
+  const loadClient = useCallback(async () => {
     setLoading(true);
-
-    const response = await HttpClient(
-      "/api/user",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
-
-    const clientesDisponibles = (response.data ?? []).filter(
-      (clientes: any) => clientes.rol === 2
-    );
-
+    const response = await HttpClient("/api/user", "GET", auth.usuario, auth.rol);
+    const clientesDisponibles = (response.data ?? []).filter((c: any) => c.rol === 2);
     setClient(clientesDisponibles);
     setLoading(false);
-  };
-
-  // Cuando cambia bodega → actualiza herramientas
-  useEffect(() => {
-    if (!bodegaSeleccionada) return;
-
-    const bodega = bodegasDelUsuario.find((b) => b.id === bodegaSeleccionada);
-    if (!bodega) {
-      setHerramientas([]);
-      return;
-    }
-
-    const herramientasDisponibles = (bodega.herramientas ?? []).filter(
-      (herramienta) => herramienta.estado === "Disponible"
-    );
-
-    setHerramientas(herramientasDisponibles);
-  }, [bodegaSeleccionada, bodegasDelUsuario]);
-
+  }, [auth.usuario, auth.rol]);
+  
   // Cargar herramientas y clientes al inicio
   useEffect(() => {
     loadProducts();
     loadClient();
-  }, []);
+  }, [loadProducts, loadClient]);
+
 
   // Valores iniciales del formulario  
   const initialValues: Solicitude = {

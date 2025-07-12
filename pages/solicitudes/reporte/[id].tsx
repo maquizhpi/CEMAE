@@ -1,25 +1,26 @@
 /* eslint-disable react/no-unescaped-entities */
 import Router from "next/router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../controllers/hooks/use_auth";
 import HttpClient from "../../../controllers/utils/http_client";
-import { ResponseData, Solicitude, Herramienta, Usuario, Bodega } from "../../../models";
+import { ResponseData, Solicitude, Herramienta, Bodega } from "../../../models";
 import Sidebar from "../../components/sidebar";
 import { useReactToPrint } from "react-to-print";
 import { Button } from "react-bootstrap";
+import Image from "next/image";
 
 const ReporteRegistro = () => {
   const { auth } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [registro, setRegistro] = useState<Solicitude | null>(null);
   const [herramientasDetalles, setHerramientasDetalles] = useState<Herramienta[]>([]);
-  const [bodeguero, setBodeguero] = useState<Solicitude | null>(null);
-  const [receptor, setReceptor] = useState<Solicitude | null>(null);
+  const [bodeguero, setBodeguero] = useState<Solicitude["bodeguero"] | null>(null);
+  const [receptor, setReceptor] = useState<Solicitude["receptor"] | null>(null);
   const [bodegas, setBodegas] = useState<Bodega[]>([]);
   const printRef = useRef(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (Router.asPath !== Router.route) {
       setLoading(true);
       const registroId = Router.query.id as string;
@@ -35,7 +36,8 @@ const ReporteRegistro = () => {
         "/api/bodegas", 
         "GET", 
         auth.usuario, 
-        auth.rol);
+        auth.rol
+      );
 
       if (response.success) {
         const solicitud = response.data;
@@ -51,12 +53,11 @@ const ReporteRegistro = () => {
     } else {
       setTimeout(loadData, 1000);
     }
-  };
+  }, [auth.usuario, auth.rol]);
 
   useEffect(() => {
     loadData();
-  }, []);
-
+  }, [loadData]);
     
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -88,7 +89,9 @@ const ReporteRegistro = () => {
 
             {/* Sección imprimible */}
             <div ref={printRef} className="print-area p-4 border mt-4">
-              <img src="/image/logo2.jpeg" alt="Logo" className="w-32 mx-auto mb-4" />
+              
+              <Image src="/image/logo2.jpeg" alt="Logo" width={128} height={64} className="mx-auto mb-4" />
+
               <div className="text-center">
                 <p className="font-bold text-lg">BRIGADA DE AVIACIÓN DEL EJÉRCITO BAE 15 "PAQUISHA"</p>
                 <p className="text-sm">ESCUDARÓN DE ASALTO SUPER PUMA</p>

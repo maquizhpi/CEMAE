@@ -7,7 +7,7 @@ import Router from "next/router";
 import { toast } from "react-toastify";
 import { Bodega, Usuario } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import FormatedDate from "../../../controllers/utils/formated_date";
 
 export const BodegasCreate = () => {
@@ -15,47 +15,46 @@ export const BodegasCreate = () => {
   const [loading, setLoading] = useState(false);
   const [usuarioBodeguero, setUsuarioBodeguero] = useState<Usuario[]>([]);
 
-const initialValues: Bodega = {
-  _id: "",
-  number: 0,
-  fechaDeCreacion: FormatedDate(),
-  creador: {
-    nombre: auth.nombre,
-    identificacion: auth.identificacion,
-    correo: auth.correo,
-    telefono: auth.telefono,
-  },
-  bodegueroAsignado: {
-    nombre: "",
-    identificacion: "",
-    correo: "",
-    telefono: "",
-  },
-  nombreBodega: "",
-  creadorNombre: auth.nombre,
-  herramientas: [],
-  ubicaciones: [],
-  ubicacionesBodega: { nombre: "" },
-};
+  const initialValues: Bodega = {
+    
+    number: 0,
+    fechaDeCreacion: FormatedDate(),
+    creador: {
+      nombre: auth.nombre,
+      identificacion: auth.identificacion,
+      correo: auth.correo,
+      telefono: auth.telefono,
+    },
+    bodegueroAsignado: {
+      nombre: "",
+      identificacion: "",
+      correo: "",
+      telefono: "",
+    },
+    nombreBodega: "",
+    herramientas: [],
+    ubicaciones: [],  
+  };
 
 
-  const loadUserBod = async () => {
+  const loadUserBod = useCallback(async () => {
     setLoading(true);
     const response = await HttpClient(
       "/api/user", 
       "GET", 
       auth.usuario, 
-      auth.rol);
+      auth.rol
+    );
 
     const data: Usuario[] = response.data ?? [];
     const bodegueros = data.filter((usuario) => usuario.rol === 1);
     setUsuarioBodeguero(bodegueros);
     setLoading(false);
-  };
+  }, [auth.usuario, auth.rol]);
 
   useEffect(() => {
     loadUserBod();
-  }, []);
+  }, [loadUserBod]);
 
   const formik = useFormik<Bodega>({
     initialValues,
@@ -73,8 +72,8 @@ const initialValues: Bodega = {
         "/api/bodegas", 
         "POST", 
         auth.usuario, 
-        auth.rol, 
-        values);
+        auth.rol,
+        values)  ;
         
       if (response.success) {
         toast.success("Bodega guardada exitosamente.");

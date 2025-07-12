@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-
 import Sidebar from "../components/sidebar";
 import { useAuth } from "../../controllers/hooks/use_auth";
 import { ResponseData, Ubicaciones } from "../../models";
@@ -19,27 +18,28 @@ const UbicacionesPanel = () => {
         useState<Ubicaciones | null>(null); // Ubicación en edición
 
     // Función para cargar los datos de ubicaciones
-    const loadData = async () => {
-        setLoading(true);
-        const response = await HttpClient(
-            "/api/ubicaciones",
-            "GET",
-            auth.usuario,
-            auth.rol
-        );
-        if (response.success) {
-            const users: Array<any> = response.data;
-            setTableData(users);
-        } else {
-            toast.warning(response.message);
-        }
-        setLoading(false);
-    };
+    const loadData = useCallback(async () => {
+    setLoading(true);
+    const response = await HttpClient(
+        "/api/ubicaciones",
+        "GET",
+        auth.usuario,
+        auth.rol
+    );
+    if (response.success) {
+        const users: Array<any> = response.data;
+        setTableData(users);
+    } else {
+        toast.warning(response.message);
+    }
+    setLoading(false);
+    }, [auth.usuario, auth.rol]);
 
-    // Ejecuta loadData al montar el componente
+
+// Ejecuta loadData al montar el componente
     useEffect(() => {
-        loadData();
-    }, []);
+    loadData();
+    }, [loadData]);
 
     // Muestra el modal
     const showModal = () => setModalVisible(true);

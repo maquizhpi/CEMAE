@@ -1,5 +1,5 @@
 import Router from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { useAuth } from "../../controllers/hooks/use_auth";
@@ -26,7 +26,7 @@ export const CalibracionPage = (props: Props) => {
   const [filteredData, setFilteredData] = useState<Array<Calibracion>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     const response = await HttpClient(
       "/api/calibracion",
@@ -37,11 +37,11 @@ export const CalibracionPage = (props: Props) => {
     const calibracion: Array<Calibracion> = response.data ?? [];
     setTableData(calibracion);
     setLoading(false);
-  };
-// eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const columns: ColumnData[] = [
     {

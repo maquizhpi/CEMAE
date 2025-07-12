@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import Sidebar from "../../components/sidebar";
 import { useAuth } from "../../../controllers/hooks/use_auth";
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {  Bodega,  Herramienta,} from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
 import * as XLSX from "xlsx";
@@ -18,7 +18,7 @@ export default function ImportarHerramientas() {
   const [loading, setLoading] = useState(false);
   const [bodegas, setBodegas] = useState<Bodega[]>([]);
 
-  const loadBodegas = async () => {
+  const loadBodegas = useCallback(async () => {
     const response = await HttpClient(
       "/api/bodegas",
       "GET",
@@ -26,11 +26,12 @@ export default function ImportarHerramientas() {
       auth.rol
     );
     setBodegas(response.data ?? []);
-  };
+  }, [auth.usuario, auth.rol]);
 
   useEffect(() => {
     loadBodegas();
-  }, []);
+  }, [loadBodegas]);
+
 
   // Maneja la carga del archivo Excel
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 import Router from "next/router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../controllers/hooks/use_auth";
 import HttpClient from "../../../controllers/utils/http_client";
@@ -16,36 +16,37 @@ const ReporteCalibracionIndividual = () => {
   const [registro, setRegistro] = useState<Calibracion | null>(null);
   const printRef = useRef(null);
 
-  const loadData = async () => {
-    if (Router.asPath !== Router.route) {
-      setLoading(true);
-      const registroId = Router.query.id as string;
+  const loadData = useCallback(async () => {
+  if (Router.asPath !== Router.route) {
+  setLoading(true);
+  const registroId = Router.query.id as string;
 
-      const response: ResponseData = await HttpClient(
-        `/api/calibracion/${registroId}`,
-        "GET",
-        auth.usuario,
-        auth.rol
-      );
+  const response: ResponseData = await HttpClient(
+    `/api/calibracion/${registroId}`,
+    "GET",
+    auth.usuario,
+    auth.rol
+  );
 
-      if (response.success) {
-        setRegistro(response.data);
-      } else {
-        toast.error("Registro no encontrado.");
-      }
-      setLoading(false);
-    } else {
-      setTimeout(loadData, 1000);
-    }
-  };
+  if (response.success) {
+    setRegistro(response.data);
+  } else {
+    toast.error("Registro no encontrado.");
+  }
+  setLoading(false);
+  } else {
+  setTimeout(loadData, 1000);
+  }
+  }, [auth]);
+
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: `Reporte_Calibracion_${registro?._id ?? "sin_id"}`,
+    documentTitle: `Reporte_Calibracion_${registro?.id ?? "sin_id"}`,  // se edita registro?._id ??
   });
 
   const herramienta = registro?.herramientas?.[0];

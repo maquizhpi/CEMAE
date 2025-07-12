@@ -1,153 +1,179 @@
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import LoadingContainer from "../../../components/loading_container";
-import { useAuth } from "../../../../controllers/hooks/use_auth";
-import { ResponseData, Herramienta, Bodega } from "../../../../models";
-import HttpClient from "../../../../controllers/utils/http_client";
-import TreeTable, { ColumnData } from "../../../components/tree_table";
-import HerramientaModal from "../../../components/modals/herramientaModal";
+import { Herramienta } from "../../../../models";
+import { Button } from "react-bootstrap";
 
+export interface Props {
+  visible: boolean;
+  close: () => Promise<void>;
+  initialData: Herramienta | null;
+  onDone: (tool: Herramienta) => Promise<void>;
+}
 
-const HerramientasPanel = () => {
-  const { auth } = useAuth();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [tableData, setTableData] = useState<Array<Herramienta>>([]);
-  const [editingTool, setEditingTool] = useState<Herramienta | null>(null);
-
-  const loadData = async () => {
-    setLoading(true);
-    const response: ResponseData = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
-
-    if (response.success) {
-      const bodegas: Array<Bodega> = response.data;
-      const herramientas: Herramienta[] = bodegas.flatMap((bodega) =>
-        bodega.herramientas.map((h) => ({ ...h, nombreBodega: bodega.nombreBodega, bodegaId: bodega.id }))
-      );
-      setTableData(herramientas);
-    } else {
-      toast.warning(response.message);
+const HerramientaModal = ({ visible, close, initialData, onDone }: Props) => {
+  const [formData, setFormData] = useState<Herramienta>(
+    initialData || {
+      _id: "",
+      nombre: "",
+      codigo: "",
+      descripcion: "",
+      serie: "",
+      modelo: "",
+      marca: "",
+      NParte: "",
+      ubicacion: "",
+      estado: "",
+      calibracion: "",
+      tipo: "",
+      cantidad: 1,
+      observacion: "",
+      imagen: "",
     }
-    setLoading(false);
-  };
+  );
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
-  const showModal = () => setModalVisible(true);
-  const hideModal = async () => {
-    if (editingTool != null) setEditingTool(null);
-    setModalVisible(false);
-    await loadData();
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const columns: ColumnData[] = [
-    {
-      dataField: "id",
-      caption: "N°",
-      cellRender: ({ rowIndex }) => rowIndex + 1,
-    },
-    {
-      dataField: "codigo",
-      caption: "Código",
-    },
-    {
-      dataField: "nombre",
-      caption: "Nombre",
-    },
-    {
-      dataField: "modelo",
-      caption: "Modelo",
-    },
-    {
-      dataField: "marca",
-      caption: "Marca",
-    },
-    {
-      dataField: "estado",
-      caption: "Estado",
-    },
-    {
-      dataField: "nombreBodega",
-      caption: "Bodega",
-    },
-  ];
-
-  const buttons = {
-    edit: (rowData: any) => {
-      setEditingTool(rowData);
-      showModal();
-    },
-    delete: async (rowData: any) => {
-      const bodegaResponse = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
-      if (bodegaResponse.success) {
-        const bodegas: Bodega[] = bodegaResponse.data;
-        const bodega = bodegas.find((b) => b.id === rowData.bodegaId);
-
-        if (!bodega) {
-          toast.error("Bodega no encontrada");
-          return;
-        }
-
-        const herramientasActualizadas = bodega.herramientas.filter((h) => h.id !== rowData._id);
-        const bodegaActualizada = { ...bodega, herramientas: herramientasActualizadas };
-
-        const response = await HttpClient("/api/bodegas", "PUT", auth.usuario, auth.rol, bodegaActualizada);
-
-        if (response.success) {
-          toast.success("Herramienta eliminada correctamente");
-          loadData();
-        } else {
-          toast.error("Error al eliminar la herramienta");
-        }
-      }
-    },
+  const handleSubmit = async () => {
+    await onDone(formData);
+    await close();
   };
+
+  if (!visible) return null;
 
   return (
-    <div style={{ padding: "40px 0" }}>
-      <button
-        className="text-center bg-transparent hover:bg-blue-600 text-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-        onClick={showModal}
-      >
-        Crear herramienta
-      </button>
-      <LoadingContainer visible={loading} miniVersion>
-        <TreeTable
-          dataSource={tableData}
-          columns={columns}
-          buttons={buttons}
-          searchPanel={true}
-          colors={{ headerBackground: "#F8F9F9", headerColor: "#466cf2" }}
-          paging
-          showNavigationButtons
-          showNavigationInfo
-          pageSize={10}
-          infoText={(actual, total, items) =>
-            `Página ${actual} de ${total} (${items} Herramientas)`
-          }
-        />
-      </LoadingContainer>
-      <HerramientaModal
-        visible={modalVisible}
-        close={hideModal}
-        initialData={editingTool}
-        onDone={async (tool: Herramienta) => {
-          const response: ResponseData =
-            editingTool == null
-              ? await HttpClient("/api/herramientas", "POST", auth.usuario, auth.rol, tool)
-              : await HttpClient("/api/herramientas", "PUT", auth.usuario, auth.rol, tool);
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl">
+        <h2 className="text-xl font-bold text-blue-600 mb-4">
+          {initialData ? "Editar Herramienta" : "Nueva Herramienta"}
+        </h2>
 
-          if (response.success) {
-            toast.success(editingTool == null ? "Herramienta creada!" : "Herramienta actualizada!");
-          } else {
-            toast.warning(response.message);
-          }
-        }}
-      />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input
+            type="text"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            placeholder="Nombre"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="codigo"
+            value={formData.codigo}
+            onChange={handleChange}
+            placeholder="Código"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleChange}
+            placeholder="Descripción"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="serie"
+            value={formData.serie}
+            onChange={handleChange}
+            placeholder="Serie"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="modelo"
+            value={formData.modelo}
+            onChange={handleChange}
+            placeholder="Modelo"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="marca"
+            value={formData.marca}
+            onChange={handleChange}
+            placeholder="Marca"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="NParte"
+            value={formData.NParte}
+            onChange={handleChange}
+            placeholder="N° Parte"
+            className="p-2 border rounded"
+          />
+          <input
+            type="text"
+            name="ubicacion"
+            value={formData.ubicacion}
+            onChange={handleChange}
+            placeholder="Ubicación"
+            className="p-2 border rounded"
+          />
+          <select
+            name="estado"
+            value={formData.estado}
+            onChange={handleChange}
+            className="p-2 border rounded"
+          >
+            <option value="">Seleccione Estado</option>
+            <option value="Disponible">Disponible</option>
+            <option value="En uso">En uso</option>
+          </select>
+          <select
+            name="calibracion"
+            value={formData.calibracion}
+            onChange={handleChange}
+            className="p-2 border rounded"
+          >
+            <option value="">Seleccione Calibración</option>
+            <option value="Calibrada">Calibrada</option>
+            <option value="No calibrada">No calibrada</option>
+            <option value="No necesita">No necesita</option>
+          </select>
+          <select
+            name="tipo"
+            value={formData.tipo}
+            onChange={handleChange}
+            className="p-2 border rounded"
+          >
+            <option value="">Seleccione Tipo</option>
+            <option value="Presicion">Presición</option>
+            <option value="Manual">Manual</option>
+            <option value="Especial">Especial</option>
+            <option value="Equipo y maquinas">Equipo y Máquinas</option>
+          </select>
+          <input
+            type="text"
+            name="observacion"
+            value={formData.observacion}
+            onChange={handleChange}
+            placeholder="Observación"
+            className="p-2 border rounded"
+          />
+        </div>
+
+        <div className="flex justify-between space-x-4">
+          <Button onClick={handleSubmit} className="bg-blue-600 text-white w-full">
+            {initialData ? "Actualizar" : "Guardar"}
+          </Button>
+          <Button onClick={close} variant="secondary" className="w-full">
+            Cancelar
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default HerramientasPanel;
+export default HerramientaModal;

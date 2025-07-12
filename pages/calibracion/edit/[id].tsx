@@ -7,7 +7,7 @@ import Router from "next/router";
 import { toast } from "react-toastify";
 import { Calibracion, ResponseData } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../../controllers/firebase/config";
 
@@ -17,7 +17,7 @@ export const EditarCalibracion = () => {
   const [initialValues, setInitialValues] = useState<Calibracion | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     const solicitudeId = Router.query.id as string;
     const response = await HttpClient(
@@ -26,15 +26,14 @@ export const EditarCalibracion = () => {
       auth.usuario,
       auth.rol
     );
-
     setInitialValues(response.data);
     setLoading(false);
-  };
+  }, [auth]); 
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
+
 
   const formik = useFormik({
     enableReinitialize: true,

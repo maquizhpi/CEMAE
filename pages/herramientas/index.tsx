@@ -3,7 +3,7 @@ import { Button, Form } from "react-bootstrap";
 import Sidebar from "../components/sidebar";
 import { toast } from "react-toastify";
 import { useAuth } from "../../controllers/hooks/use_auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import HttpClient from "../../controllers/utils/http_client";
 import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
@@ -21,7 +21,7 @@ export const HerramientasPage = () => {
   const [filteredHerramientas, setFilteredHerramientas] = useState<Array<Herramienta>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const loadBodegas = async () => {
+  const loadBodegas = useCallback(async () => {
     setLoading(true);
     const response = await HttpClient(
       "/api/bodegas",
@@ -56,11 +56,12 @@ export const HerramientasPage = () => {
     }
 
     setLoading(false);
-  };
+  }, [auth.rol, auth.usuario, auth.identificacion]);
 
   useEffect(() => {
     loadBodegas();
-  }, []);
+  }, [loadBodegas]);
+
 
   useEffect(() => {
     if (selectedBodega) {

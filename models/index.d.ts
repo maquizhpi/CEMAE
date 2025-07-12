@@ -66,8 +66,9 @@ export type ModelosHerramienta = {
 
 // Modelo para los productos
 export type Herramienta = {
-  nombreBodega: ReactNode;
+  nombreBodega?: ReactNode;
   id?: string;
+  _id?: string;
   nombre: string;
   codigo: string;
   descripcion: string;
@@ -107,9 +108,6 @@ export type Bodega = {
     telefono: string;
   };
   nombreBodega: string;
-  ubicacionesBodega: {
-    nombre: string;
-  }
 };
 
 // Modelo para las solicitudes

@@ -7,7 +7,7 @@ import Router from "next/router";
 import { toast } from "react-toastify";
 import { Bodega, Calibracion, Herramienta } from "../../../models";
 import HttpClient from "../../../controllers/utils/http_client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import FormatedDate from "../../../controllers/utils/formated_date";
 import Select from "react-select";
 
@@ -19,17 +19,10 @@ export const RegistroCreate = () => {
   const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
   const [selectedTool, setSelectedTool] = useState<any>(null);
 
-  // Cargar bodegas al inicio
-  const loadBodegas = async () => {
+  // Cargar bodegas del usuario
+  const loadBodegas = useCallback(async () => {
     setLoading(true);
-
-    const response = await HttpClient(
-      "/api/bodegas",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
-
+    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegas = response.data ?? [];
 
     const bodegasFiltradas = auth.rol === 0
@@ -41,13 +34,17 @@ export const RegistroCreate = () => {
 
     setBodegasDelUsuario(bodegasFiltradas);
     if (bodegasFiltradas.length > 0) {
-      setBodegaSeleccionada(bodegasFiltradas[0].id); // primera seleccionada
+      setBodegaSeleccionada(bodegasFiltradas[0].id); 
     }
-
     setLoading(false);
-  };
+  }, [auth]);
 
-  // Cuando cambia la bodega → cargar herramientas de esa bodega
+  useEffect(() => {
+    loadBodegas();
+  }, [loadBodegas]); 
+
+  
+  // Cargar herramientas de la bodega seleccionada
   useEffect(() => {
     if (!bodegaSeleccionada) return;
 
@@ -67,12 +64,6 @@ export const RegistroCreate = () => {
 
     setHerramientas(herramientasDisponibles);
   }, [bodegaSeleccionada, bodegasDelUsuario]);
-
-
- // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    loadBodegas();  
-  }, []);
 
   const initialValues: Calibracion = {
     number: 0,

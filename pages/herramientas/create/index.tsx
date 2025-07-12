@@ -3,7 +3,7 @@ import { Button } from "react-bootstrap";
 import Sidebar from "../../components/sidebar";
 import { useAuth } from "../../../controllers/hooks/use_auth";
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Bodega,
   Herramienta,
@@ -44,18 +44,12 @@ export const RegistroHerramientaCreate = () => {
   const [modelos, setModelos] = useState<ModelosHerramienta[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicaciones[]>([]);
 
-  const loadBodegas = async () => {
+  const loadBodegas = useCallback(async () => {
     setLoading(true);
-    const response = await HttpClient(
-      "/api/bodegas",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
+    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegas = response.data ?? [];
     const bodegasUsuario = bodegas.filter(
-      (bodega: Bodega) =>
-        bodega.bodegueroAsignado?.identificacion === auth.identificacion
+      (bodega: Bodega) => bodega.bodegueroAsignado?.identificacion === auth.identificacion
     );
 
     setBodegasDelUsuario(bodegasUsuario);
@@ -65,33 +59,24 @@ export const RegistroHerramientaCreate = () => {
     }
 
     setLoading(false);
-  };
+  }, [auth, bodegaSeleccionada]);
 
-  const loadModelos = async () => {
-    const response = await HttpClient(
-      "/api/modelos",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
+  const loadModelos = useCallback(async () => {
+    const response = await HttpClient("/api/modelos", "GET", auth.usuario, auth.rol);
     setModelos(response.data ?? []);
-  };
+  }, [auth]);
 
-  const loadUbicaciones = async () => {
-    const response = await HttpClient(
-      "/api/ubicaciones",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
+  const loadUbicaciones = useCallback(async () => {
+    const response = await HttpClient("/api/ubicaciones", "GET", auth.usuario, auth.rol);
     setUbicaciones(response.data ?? []);
-  };
- //// eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth]);
+
   useEffect(() => {
     loadBodegas();
     loadModelos();
     loadUbicaciones();
-  }, []);
+  }, [loadBodegas, loadModelos, loadUbicaciones]);
+
 
   const handleSaveTool = async () => {
     if (!toolTemp.nombre || !toolTemp.codigo) {
@@ -154,7 +139,7 @@ export const RegistroHerramientaCreate = () => {
 
     if (response.success) {
       toast.success("Herramienta registrada correctamente!");
-      setToolTemp({
+      setToolTemp({    
         nombre: "",
         codigo: "",
         descripcion: "",
@@ -170,6 +155,7 @@ export const RegistroHerramientaCreate = () => {
         observacion: "",
         imagen: "",
       });
+
       setImage(null);
     } else {
       toast.error("Error al guardar la herramienta.");
