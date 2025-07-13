@@ -11,19 +11,10 @@ import { Solicitude } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolicitudes";
 
-type Props = {
-  dates: Array<string>;
-  sm?: number;
-  md?: number;
-  lg?: number;
-  xl?: number;
-  inTabs?: boolean;
-};
-
-export const SolicitudePage = (props: Props) => {
+export const SolicitudePage = () => {
   const { auth } = useAuth();
-  const [tableData, setTableData] = useState<Array<any>>([]);
-  const [filteredData, setFilteredData] = useState<Array<any>>([]);
+  const [tableData, setTableData] = useState<Array<Solicitude>>([]);
+  const [filteredData, setFilteredData] = useState<Array<Solicitude>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const loadData = useCallback(async () => {
@@ -41,18 +32,23 @@ export const SolicitudePage = (props: Props) => {
 
     const solicitudesNormalizadas = solicitudes.map((s) => ({
       ...s,
+      id: s._id ?? s.id, // 🔧 Asegura que cada solicitud tenga 'id'
+      herramientas: s.herramientas || [],
       receptorNombre: s.receptor?.nombre || "N/A",
       bodegueroNombre: s.bodeguero?.nombre || "N/A",
     }));
 
+    console.log("✅ Datos normalizados:", solicitudesNormalizadas);
+
     setTableData(solicitudesNormalizadas);
+    setFilteredData(solicitudesNormalizadas);
     setLoading(false);
   }, [auth.usuario, auth.rol, auth.nombre]);
+
 
   useEffect(() => {
     loadData();
   }, [loadData]);
-
 
   const columns: ColumnData[] = [
     {
@@ -60,7 +56,6 @@ export const SolicitudePage = (props: Props) => {
       caption: "Nº Solicitud",
       alignment: "left",
       cssClass: "bold hidden md:table-cell",
-      minWidth: 30,
       width: 80,
     },
     {
@@ -68,7 +63,6 @@ export const SolicitudePage = (props: Props) => {
       caption: "Receptor",
       alignment: "left",
       cssClass: "bold table-cell",
-      minWidth: 80,
     },
     {
       dataField: "herramientas",
@@ -77,7 +71,7 @@ export const SolicitudePage = (props: Props) => {
       cssClass: "bold hidden md:table-cell",
       cellRender: (cellData: any) => {
         const herramientas = cellData.value ?? [];
-        if (herramientas.length === 0) return "sin herramientas";
+        if (herramientas.length === 0) return "Sin herramientas";
         return (
           <ul>
             {herramientas.map((h: any, index: number) => (
@@ -91,8 +85,7 @@ export const SolicitudePage = (props: Props) => {
       dataField: "estado",
       caption: "Estado",
       alignment: "left",
-      cssClass: "bold ",
-      minWidth: 80,
+      cssClass: "bold",
       cellRender: (cellData: any) => {
         const estado = cellData.value?.toLowerCase();
         let colorClass = "";
@@ -113,42 +106,37 @@ export const SolicitudePage = (props: Props) => {
   const buttons = {
     download: (rowData: Solicitude) =>
       CheckPermissions(auth, [0, 1, 2])
-        ? Router.push({
-            pathname: "/solicitudes/reporte/" + (rowData.id as string),
-          })
+        ? Router.push({ pathname: "/solicitudes/reporte/" + rowData.id })
         : toast.error("No puedes acceder"),
     edit: (rowData: Solicitude) => {
       if (rowData.estado?.toLowerCase() === "entregado") {
-        toast.error("No puedes editar una solicitud con herramientas entregadas");
+        toast.error("No puedes editar una solicitud entregada");
         return;
       }
       if (!CheckPermissions(auth, [0, 1])) {
         toast.error("No tienes permisos para editar esta solicitud");
         return;
       }
-      Router.push({ pathname: "/solicitudes/edit/" + (rowData.id as string) });
+      Router.push({ pathname: "/solicitudes/edit/" + rowData.id });
     },
-        delete: (rowData: Solicitude) => {
-          if (!CheckPermissions(auth, [0, 1])) {
-            toast.error("No tienes permisos para eliminar este registro");
-            return;
-          }
-          if (confirm("¿Estás seguro de que deseas eliminar este registro de solicitud?")) {
-            setLoading(true);
-            HttpClient(`/api/solicitudes/${rowData.id}`, 
-              "DELETE", 
-              auth.usuario, 
-              auth.rol)
-              .then(() => {
-                toast.success("Registro de calibración eliminado correctamente");
-                loadData();
-              })
-              .catch(() => {
-                toast.error("Error al eliminar el registro de calibración");
-                setLoading(false);
-              });
-          }
-        },
+    delete: (rowData: Solicitude) => {
+      if (!CheckPermissions(auth, [0, 1])) {
+        toast.error("No tienes permisos para eliminar esta solicitud");
+        return;
+      }
+      if (confirm("¿Deseas eliminar esta solicitud?")) {
+        setLoading(true);
+        HttpClient(`/api/solicitudes/${rowData.id}`, "DELETE", auth.usuario, auth.rol)
+          .then(() => {
+            toast.success("Solicitud eliminada correctamente");
+            loadData();
+          })
+          .catch(() => {
+            toast.error("Error al eliminar solicitud");
+            setLoading(false);
+          });
+      }
+    },
   };
 
   return (
@@ -164,18 +152,17 @@ export const SolicitudePage = (props: Props) => {
 
           {CheckPermissions(auth, [1]) && (
             <Button
-              className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
+              className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3"
               onClick={() => Router.push({ pathname: "/solicitudes/create" })}
             >
               Crear registro
             </Button>
           )}
-      
 
           <div className="w-full overflow-x-auto px-2">
             <TreeTable
               keyExpr="id"
-              dataSource={tableData}
+              dataSource={filteredData}
               columns={columns}
               searchPanel={true}
               buttons={buttons}
@@ -195,7 +182,10 @@ export const SolicitudePage = (props: Props) => {
             <Button
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full"
               onClick={() =>
-                generateReporteSolicitudes("REPORTE DE SOLICITUDES FILTRADAS", filteredData.length > 0 ? filteredData : tableData)
+                generateReporteSolicitudes(
+                  "REPORTE DE SOLICITUDES FILTRADAS",
+                  filteredData.length > 0 ? filteredData : tableData
+                )
               }
             >
               Exportar reporte PDF

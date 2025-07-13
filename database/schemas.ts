@@ -172,7 +172,7 @@ const SolicitudeSchema: Schema<SolicitudeDocument> = new Schema(
       telefono: { type: String },
       correo: { type: String },
     },
-    herramientas: { type: [Object] }, // o reemplaza con [HerramientaSchema] si lo tienes importado
+    herramientas: [HerramientaSchema], 
     receptor: {
       nombre: { type: String },
       identificacion: { type: String },
@@ -191,7 +191,6 @@ SolicitudeSchema.virtual("id").get(function (this: { _id: any }) {
 
 SolicitudeSchema.set("toJSON", { virtuals: true });
 
-// ✅ AQUÍ ESTÁ LA CORRECCIÓN DEL ERROR
 export const SolicitudeModel: Model<SolicitudeDocument> =
   mongoose.models.Solicitudes ||
   mongoose.model<SolicitudeDocument>("Solicitudes", SolicitudeSchema);
