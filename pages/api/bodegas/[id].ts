@@ -9,6 +9,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    // connect to the database
     await dbConnect();
 
     switch (req.method) {
@@ -16,17 +17,21 @@ export default async function handler(
         return await read(req, res);
       case "DELETE":
         return await remove(req, res);       
-      default:     
-        return res.status(405).json({
-          message: "Método no permitido",
-          success: false,
-        });
+      default:
+        throw new Error("Invalid method");
     }
   } catch (error) {
     console.error(error);
+    // return the error
     return res.status(500).json({
       message: new Error(error).message,
       success: false,
     });
   }
 }
+
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};

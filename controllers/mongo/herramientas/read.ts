@@ -9,11 +9,11 @@ export default async function handler(
   const id = req.query.id as string;
 
   // fetch the posts
-  const herramienta = await HerramientaModel.findById(id);
+  const modelo = await HerramientaModel.findById(id);
 
   return res.status(200).json({
-    message: "una herramienta",
-    data: herramienta as Herramienta,
+    message: "una marca",
+    data: modelo as Herramienta,
     success: true,
   });
 }

@@ -9,7 +9,7 @@ import { Calibracion } from "../../models";
 import Sidebar from "../components/sidebar";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import dayjs from "dayjs";
-import { generateReporteCalibraciones } from "./reporte/reporteCalibraciones";
+import { generateReporteCalibraciones } from "../../controllers/utils/reporteCalibraciones";
 
 type Props = {
   dates: Array<string>;

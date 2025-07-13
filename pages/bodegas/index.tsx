@@ -8,13 +8,12 @@ import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import Router from "next/router";
-
+import { generateReporteBodegas } from "../../controllers/utils/reporteBodegas";
 
 export const BodegasPage = () => {
   const { auth } = useAuth();
-  const [tableData, setTableData] = useState<Array<Bodega>>([]);
+  const [tableData, setTableData] = useState<Array<Bodega & { creadorNombre: string; bodegueroAsignadoNombre: string }>>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [itemToDelete, setItemToDelete] = useState<string>(null);
   const [filterText, setFilterText] = useState<string>("");
 
 
@@ -75,33 +74,13 @@ export const BodegasPage = () => {
     },
   ];
 
-  const handleDelete = (rowData: Bodega) => {
-    if (itemToDelete === rowData.id) {
-      HttpClient(
-        `/api/bodegas/${rowData.id}`,
-        "DELETE",
-        auth.usuario,
-        auth.rol
-      ).then((response) => {
-        if (response.success) {
-          toast.success("Bodega eliminada correctamente");
-          loadData();
-          setItemToDelete(null);
-        } else {
-          toast.error("Error al eliminar la bodega");
-        }
-      });
-    } else {
-      setItemToDelete(rowData.id);
-    }
-  };
-
   const exportToPDF = () => {
-    const bodegasFiltradas = tableData.filter((b) =>
-      b.nombreBodega?.toLowerCase().includes(filterText.toLowerCase()) ||
-      b.bodegueroAsignado?.toLowerCase().includes(filterText.toLowerCase()) ||
-      b.creadorNombre?.toLowerCase().includes(filterText.toLowerCase())
-    );
+  const bodegasFiltradas = tableData.filter((b) =>
+    b.nombreBodega?.toLowerCase().includes(filterText.toLowerCase()) ||
+    b.bodegueroAsignado?.nombre?.toLowerCase().includes(filterText.toLowerCase()) ||
+    b.creadorNombre?.toLowerCase().includes(filterText.toLowerCase())
+  );
+
     generateReporteBodegas("REPORTE DE BODEGAS", bodegasFiltradas);
   };
 
@@ -112,11 +91,21 @@ export const BodegasPage = () => {
         : toast.error("No puedes acceder"),
     
     delete: (rowData: Bodega) => {
-      if (CheckPermissions(auth, [0, 1])) {
-        setItemToDelete(rowData.id as string);
-        handleDelete(rowData);
-      } else {
-        toast.error("No puedes eliminar bodegas");
+      if (!CheckPermissions(auth, [0, 1])) {
+        toast.error("No tienes permisos para eliminar este registro");
+        return;
+      }
+      if (confirm("¿Estás seguro de que deseas eliminar esta bodega?")) {
+        setLoading(true);
+        HttpClient(`/api/bodegas/${rowData.id}`, "DELETE", auth.usuario, auth.rol)
+          .then(() => {
+            toast.success("Registro de bodega eliminado correctamente");
+            loadData();
+          })
+          .catch(() => {
+            toast.error("Error al eliminar el registro de calibración");
+            setLoading(false);
+          });
       }
     },
     edit: (rowData: Bodega) => {
@@ -186,11 +175,3 @@ export const BodegasPage = () => {
 };
 
 export default BodegasPage;
-function generateReporteBodegas(arg0: string, bodegasFiltradas: Bodega[]) {
-  throw new Error("Function not implemented.");
-}
-
-function handleDelete(rowData: Bodega) {
-  throw new Error("Function not implemented.");
-}
-

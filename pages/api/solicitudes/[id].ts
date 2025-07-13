@@ -20,7 +20,7 @@ export default async function handler(
       case "PUT":
         return await update(req, res);
       default:
-        throw new Error("Invalid method");
+        throw new Error("Método no permitido");
     }
   } catch (error) {
     console.error(error);

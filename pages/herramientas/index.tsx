@@ -9,7 +9,7 @@ import { Bodega, Herramienta } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import Router from "next/router";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
-import { generateReporteHerramienta } from "../bodegas/reporte/reporteHerramientas";
+import { generateReporteHerramienta } from "../../controllers/utils/reporteHerramientas";
 
 export const HerramientasPage = () => {
   const { auth } = useAuth();

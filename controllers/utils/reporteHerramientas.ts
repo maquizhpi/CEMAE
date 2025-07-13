@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Herramienta } from "../../../models";
+import { Herramienta } from "../../models";
 
 export const generateReporteHerramienta = (title: string, herramientas: Herramienta[]) => {
   const doc = new jsPDF();

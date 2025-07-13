@@ -8,7 +8,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   // fetch the posts
-  const bodegas = await BodegaModel.find({})
+  const bodegas = await BodegaModel.find({});
 
   return res.status(200).json({
     message: "todas las bodegass",

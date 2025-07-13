@@ -69,69 +69,69 @@ export type Herramienta = {
   nombreBodega?: ReactNode;
   id?: string;
   _id?: string;
-  nombre: string;
-  codigo: string;
-  descripcion: string;
-  serie: string;
-  modelo: string;
-  marca: string;
-  NParte: string;
-  ubicacion: string;
-  estado: string;
-  imagen: string;
-  tipo: string;
-  cantidad: number;
-  observacion: string;
-  calibracion: string;
+  nombre?: string;
+  codigo?: string;
+  descripcion?: string;
+  serie?: string;
+  modelo?: string;
+  marca?: string;
+  NParte?: string;
+  ubicacion?: string;
+  estado?: string;
+  imagen?: string;
+  tipo?: string;
+  cantidad?: number;
+  observacion?: string;
+  calibracion?: string;
   file?: File | CloudImage;
 };
 
 // Modelo para las bodegas
-export type Bodega = {
-  creadorNombre: any;
-  _id: string;
+export type Bodega = {  
+  _id?: string;
   id?: string;
-  number: number;
-  ubicaciones: Array<Ubicaciones>;
-  herramientas: Array<Herramienta>;
-  fechaDeCreacion: string;
-  creador: {
-    nombre: string;
-    identificacion: string;
-    correo: string;
-    telefono: string;
+  number?: number;
+  ubicaciones?: Array<Ubicaciones>;
+  herramientas?: Array<Herramienta>;
+  fechaDeCreacion?: string;
+  creador?: {
+    nombre?: string;
+    identificacion?: string;
+    correo: string?;
+    telefono: string?;
   };
-  bodegueroAsignado: {
-    nombre: string;
-    identificacion: string;
-    correo: string;
-    telefono: string;
+  bodegueroAsignado?: {
+    nombre?: string;
+    identificacion?: string;
+    correo?: string;
+    telefono?: string;
   };
-  nombreBodega: string;
+  nombreBodega?: string;
+  ubicacionesBodega?: string;
 };
 
 // Modelo para las solicitudes
 export type Solicitude = {
   _id?: string;
   id?: string;
-  number: number;
-  herramientas: Array<Herramienta>;
-  fecha: string;
-  bodeguero:{
-    nombre: string;
-    identificacion: string;
-    correo: string;
-    telefono: string;
+  number?: number;
+  herramientas?: Array<Herramienta>;
+  fecha?: string;
+  bodeguero?:{
+    nombre?: string;
+    identificacion?: string;
+    correo?: string;
+    telefono?: string;
   }
-  receptor: {    
-    nombre: string;
-    identificacion: string;
-    correo: string;
-    telefono: string;
+  receptor?: {    
+    nombre?: string;
+    identificacion?: string;
+    correo?: string;
+    telefono?: string;
   }
-  estado: string;
-  bodega: string;
-  observacion: string;
+  estado?: string;
+  bodega?: string;
+  observacion?: string;
 };
 
 // Modelo para las calibraciones

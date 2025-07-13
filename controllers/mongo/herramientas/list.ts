@@ -1,18 +1,23 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import dbConnect from "../../../database/connect/mongo";
-import { HerramientaModel } from "../../../database/schemas";
-import { Herramienta } from "../../../models";
+import { BodegaModel } from "../../../database/schemas";
+import { Bodega } from "../../../models";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // fetch the posts
-  const bodegas = await HerramientaModel.find({})
+  try {
+    const bodegas = await BodegaModel.find({}).lean();
 
-  return res.status(200).json({
-    message: "todas las bodegass",
-    data: bodegas as Array<Herramienta>,
-    success: true,
-  });
+    return res.status(200).json({
+      message: "todas las bodegass",
+      data: bodegas as Bodega[],
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error al obtener bodegas",
+      success: false,
+    });
+  }
 }

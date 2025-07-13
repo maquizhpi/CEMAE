@@ -9,7 +9,7 @@ import { useEffect, useState, useCallback } from "react";
 import HttpClient from "../../controllers/utils/http_client";
 import { Solicitude } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
-import { generateReporteSolicitudes } from "./reporte/reporteSolicitudes";
+import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolicitudes";
 
 type Props = {
   dates: Array<string>;

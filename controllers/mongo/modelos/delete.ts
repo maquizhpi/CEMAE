@@ -2,7 +2,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { ModeloHerramientaModel, AuditoryModel } from "../../../database/schemas";
 import FormatedDate from "../../utils/formated_date";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest, 
+  res: NextApiResponse) 
+  {
   try {
     const id = req.query.id as string;
     const userName = req.headers.username as string;

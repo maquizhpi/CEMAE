@@ -1,44 +1,31 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-    AuditoryModel,
-    BackupBodegaModel,
-    BodegaModel,
-} from "../../../database/schemas";
+import { AuditoryModel, BodegaModel} from "../../../database/schemas";
 import FormatedDate from "../../utils/formated_date";
 
 export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
+  req: NextApiRequest,
+  res: NextApiResponse
 ) {
-    const { _id } = req.body; 
-    const userName = req.headers.username as string;
+  const id = req.query.id as string;
+  const userName = req.headers.username as string;
+  const resp = await BodegaModel.findByIdAndRemove(id);
+  //{ acknowledged: true, deletedCount: 1 }
 
-    // Buscar la bodega
-    const bodega = await BodegaModel.findById(_id);
-    if (!bodega) {
-        return res.status(404).json({
-            message: "Bodega no encontrada",
-            success: false,
-        });
-    }
+  const auditory = new AuditoryModel({
+    date: FormatedDate(),
+    user: userName,
+    action: "Elimino de una bodega: "+ resp.number,
+  });
+  await auditory.save();
 
-    // Hacer backup antes de eliminar
-    const backup = new BackupBodegaModel({ bodega: bodega._id });
-    await backup.save();
-
-    // Eliminar la bodega
-    await BodegaModel.deleteOne({ _id });
-
-    // Registrar en auditoría
-    const auditory = new AuditoryModel({
-        date: FormatedDate(),
-        user: userName,
-        action: "Eliminó la bodega: " + bodega.number,
-    });
-    await auditory.save();
-
+  if (resp)
     return res.status(200).json({
-        message: "Bodega eliminada",
-        success: true,
+      message: "Eliminado!",
+      success: true,
     });
+
+  return res.status(500).json({
+    message: "Error inesperado",
+    success: false,
+  });
 }

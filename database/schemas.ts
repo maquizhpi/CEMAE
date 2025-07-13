@@ -1,4 +1,4 @@
-import mongoose, { mongo, Schema } from "mongoose";
+import mongoose, { mongo, Schema, Model } from "mongoose";
 import {
   Auditory,
   Backup,
@@ -92,8 +92,10 @@ export const ModeloHerramientaModel =
   mongoose.model("ModeloHerramienta", ModeloHerramientaSchema);
 
 //////////////////////Modelo para herramientas//////////////////////////
-const HerramientaSchema = new mongoose.Schema<Herramienta>(
-  {    
+export interface HerramientaDocument extends Herramienta, Document {}
+
+const HerramientaSchema = new Schema<HerramientaDocument>(
+  {
     nombre: { type: String },
     codigo: { type: String },
     descripcion: { type: String },
@@ -112,23 +114,19 @@ const HerramientaSchema = new mongoose.Schema<Herramienta>(
   { timestamps: true }
 );
 
-// Duplicate the ID field.
 HerramientaSchema.virtual("id").get(function () {
-  return typeof this._id === "object" && this._id.toHexString
-    ? this._id.toHexString()
-    : this._id;
+  return this._id?.toString?.() ?? this._id;
 });
 
-// Ensure virtual fields are serialised.
-HerramientaSchema.set("toJSON", {
-  virtuals: true,
-});
+HerramientaSchema.set("toJSON", { virtuals: true });
 
-export const HerramientaModel =
-  mongoose.models.herramienta || mongoose.model("herramienta", HerramientaSchema);
+export const HerramientaModel: Model<HerramientaDocument> =
+  mongoose.models.herramienta ||
+  mongoose.model<HerramientaDocument>("herramienta", HerramientaSchema);
 
 //////////////////////Modelo para los bodegas//////////////////////////
-const BodegaSchema = new mongoose.Schema<Bodega>(
+export interface BodegaDocument extends Bodega, Document {}
+const BodegaSchema = new Schema<BodegaDocument>(
   {
     number: { type: Number },
     fechaDeCreacion: { type: String },
@@ -147,24 +145,24 @@ const BodegaSchema = new mongoose.Schema<Bodega>(
     nombreBodega: { type: String },
     ubicaciones: { type: [UbicacionesSchema] },
     herramientas: { type: [HerramientaSchema] },
-    ubicacionesBodega: {type: String },
+    ubicacionesBodega: { type: String },
   },
   { timestamps: true }
 );
-// Duplicate the ID field.
-BodegaSchema.virtual("id").get(function () {
-  return this._id.toHexString();
-});
-// Ensure virtual fields are serialised.
-BodegaSchema.set("toJSON", {
-  virtuals: true,
-});
-export const BodegaModel =
-  mongoose.models.Bodegas || mongoose.model("Bodegas", BodegaSchema);
 
+BodegaSchema.virtual("id").get(function () {
+  return this._id?.toString?.() ?? this._id;
+});
+
+BodegaSchema.set("toJSON", { virtuals: true });
+
+export const BodegaModel: Model<BodegaDocument> =
+  mongoose.models.Bodegas || mongoose.model<BodegaDocument>("Bodegas", BodegaSchema);
 
 // //////////////Modelo para las solicitudes//////////////////
-const SolicitudeSchema = new mongoose.Schema<Solicitude>(
+export interface SolicitudeDocument extends Solicitude, Document {}
+
+const SolicitudeSchema: Schema<SolicitudeDocument> = new Schema(
   {
     number: { type: Number },
     fecha: { type: String },
@@ -174,7 +172,7 @@ const SolicitudeSchema = new mongoose.Schema<Solicitude>(
       telefono: { type: String },
       correo: { type: String },
     },
-    herramientas: { type: [HerramientaSchema] },
+    herramientas: { type: [Object] }, // o reemplaza con [HerramientaSchema] si lo tienes importado
     receptor: {
       nombre: { type: String },
       identificacion: { type: String },
@@ -187,17 +185,16 @@ const SolicitudeSchema = new mongoose.Schema<Solicitude>(
   { timestamps: true }
 );
 
-SolicitudeSchema.virtual("id").get(function () {
-  return this._id.toHexString();
+SolicitudeSchema.virtual("id").get(function (this: { _id: any }) {
+  return this._id?.toString?.() ?? this._id;
 });
 
-SolicitudeSchema.set("toJSON", {
-  virtuals: true,
-});
+SolicitudeSchema.set("toJSON", { virtuals: true });
 
-export const SolicitudeModel =
-  mongoose.models.Solicitudes || mongoose.model("Solicitudes", SolicitudeSchema);
-
+// ✅ AQUÍ ESTÁ LA CORRECCIÓN DEL ERROR
+export const SolicitudeModel: Model<SolicitudeDocument> =
+  mongoose.models.Solicitudes ||
+  mongoose.model<SolicitudeDocument>("Solicitudes", SolicitudeSchema);
 
 //////////////////////Modelo para calibracion//////////////////////////
 const CalibracionSchema = new mongoose.Schema<Calibracion>(

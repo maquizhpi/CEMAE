@@ -3,7 +3,10 @@ import read from "../../../controllers/mongo/modelos/read";
 import remove from "../../../controllers/mongo/modelos/delete";
 import dbConnect from "../../../database/connect/mongo";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest, 
+  res: NextApiResponse
+) {
   try {
     await dbConnect();
 

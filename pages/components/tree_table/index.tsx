@@ -9,7 +9,6 @@ import TreeList, {
   Paging,
   Pager,
   Selection,
-  ContentReadyEvent,
 } from "devextreme-react/tree-list";
 import { useEffect, useState } from "react";
 import { loadMessages } from "devextreme/localization";
