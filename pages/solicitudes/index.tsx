@@ -33,6 +33,7 @@ const SolicitudePage = () => {
 
       const normalizadas = solicitudes.map((s) => ({
         ...s,
+        id: s._id, 
         herramientas: s.herramientas ?? [],
         receptorNombre: s.receptor?.nombre ?? "N/A",
         bodegueroNombre: s.bodeguero?.nombre ?? "N/A",
@@ -40,7 +41,7 @@ const SolicitudePage = () => {
 
       setTableData(normalizadas);
     } catch (error) {
-      console.error("❌ Error cargando solicitudes:", error);
+      console.error("Error cargando solicitudes:", error);
       toast.error("No se pudieron cargar las solicitudes.");
     } finally {
       setLoading(false);
