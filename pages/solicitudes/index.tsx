@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Button } from "react-bootstrap";
+import { Button, Spinner } from "react-bootstrap";
 import Sidebar from "../components/sidebar";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import Router from "next/router";
@@ -11,40 +11,41 @@ import { Solicitude } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolicitudes";
 
-export const SolicitudePage = () => {
+const SolicitudePage = () => {
   const { auth } = useAuth();
-  const [tableData, setTableData] = useState<Array<Solicitude>>([]);
-  const [filteredData, setFilteredData] = useState<Array<Solicitude>>([]);
+  const [tableData, setTableData] = useState<Solicitude[]>([]);
+  const [filteredData, setFilteredData] = useState<Solicitude[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const response = await HttpClient("/api/solicitudes", "GET", auth.usuario, auth.rol);
-    let solicitudes: Array<Solicitude> = response.data ?? [];
+    try {
+      const response = await HttpClient("/api/solicitudes", "GET", auth.usuario, auth.rol);
+      let solicitudes: Solicitude[] = response.data ?? [];
 
-    if (auth.rol !== 0) {
-      solicitudes = solicitudes.filter(
-        (s) =>
-          s.bodeguero?.nombre?.toLowerCase() === auth.nombre.toLowerCase() ||
-          s.receptor?.nombre?.toLowerCase() === auth.nombre.toLowerCase()
-      );
+      if (auth.rol !== 0) {
+        solicitudes = solicitudes.filter(
+          (s) =>
+            s.bodeguero?.nombre?.toLowerCase() === auth.nombre?.toLowerCase() ||
+            s.receptor?.nombre?.toLowerCase() === auth.nombre?.toLowerCase()
+        );
+      }
+
+      const normalizadas = solicitudes.map((s) => ({
+        ...s,
+        herramientas: s.herramientas ?? [],
+        receptorNombre: s.receptor?.nombre ?? "N/A",
+        bodegueroNombre: s.bodeguero?.nombre ?? "N/A",
+      }));
+
+      setTableData(normalizadas);
+    } catch (error) {
+      console.error("❌ Error cargando solicitudes:", error);
+      toast.error("No se pudieron cargar las solicitudes.");
+    } finally {
+      setLoading(false);
     }
-
-    const solicitudesNormalizadas = solicitudes.map((s) => ({
-      ...s,
-      id: s._id ?? s.id, // 🔧 Asegura que cada solicitud tenga 'id'
-      herramientas: s.herramientas || [],
-      receptorNombre: s.receptor?.nombre || "N/A",
-      bodegueroNombre: s.bodeguero?.nombre || "N/A",
-    }));
-
-    console.log("✅ Datos normalizados:", solicitudesNormalizadas);
-
-    setTableData(solicitudesNormalizadas);
-    setFilteredData(solicitudesNormalizadas);
-    setLoading(false);
-  }, [auth.usuario, auth.rol, auth.nombre]);
-
+  }, [auth]);
 
   useEffect(() => {
     loadData();
@@ -56,6 +57,7 @@ export const SolicitudePage = () => {
       caption: "Nº Solicitud",
       alignment: "left",
       cssClass: "bold hidden md:table-cell",
+      minWidth: 30,
       width: 80,
     },
     {
@@ -63,6 +65,7 @@ export const SolicitudePage = () => {
       caption: "Receptor",
       alignment: "left",
       cssClass: "bold table-cell",
+      minWidth: 80,
     },
     {
       dataField: "herramientas",
@@ -71,14 +74,15 @@ export const SolicitudePage = () => {
       cssClass: "bold hidden md:table-cell",
       cellRender: (cellData: any) => {
         const herramientas = cellData.value ?? [];
-        if (herramientas.length === 0) return "Sin herramientas";
-        return (
-          <ul>
-            {herramientas.map((h: any, index: number) => (
-              <li key={index}>{h.nombre?.toUpperCase()}</li>
-            ))}
-          </ul>
-        );
+        return herramientas.length === 0
+          ? "Sin herramientas"
+          : (
+              <ul>
+                {herramientas.map((h: any, idx: number) => (
+                  <li key={idx}>{h.nombre?.toUpperCase()}</li>
+                ))}
+              </ul>
+            );
       },
     },
     {
@@ -86,18 +90,13 @@ export const SolicitudePage = () => {
       caption: "Estado",
       alignment: "left",
       cssClass: "bold",
+      minWidth: 80,
       cellRender: (cellData: any) => {
         const estado = cellData.value?.toLowerCase();
-        let colorClass = "";
-        if (estado === "entregado" || estado === "herramientas entregadas") {
-          colorClass = "text-green-600 font-bold";
-        } else if (estado === "no entregado") {
-          colorClass = "text-red-600 font-bold";
-        } else if (estado?.includes("pendiente")) {
-          colorClass = "text-yellow-500 font-bold";
-        } else {
-          colorClass = "text-gray-500 font-bold";
-        }
+        let colorClass = "text-gray-500 font-bold";
+        if (estado === "entregado") colorClass = "text-green-600 font-bold";
+        else if (estado === "no entregado") colorClass = "text-red-600 font-bold";
+        else if (estado?.includes("pendiente")) colorClass = "text-yellow-500 font-bold";
         return <span className={colorClass}>{cellData.value}</span>;
       },
     },
@@ -106,35 +105,37 @@ export const SolicitudePage = () => {
   const buttons = {
     download: (rowData: Solicitude) =>
       CheckPermissions(auth, [0, 1, 2])
-        ? Router.push({ pathname: "/solicitudes/reporte/" + rowData.id })
+        ? Router.push({ pathname: `/solicitudes/reporte/${rowData.id}` })
         : toast.error("No puedes acceder"),
+
     edit: (rowData: Solicitude) => {
       if (rowData.estado?.toLowerCase() === "entregado") {
-        toast.error("No puedes editar una solicitud entregada");
+        toast.error("No puedes editar una solicitud ya entregada.");
         return;
       }
       if (!CheckPermissions(auth, [0, 1])) {
-        toast.error("No tienes permisos para editar esta solicitud");
+        toast.error("Sin permisos para editar.");
         return;
       }
-      Router.push({ pathname: "/solicitudes/edit/" + rowData.id });
+      Router.push({ pathname: `/solicitudes/edit/${rowData.id}` });
     },
-    delete: (rowData: Solicitude) => {
+
+    delete: async (rowData: Solicitude) => {
       if (!CheckPermissions(auth, [0, 1])) {
-        toast.error("No tienes permisos para eliminar esta solicitud");
+        toast.error("Sin permisos para eliminar.");
         return;
       }
-      if (confirm("¿Deseas eliminar esta solicitud?")) {
+      if (confirm("¿Seguro que deseas eliminar esta solicitud?")) {
         setLoading(true);
-        HttpClient(`/api/solicitudes/${rowData.id}`, "DELETE", auth.usuario, auth.rol)
-          .then(() => {
-            toast.success("Solicitud eliminada correctamente");
-            loadData();
-          })
-          .catch(() => {
-            toast.error("Error al eliminar solicitud");
-            setLoading(false);
-          });
+        try {
+          await HttpClient(`/api/solicitudes/${rowData.id}`, "DELETE", auth.usuario, auth.rol);
+          toast.success("Registro eliminado.");
+          await loadData(); // Recargar los datos sin recargar la página
+        } catch {
+          toast.error("Error al eliminar solicitud.");
+        } finally {
+          setLoading(false);
+        }
       }
     },
   };
@@ -144,38 +145,45 @@ export const SolicitudePage = () => {
       <div className="md:w-1/6 max-w-none">
         <Sidebar />
       </div>
-      <div className="w-12/12 md:w-5/6 bg-blue-100">
+      <div className="w-full md:w-5/6 bg-blue-100">
         <div className="bg-white w-[95%] md:w-5/6 mx-auto mt-4 mb-4 p-4 rounded-lg shadow-md">
-          <p className="md:text-4xl text-xl text-center pt-5 font-extrabold text-blue-500 mt-6">
+          <h1 className="text-3xl font-extrabold text-blue-500 text-center mb-4">
             Registro de solicitudes generadas
-          </p>
+          </h1>
 
           {CheckPermissions(auth, [1]) && (
             <Button
-              className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3"
-              onClick={() => Router.push({ pathname: "/solicitudes/create" })}
+              className="text-white bg-blue-400 hover:bg-blue-500 rounded-full text-sm px-5 py-3 mb-3"
+              onClick={() => Router.push("/solicitudes/create")}
             >
               Crear registro
             </Button>
           )}
 
           <div className="w-full overflow-x-auto px-2">
-            <TreeTable
-              keyExpr="id"
-              dataSource={filteredData}
-              columns={columns}
-              searchPanel={true}
-              buttons={buttons}
-              buttonsFirst
-              paging
-              showNavigationButtons
-              showNavigationInfo
-              pageSize={10}
-              infoText={(actual, total, items) =>
-                `Página ${actual} de ${total} (${items} solicitudes)`
-              }
-              onFilteredDataChange={(filtered: Solicitude[]) => setFilteredData(filtered)}
-            />
+            {loading ? (
+              <div className="text-center py-10">
+                <Spinner animation="border" role="status" />
+                <p className="mt-2 text-gray-500">Cargando solicitudes...</p>
+              </div>
+            ) : (
+              <TreeTable
+                keyExpr="id"
+                dataSource={tableData}
+                columns={columns}
+                searchPanel
+                buttons={buttons}
+                buttonsFirst
+                paging
+                showNavigationButtons
+                showNavigationInfo
+                pageSize={10}
+                infoText={(actual, total, items) =>
+                  `Página ${actual} de ${total} (${items} solicitudes)`
+                }
+                onFilteredDataChange={(filtered: Solicitude[]) => setFilteredData(filtered)}
+              />
+            )}
           </div>
 
           <div className="px-8 pb-8">
@@ -187,6 +195,7 @@ export const SolicitudePage = () => {
                   filteredData.length > 0 ? filteredData : tableData
                 )
               }
+              disabled={loading}
             >
               Exportar reporte PDF
             </Button>
