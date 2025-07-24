@@ -80,12 +80,11 @@ export const HerramientasPage = () => {
 
       setHerramientas(herramientasFiltradas);
       setFilteredHerramientas(herramientasFiltradas);
-
     } else {
       setHerramientas([]);
       setFilteredHerramientas([]);
     }
-  }, [selectedBodega, bodegas]);
+  }, [selectedBodega, bodegas, estado, calibracion]);
 
   const handleDelete = (herramienta: Herramienta) => {
     if (confirm(`¿Estás seguro de eliminar la herramienta "${herramienta.nombre}"?`)) {

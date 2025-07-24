@@ -60,7 +60,7 @@ const SolicitudePage = () => {
     } finally {
       setLoading(false);
     }
-  }, [auth]);
+  }, [auth, estado]);
 
   useEffect(() => {
     loadData();
