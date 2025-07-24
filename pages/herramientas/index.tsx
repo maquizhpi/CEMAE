@@ -10,10 +10,12 @@ import TreeTable, { ColumnData } from "../components/tree_table";
 import Router from "next/router";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import { generateReporteHerramienta } from "../../controllers/utils/reporteHerramientas";
+import { useRouter } from "next/router";
 
 export const HerramientasPage = () => {
   const { auth } = useAuth();
-
+  const router = useRouter();
+  const { estado, calibracion } = router.query;
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
   const [selectedBodega, setSelectedBodega] = useState<string>("");
   const [herramientas, setHerramientas] = useState<Array<Herramienta>>([]);
@@ -66,9 +68,19 @@ export const HerramientasPage = () => {
   useEffect(() => {
     if (selectedBodega) {
       const bodegaSeleccionada = bodegas.find((b) => b.id === selectedBodega);
-      const herramientasFiltradas = bodegaSeleccionada?.herramientas ?? [];
+      let herramientasFiltradas = bodegaSeleccionada?.herramientas ?? [];
+
+      if (estado && typeof estado === "string") {
+        herramientasFiltradas = herramientasFiltradas.filter(h => h.estado.toLowerCase() === estado.toLowerCase());
+      }
+
+      if (calibracion && typeof calibracion === "string") {
+        herramientasFiltradas = herramientasFiltradas.filter(h => h.calibracion.toLowerCase() === calibracion.toLowerCase());
+      }
+
       setHerramientas(herramientasFiltradas);
       setFilteredHerramientas(herramientasFiltradas);
+
     } else {
       setHerramientas([]);
       setFilteredHerramientas([]);

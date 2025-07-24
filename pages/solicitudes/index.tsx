@@ -10,8 +10,11 @@ import HttpClient from "../../controllers/utils/http_client";
 import { Solicitude } from "../../models";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolicitudes";
+import { useRouter } from "next/router";
 
 const SolicitudePage = () => {
+  const router = useRouter();
+  const { estado } = router.query;
   const { auth } = useAuth();
   const [tableData, setTableData] = useState<Solicitude[]>([]);
   const [filteredData, setFilteredData] = useState<Solicitude[]>([]);
@@ -40,6 +43,17 @@ const SolicitudePage = () => {
       }));
 
       setTableData(normalizadas);
+      // Si hay un estado en la URL, aplicamos filtro adicional
+      let solicitudesFiltradas = normalizadas;
+
+      if (estado && typeof estado === "string") {
+        solicitudesFiltradas = normalizadas.filter(
+          (s) => s.estado.toLowerCase() === estado.toLowerCase()
+        );
+      }
+
+      setTableData(solicitudesFiltradas);
+
     } catch (error) {
       console.error("Error cargando solicitudes:", error);
       toast.error("No se pudieron cargar las solicitudes.");

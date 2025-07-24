@@ -17,6 +17,7 @@ export const EditarCalibracion = () => {
   const [initialValues, setInitialValues] = useState<Calibracion | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
+  // Carga los datos de calibración al iniciar el componente
   const loadData = useCallback(async () => {
     setLoading(true);
     const solicitudeId = Router.query.id as string;
@@ -49,6 +50,7 @@ export const EditarCalibracion = () => {
       observacion: "",
       documentoCalibracion: "",
     },
+    
     onSubmit: async (values) => {
       setLoading(true);
       values.estado = "Herramientas calibradas";

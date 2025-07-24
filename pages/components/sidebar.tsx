@@ -36,7 +36,7 @@ const Sidebar = () => {
     setTimeout(() => {
       setMostrarCarga(false);
     }, 10000);
-    setMenuAbierto(false); // Cierra el menú en móvil después de hacer clic
+    setMenuAbierto(false);
     setMenuAbierto(false); 
   };
 
@@ -65,12 +65,19 @@ const Sidebar = () => {
           ×
         </button>
         {/* Imagen del logo */}
-        <Image src="/image/logo2.jpeg" alt="Logo" width={100} height={100} />
+        <div className="flex justify-center">
+          <Image src="/image/logo2.jpeg" alt="Logo" width={100} height={100} />
+        </div>
         {/* Nombre del usuario */}
         <p className="text-center mb-4">
           <strong>{auth?.nombre}</strong>
         </p>
-
+        {/* Tipo de cliente */}
+        <p className="text-center text-black text-base font-bold mb-4">
+          {auth?.rol === 0 && "Administrador"}
+          {auth?.rol === 1 && "Bodeguero"}
+          {auth?.rol === 2 && "Cliente"}
+        </p>
 
         {/* Menú */}
         <div className="flex flex-col justify-start">

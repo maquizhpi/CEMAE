@@ -1,3 +1,4 @@
+// controllers/mongo/user/delete.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { AuditoryModel, UserModel } from "../../../database/schemas";
 import FormatedDate from "../../utils/formated_date";

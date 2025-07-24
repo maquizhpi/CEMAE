@@ -10,6 +10,8 @@ import Sidebar from "../components/sidebar";
 import TreeTable, { ColumnData } from "../components/tree_table";
 import dayjs from "dayjs";
 import { generateReporteCalibraciones } from "../../controllers/utils/reporteCalibraciones";
+import { useRouter } from "next/router";
+
 
 type Props = {
   dates: Array<string>;
@@ -19,30 +21,58 @@ type Props = {
   xl?: number;
   inTabs?: boolean;
 };
-
+// exportar funciones para el componente
 export const CalibracionPage = (props: Props) => {
+  const router = useRouter();
+  const { estado } = router.query;
   const { auth } = useAuth();
   const [tableData, setTableData] = useState<Array<Calibracion>>([]);
   const [filteredData, setFilteredData] = useState<Array<Calibracion>>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Carga los datos de calibración al iniciar el componente
   const loadData = useCallback(async () => {
     setLoading(true);
-    const response = await HttpClient(
-      "/api/calibracion",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
-    const calibracion: Array<Calibracion> = response.data ?? [];
-    setTableData(calibracion);
-    setLoading(false);
-  }, [auth]);
+    try {
+      const response = await HttpClient(
+        "/api/calibracion", 
+        "GET", 
+        auth.usuario, 
+        auth.rol);
+
+      const calibracion: Array<Calibracion> = response.data ?? [];
+      let filtradas = calibracion;
+      if (estado && typeof estado === "string") {
+        if (estado === "VENCIDA") {
+          // Filtro por fecha vencida
+          filtradas = calibracion.filter((c) => {
+            if (!c.fechaProximaCalibracion) return false;
+            const proxima = new Date(c.fechaProximaCalibracion);
+            const hoy = new Date();
+            return proxima < hoy;
+          });
+        } else {
+          // Filtro por estado normal
+          filtradas = calibracion.filter(
+            (c) => c.estado?.toLowerCase() === estado.toLowerCase()
+          );
+        }
+      }
+      setTableData(filtradas);
+    } catch (error) {
+      console.error("Error al cargar calibraciones:", error);
+      toast.error("No se pudieron cargar las calibraciones");
+    } finally {
+      setLoading(false);
+    }
+  }, [auth, estado]);
+
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // Define las columnas de la tabla
   const columns: ColumnData[] = [
     {
       dataField: "",
@@ -183,7 +213,7 @@ export const CalibracionPage = (props: Props) => {
       }
     },
   };
-
+ // Renderiza el componente
   return (
     <>
       <div className="flex h-screen">

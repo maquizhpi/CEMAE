@@ -2,7 +2,14 @@ import { ResponseData } from "../../models";
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
-const HttpClient = async (path: string, method: Method, userName: string, role: number, body?: any): Promise<ResponseData> => {
+const HttpClient = async (
+  path: string, 
+  method: Method, 
+  userName: string, 
+  role: number, 
+  body?: any): 
+  
+  Promise<ResponseData> => {
   try {
     const request: Response = await fetch(path, {
       method,

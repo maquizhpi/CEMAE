@@ -46,28 +46,29 @@ export const RegistroHerramientaCreate = () => {
 
   const loadBodegas = useCallback(async () => {
     setLoading(true);
-    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+    const response = await HttpClient(
+      "/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegas = response.data ?? [];
     const bodegasUsuario = bodegas.filter(
-      (bodega: Bodega) => bodega.bodegueroAsignado?.identificacion === auth.identificacion
+      (bodega: Bodega) => bodega.bodegueroAsignado?.identificacion 
+      === auth.identificacion
     );
-
     setBodegasDelUsuario(bodegasUsuario);
-
     if (bodegasUsuario.length > 0 && !bodegaSeleccionada) {
       setBodegaSeleccionada(bodegasUsuario[0]._id);
     }
-
     setLoading(false);
   }, [auth, bodegaSeleccionada]);
 
   const loadModelos = useCallback(async () => {
-    const response = await HttpClient("/api/modelos", "GET", auth.usuario, auth.rol);
+    const response = await HttpClient(
+      "/api/modelos", "GET", auth.usuario, auth.rol);
     setModelos(response.data ?? []);
   }, [auth]);
 
   const loadUbicaciones = useCallback(async () => {
-    const response = await HttpClient("/api/ubicaciones", "GET", auth.usuario, auth.rol);
+    const response = await HttpClient(
+      "/api/ubicaciones", "GET", auth.usuario, auth.rol);
     setUbicaciones(response.data ?? []);
   }, [auth]);
 
@@ -77,20 +78,20 @@ export const RegistroHerramientaCreate = () => {
     loadUbicaciones();
   }, [loadBodegas, loadModelos, loadUbicaciones]);
 
-
+  // Maneja el guardado de la herramienta
   const handleSaveTool = async () => {
+    // Validaciones básicas
     if (!toolTemp.nombre || !toolTemp.codigo) {
       toast.warning("Faltan campos obligatorios (Nombre, Código).");
       return;
     }
-
+    // Verifica que se haya seleccionado una bodega
     if (!bodegaSeleccionada) {
       toast.warning("Debe seleccionar una bodega.");
       return;
     }
-
+    // Verifica que se haya seleccionado una imagen
     setLoading(true);
-
     let imageUrl = toolTemp.imagen;
     if (image) {
       try {
@@ -113,7 +114,6 @@ export const RegistroHerramientaCreate = () => {
         return;
       }
     }
-
     // Buscar la bodega seleccionada
     const bodega = bodegasDelUsuario.find((b) => b._id === bodegaSeleccionada);
     if (!bodega) {
@@ -121,14 +121,14 @@ export const RegistroHerramientaCreate = () => {
       setLoading(false);
       return;
     }
-
-    const nuevasHerramientas = [...(bodega.herramientas ?? []), { ...toolTemp, imagen: imageUrl }];
-
+    // Crear la nueva herramienta
+    const nuevasHerramientas = [...(bodega.herramientas ?? []), 
+    { ...toolTemp, imagen: imageUrl }];
     const bodegaActualizada = {
       ...bodega,
       herramientas: nuevasHerramientas,
     };
-
+    // Enviar la solicitud para actualizar la bodega
     const response: ResponseData = await HttpClient(
       "/api/bodegas",
       "PUT",
@@ -136,7 +136,7 @@ export const RegistroHerramientaCreate = () => {
       auth.rol,
       bodegaActualizada
     );
-
+    // Manejar la respuesta
     if (response.success) {
       toast.success("Herramienta registrada correctamente!");
       setToolTemp({    
@@ -160,7 +160,6 @@ export const RegistroHerramientaCreate = () => {
     } else {
       toast.error("Error al guardar la herramienta.");
     }
-
     setLoading(false);
   };
 

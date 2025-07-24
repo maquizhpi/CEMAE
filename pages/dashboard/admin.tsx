@@ -9,9 +9,13 @@ import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolic
 import { generateReporteCalibraciones } from "../../controllers/utils/reporteCalibraciones";
 import { generateReporteHerramienta } from "../../controllers/utils/reporteHerramientas";
 import { generateReporteBodegas } from "../../controllers/utils/reporteBodegas";
+import router, { useRouter } from "next/router";
+
 
 export default function DashboardGlobal() {
   const { auth } = useAuth();
+  const Router = useRouter();
+  const {estado, calibracion} = Router.query;
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
   const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
   const [solicitudes, setSolicitudes] = useState<any[]>([]);
@@ -116,7 +120,7 @@ return (
             Dashboard Global del Administrador
           </h2>
 
-          <Section title="Bodegas y Herramientas Registradas">
+          <Section title="Bodegas Registradas">
             {/* Cards de bodegas */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {bodegas.map((bodega, index) => (
@@ -138,35 +142,53 @@ return (
                 </div>
               ))}
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              <button onClick={() => generateReporteBodegas("Reporte Global Bodegas", bodegas)} className="bg-yellow-600 text-white px-4 py-2 rounded-lg">Exportar Bodegas</button>
+            </div>
           </Section>
 
           <Section title="Métricas de Herramientas">
-                       <h3 className="text-3xl text-center text-blue-900 mb-6">
+            <h3 className="text-3xl text-center text-blue-900 mb-6">
               Métricas herramientas
             </h3>
             {/* Métricas herramientas*/}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">              
-              <div className="bg-green-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{total}</p>
-                <p className="text-sm">Total Herramientas</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div
+                  className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
+                  onClick={() => Router.push("/herramientas")}
+                >
+                  <p className="text-xl font-bold">{total}</p>
+                  <p className="text-sm">Total Herramientas</p>
+                </div>
+                <div
+                  className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                  onClick={() => Router.push("/herramientas?estado=Disponible")}
+                >
+                  <p className="text-xl font-bold">{disponibles.length}</p>
+                  <p className="text-sm">Disponibles</p>
+                </div>
+                <div
+                  className="bg-red-200 p-4 rounded-lg text-center cursor-pointer hover:bg-red-300"
+                  onClick={() => Router.push("/herramientas?estado=En%20uso")}
+                >
+                  <p className="text-xl font-bold">{enUso.length}</p>
+                  <p className="text-sm">En Uso</p>
+                </div>
+                <div
+                  className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
+                  onClick={() => Router.push("/herramientas?calibracion=Calibrada")}
+                >
+                  <p className="text-xl font-bold">{calibradas.length}</p>
+                  <p className="text-sm">Calibradas</p>
+                </div>
+                <div
+                  className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300 col-span-2 md:col-span-1"
+                  onClick={() => Router.push("/herramientas?calibracion=No%20calibrada")}
+                >
+                  <p className="text-xl font-bold">{noCalibradas.length}</p>
+                  <p className="text-sm">No Calibradas</p>
+                </div>
               </div>
-              <div className="bg-blue-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{disponibles.length}</p>
-                <p className="text-sm">Disponibles</p>
-              </div>
-              <div className="bg-red-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{enUso.length}</p>
-                <p className="text-sm">En Uso</p>
-              </div>
-              <div className="bg-yellow-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{calibradas.length}</p>
-                <p className="text-sm">Calibradas</p>
-              </div>
-              <div className="bg-gray-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{noCalibradas.length}</p>
-                <p className="text-sm">No Calibradas</p>
-              </div>
-            </div>
             <h3 className="text-3xl text-center text-blue-900 mb-6">
               Gráfico de herramientas
             </h3>
@@ -192,31 +214,49 @@ return (
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              <button onClick={() => generateReporteHerramienta("Reporte Global Herramientas", herramientas)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                Exportar Herramientas
+                </button>
+            </div>
           </Section>
 
           <Section title="Métricas de Solicitudes">
-                        <h3 className="text-3xl text-center text-blue-900 mb-6">
+            <h3 className="text-3xl text-center text-blue-900 mb-6">
               Métricas de solicitudes
             </h3>
             {/* Métricas Solicitudes*/}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">              
-              <div className="bg-blue-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{solicitudesRealizadas}</p>
-                <p className="text-sm">Solicitudes Realizadas</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">               
+                <div
+                  className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
+                  onClick={() => router.push("/solicitudes")}
+                >
+                  <p className="text-xl font-bold">{solicitudesRealizadas}</p>
+                  <p className="text-sm">Solicitudes Realizadas</p>
+                </div>
+                <div
+                  className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                  onClick={() => router.push("/solicitudes?estado=ENTREGADO")}
+                >
+                  <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
+                  <p className="text-sm">Solicitudes Entregadas</p>
+                </div>
+                <div
+                  className="bg-pink-200 p-4 rounded-lg text-center cursor-pointer hover:bg-pink-300"
+                  onClick={() => router.push("/solicitudes?estado=NO%20ENTREGADO")}
+                >
+                  <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
+                  <p className="text-sm">Solicitudes No Entregadas</p>
+                </div>
+                <div
+                  className="bg-purple-200 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-300"
+                  onClick={() => router.push("/solicitudes?estado=PENDIENTE")}
+                >
+                  <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
+                  <p className="text-sm">Solicitudes Pendientes</p>
+                </div>
               </div>
-              <div className="bg-green-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
-                <p className="text-sm">Entregadas</p>
-              </div>
-              <div className="bg-red-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
-                <p className="text-sm">No Entregadas</p>
-              </div>
-              <div className="bg-yellow-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
-                <p className="text-sm">Pendientes</p>
-              </div>   
-            </div>
             <h3 className="text-3xl text-center text-blue-900 mb-6">
               Gráfico de solicitudes
             </h3>
@@ -241,31 +281,45 @@ return (
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+              <button onClick={() => generateReporteSolicitudes("Reporte Global Solicitudes", solicitudes)} className="bg-green-600 text-white px-4 py-2 rounded-lg">Exportar Solicitudes</button>
+            </div>
           </Section>
 
           <Section title="Métricas de Calibraciones">
-                        <h3 className="text-3xl text-center text-blue-900 mb-6">
+            <h3 className="text-3xl text-center text-blue-900 mb-6">
               Métricas de calibraciones
             </h3>
             {/* Métricas Calibraciones*/}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-
-              <div className="bg-blue-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
-                <p className="text-sm">Solicitadas</p>
-              </div>
-              <div className="bg-green-200 p-4 rounded-lg text-center">
+              <div
+                className="bg-orange-200 p-4 rounded-lg text-center cursor-pointer hover:bg-orange-300"
+                onClick={() => router.push("/calibracion?estado=Herramientas%20calibradas")}
+              >
                 <p className="text-xl font-bold">{calibracionesRealizadas.length}</p>
-                <p className="text-sm">Realizadas</p>
+                <p className="text-sm">Calibraciones Realizadas</p>
               </div>
-              <div className="bg-yellow-200 p-4 rounded-lg text-center">
-                <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
-                <p className="text-sm">Pendientes</p>
-              </div>
-              <div className="bg-red-200 p-4 rounded-lg text-center">
+              <div
+                className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300"
+                onClick={() => router.push("/calibracion?estado=VENCIDA")}
+              >
                 <p className="text-xl font-bold">{calibracionVencida.length}</p>
-                <p className="text-sm">Vencidas</p>
-              </div> 
+                <p className="text-sm">Calibración Vencida</p>
+              </div>
+              <div
+                className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
+                onClick={() => router.push("/calibracion?estado=En%20calibracion")}
+              >
+                <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
+                <p className="text-sm">Calibraciones Pendientes</p>
+              </div>
+              <div
+                className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                onClick={() => router.push("/calibracion")}
+              >
+                <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
+                <p className="text-sm">Solicitudes de Calibración</p>
+              </div>
             </div>
             <h3 className="text-3xl text-center text-blue-900 mb-6">
               Gráfico de calibraciones
@@ -291,15 +345,9 @@ return (
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </Section>
-
-          <Section title="Exportar Reportes">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              <button onClick={() => generateReporteHerramienta("Reporte Global Herramientas", herramientas)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Exportar Herramientas</button>
-              <button onClick={() => generateReporteSolicitudes("Reporte Global Solicitudes", solicitudes)} className="bg-green-600 text-white px-4 py-2 rounded-lg">Exportar Solicitudes</button>
               <button onClick={() => generateReporteCalibraciones("Reporte Global Calibraciones", calibraciones)} className="bg-purple-600 text-white px-4 py-2 rounded-lg">Exportar Calibraciones</button>
-              <button onClick={() => generateReporteBodegas("Reporte Global Bodegas", bodegas)} className="bg-yellow-600 text-white px-4 py-2 rounded-lg">Exportar Bodegas</button>
-            </div>
+            </div> 
           </Section>
         </div>
       </div>

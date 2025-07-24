@@ -149,7 +149,8 @@ const UsersPanel = () => {
                 );
           if (response.success) {
             toast.success(
-              editingUser == null ? "Usuario creado!" : "Usuario actualizado!"
+              editingUser == null ? "Usuario creado!" 
+              : "Usuario actualizado!"
             );
           } else {
             toast.warning(response.message);
