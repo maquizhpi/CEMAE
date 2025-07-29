@@ -10,37 +10,40 @@ import UbicacionesModal from "../components/modals/modalUbicaciones";
 
 // Componente principal del panel de ubicaciones
 const UbicacionesPanel = () => {
-    const { auth } = useAuth(); // Hook de autenticación
-    const [loading, setLoading] = useState<boolean>(true); // Estado de carga
-    const [modalVisible, setModalVisible] = useState<boolean>(false); // Estado de visibilidad del modal
-    const [tableData, setTableData] = useState<Array<Ubicaciones>>([]); // Datos de la tabla
-    const [editingUbicaciones, setEditingUbicaciones] =
-        useState<Ubicaciones | null>(null); // Ubicación en edición
+  const { auth } = useAuth(); 
 
-    // Función para cargar los datos de ubicaciones
-    const loadData = useCallback(async () => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [tableData, setTableData] = useState<Array<Ubicaciones>>([]);
+  const [editingUbicaciones, setEditingUbicaciones] = useState<Ubicaciones | null>(null);
+
+  //  Hook de callback
+  const loadData = useCallback(async () => {
+    if (!auth?.usuario || auth.rol === undefined) return;
+
     setLoading(true);
-    const response = await HttpClient(
-        "/api/ubicaciones",
-        "GET",
-        auth.usuario,
-        auth.rol
-    );
+    const response = await HttpClient("/api/ubicaciones", "GET", auth.usuario, auth.rol);
+
     if (response.success) {
-        const users: Array<any> = response.data;
-        setTableData(users);
+      const users: Array<any> = response.data;
+      setTableData(users);
     } else {
-        toast.warning(response.message);
+      toast.warning(response.message);
     }
     setLoading(false);
-    }, [auth.usuario, auth.rol]);
+  }, [auth]);
 
+  //  Hook de efecto
+  useEffect(() => {
+    if (auth?.usuario && auth.rol !== undefined) {
+      loadData();
+    }
+  }, [auth, loadData]);
 
-// Ejecuta loadData al montar el componente
-    useEffect(() => {
-    loadData();
-    }, [loadData]);
-
+  //  Luego la verificación
+  if (!auth) {
+    return <div className="p-6 text-center text-xl text-blue-800">Cargando sesión...</div>;
+  }
     // Muestra el modal
     const showModal = () => setModalVisible(true);
 

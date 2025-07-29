@@ -11,21 +11,18 @@ import Router from "next/router";
 import { generateReporteBodegas } from "../../controllers/utils/reporteBodegas";
 
 export const BodegasPage = () => {
-  const { auth } = useAuth();
+  const { auth } = useAuth(); 
   const [tableData, setTableData] = useState<Array<Bodega & { creadorNombre: string; bodegueroAsignadoNombre: string }>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filterText, setFilterText] = useState<string>("");
 
-
   const loadData = useCallback(async () => {
+    if (!auth?.usuario || auth.rol === undefined) return;
+
     setLoading(true);
-    const response = await HttpClient(
-      "/api/bodegas",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
+    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegas = response.data ?? [];
+
     const bodegasFiltradas = (auth.rol === 0
       ? bodegas
       : bodegas.filter(
@@ -40,11 +37,17 @@ export const BodegasPage = () => {
 
     setTableData(bodegasFiltradas);
     setLoading(false);
-  }, [auth.usuario, auth.rol, auth.identificacion]);
+  }, [auth]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (auth?.usuario && auth.rol !== undefined) {
+      loadData();
+    }
+  }, [auth, loadData]);
+
+    if (!auth) {
+    return <div className="p-6 text-center text-xl text-blue-800">Cargando sesión...</div>;
+  }
 
 
   const columns: ColumnData[] = [

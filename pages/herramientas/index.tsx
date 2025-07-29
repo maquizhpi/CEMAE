@@ -13,9 +13,11 @@ import { generateReporteHerramienta } from "../../controllers/utils/reporteHerra
 import { useRouter } from "next/router";
 
 export const HerramientasPage = () => {
-  const { auth } = useAuth();
-  const router = useRouter();
+  const { auth } = useAuth();       // ✅ SIEMPRE primero
+  const router = useRouter();       // ✅ Hook inmediatamente después
+
   const { estado, calibracion } = router.query;
+
   const [bodegas, setBodegas] = useState<Array<Bodega>>([]);
   const [selectedBodega, setSelectedBodega] = useState<string>("");
   const [herramientas, setHerramientas] = useState<Array<Herramienta>>([]);
@@ -24,14 +26,10 @@ export const HerramientasPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   const loadBodegas = useCallback(async () => {
-    setLoading(true);
-    const response = await HttpClient(
-      "/api/bodegas",
-      "GET",
-      auth.usuario,
-      auth.rol
-    );
+    if (!auth?.usuario || auth.rol === undefined) return;
 
+    setLoading(true);
+    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
     const bodegasData: Bodega[] = response.data ?? [];
 
     if (auth.rol === 0) {
@@ -47,9 +45,7 @@ export const HerramientasPage = () => {
       setFilteredHerramientas(todasHerramientas);
     } else {
       const bodegasFiltradas = bodegasData.filter(
-        (b) =>
-          b.bodegueroAsignado &&
-          b.bodegueroAsignado?.identificacion === auth.identificacion
+        (b) => b.bodegueroAsignado?.identificacion === auth.identificacion
       );
       setBodegas(bodegasFiltradas);
       if (bodegasFiltradas.length > 0) {
@@ -58,12 +54,13 @@ export const HerramientasPage = () => {
     }
 
     setLoading(false);
-  }, [auth.rol, auth.usuario, auth.identificacion]);
+  }, [auth]);
 
   useEffect(() => {
-    loadBodegas();
-  }, [loadBodegas]);
-
+    if (auth?.usuario && auth.rol !== undefined) {
+      loadBodegas();
+    }
+  }, [auth, loadBodegas]);
 
   useEffect(() => {
     if (selectedBodega) {
@@ -85,6 +82,12 @@ export const HerramientasPage = () => {
       setFilteredHerramientas([]);
     }
   }, [selectedBodega, bodegas, estado, calibracion]);
+
+  // ✅ Solo aquí puedes poner el return condicional
+  if (!auth) {
+    return <div className="p-6 text-center text-xl text-blue-800">Cargando sesión...</div>;
+  }
+
 
   const handleDelete = (herramienta: Herramienta) => {
     if (confirm(`¿Estás seguro de eliminar la herramienta "${herramienta.nombre}"?`)) {

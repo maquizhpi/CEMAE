@@ -63,8 +63,11 @@ const SolicitudePage = () => {
   }, [auth, estado]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (auth?.usuario && auth.rol !== undefined) {
+      loadData();
+    }
+  }, [auth, loadData]);
+
 
   const columns: ColumnData[] = [
     {

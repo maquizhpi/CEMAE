@@ -33,6 +33,7 @@
     "jsdom": "^26.1.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
+    "mongo-sanitize": "^1.1.0",
     "mongoose": "^6.4.1",
     "mysql": "^2.18.1",
     "next": "latest",

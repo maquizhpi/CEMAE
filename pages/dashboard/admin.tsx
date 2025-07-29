@@ -37,8 +37,11 @@ export default function DashboardGlobal() {
   }, [auth]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (auth?.usuario && auth?.rol !== undefined) {
+      loadData();
+    }
+  }, [auth, loadData]);
+
 
 
   const herramientasPorBodega = bodegas.map((bodega) => ({

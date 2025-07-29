@@ -33,11 +33,14 @@ export default function DashboardCliente() {
     } catch (error) {
       console.error("Error al cargar datos desde la base de datos:", error);
     }
-  }, [auth.nombre]);
+  }, [auth]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (auth?.usuario && auth?.rol !== undefined) {
+      loadData();
+    }
+  }, [auth, loadData]);
+
 
   // Métricas
   const totalSolicitudes = solicitudes.length;

@@ -69,8 +69,10 @@ export const CalibracionPage = (props: Props) => {
 
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (auth?.usuario && auth.rol !== undefined) {
+      loadData();
+    }
+  }, [auth, loadData]);
 
   // Define las columnas de la tabla
   const columns: ColumnData[] = [

@@ -58,10 +58,13 @@ export default function DashboardBodeguero() {
   }, [auth]);
 
   useEffect(() => {
-    loadData();
-    loadSolicitudes();
-    loadCalibraciones();
-  }, [loadData, loadSolicitudes, loadCalibraciones]);
+    if (auth?.usuario && auth?.rol !== undefined) {
+      loadData();
+      loadSolicitudes();
+      loadCalibraciones();
+    }
+  }, [auth, loadData, loadSolicitudes, loadCalibraciones]);
+
 
   const bodegaActual = bodegas.find(b => b.id === bodegaSeleccionada);
   const herramientasPorBodega: Herramienta[] = bodegaActual?.herramientas ?? [];
