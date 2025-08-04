@@ -81,7 +81,7 @@ const CatalogoHerramientas = () => {
                 <div className="relative w-full h-40 mb-2 rounded-md overflow-hidden">
                   <Image
                     src={h.imagen || "/image/no-image.png"}
-                    alt={`Imagen de ${h.nombre}`}
+                    alt={`Imagen perteneciente a una herramienta especial guardada en la base de datos la cual corresponde a ${h.nombre}`}
                     layout="fill"
                     objectFit="cover"
                   />

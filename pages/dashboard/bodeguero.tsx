@@ -9,6 +9,7 @@ import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolic
 import { generateReporteCalibraciones } from "../../controllers/utils/reporteCalibraciones";
 import { generateReporteHerramienta } from "../../controllers/utils/reporteHerramientas";
 import router, { useRouter } from "next/router";
+import Head from "next/head";
 
 export default function DashboardBodeguero() {
   const Router = useRouter();
@@ -127,309 +128,317 @@ export default function DashboardBodeguero() {
       </div>
     );
   };
-
+  
   return (
-    <div className="flex h-screen">
-      {/* Barra lateral */}
-      <div className="md:w-1/6 max-w-none">
-        <Sidebar />
-      </div>
-      {/* Contenido principal */}
-      <div className="w-12/12 md:w-5/6 bg-blue-100 overflow-y-scroll">
-        <div className="flex-1 p-6">
-          <div className="bg-white w-full rounded-xl shadow-2xl p-8 mb-8">
-            <h2 className="text-3xl text-center text-blue-800 font-bold mb-6">
-              Dashboard del Bodeguero
-            </h2>
+    <>
+      <Head>
+        <title>Dashboard Bodeguero - CEMAE</title>
+        <meta name="description" content="Panel de control para gestión de herramientas del bodeguero en CEMAE." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charSet="UTF-8" />
+      </Head>
+      <div className="flex h-screen">
+        {/* Barra lateral */}
+        <div className="md:w-1/6 max-w-none">
+          <Sidebar />
+        </div>
+        {/* Contenido principal */}
+        <div className="w-12/12 md:w-5/6 bg-blue-100 overflow-y-scroll">
+          <div className="flex-1 p-6">
+            <div className="bg-white w-full rounded-xl shadow-2xl p-8 mb-8">
+              <h2 className="text-3xl text-center text-blue-800 font-bold mb-6">
+                Dashboard del Bodeguero
+              </h2>
 
-            {/* Selector de bodega */}
-            <div className="mb-6">
-              <label className="block mb-2 font-semibold text-blue-800">Seleccione una bodega:</label>
-              <select
-                value={bodegaSeleccionada}
-                onChange={(e) => setBodegaSeleccionada(e.target.value)}
-                className="w-full p-2 border rounded-lg shadow-sm"
-              >
-                {bodegas.map(b => (
-                  <option key={b.id} value={b.id}>{b.nombreBodega}</option>
-                ))}
-              </select>
-            </div>
-            <Section title="Herramientas Registradas">
-              {/* Estadísticas rápidas */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div
-                  className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
-                  onClick={() => Router.push("/herramientas")}
+              {/* Selector de bodega */}
+              <div className="mb-6">
+                <label className="block mb-2 font-semibold text-blue-800">Seleccione una bodega:</label>
+                <select
+                  value={bodegaSeleccionada}
+                  onChange={(e) => setBodegaSeleccionada(e.target.value)}
+                  className="w-full p-2 border rounded-lg shadow-sm"
                 >
-                  <p className="text-xl font-bold">{total}</p>
-                  <p className="text-sm">Total Herramientas</p>
-                </div>
-                <div
-                  className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
-                  onClick={() => Router.push("/herramientas?estado=Disponible")}
-                >
-                  <p className="text-xl font-bold">{disponibles.length}</p>
-                  <p className="text-sm">Disponibles</p>
-                </div>
-                <div
-                  className="bg-red-200 p-4 rounded-lg text-center cursor-pointer hover:bg-red-300"
-                  onClick={() => Router.push("/herramientas?estado=En%20uso")}
-                >
-                  <p className="text-xl font-bold">{enUso.length}</p>
-                  <p className="text-sm">En Uso</p>
-                </div>
-                <div
-                  className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
-                  onClick={() => Router.push("/herramientas?calibracion=Calibrada")}
-                >
-                  <p className="text-xl font-bold">{calibradas.length}</p>
-                  <p className="text-sm">Calibradas</p>
-                </div>
-                <div
-                  className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300 col-span-2 md:col-span-1"
-                  onClick={() => Router.push("/herramientas?calibracion=No%20calibrada")}
-                >
-                  <p className="text-xl font-bold">{noCalibradas.length}</p>
-                  <p className="text-sm">No Calibradas</p>
-                </div>
+                  {bodegas.map(b => (
+                    <option key={b.id} value={b.id}>{b.nombreBodega}</option>
+                  ))}
+                </select>
               </div>
-              {/* Gráfica de barras herramientas */}
-              <div className="bg-white p-6 rounded-lg shadow mb-8">
-                <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Herramientas</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                      {data.map((entry, index) => (
-                      <Cell
+              <Section title="Herramientas Registradas">
+                {/* Estadísticas rápidas */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div
+                    className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
+                    onClick={() => Router.push("/herramientas")}
+                  >
+                    <p className="text-xl font-bold">{total}</p>
+                    <p className="text-sm">Total Herramientas</p>
+                  </div>
+                  <div
+                    className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                    onClick={() => Router.push("/herramientas?estado=Disponible")}
+                  >
+                    <p className="text-xl font-bold">{disponibles.length}</p>
+                    <p className="text-sm">Disponibles</p>
+                  </div>
+                  <div
+                    className="bg-red-200 p-4 rounded-lg text-center cursor-pointer hover:bg-red-300"
+                    onClick={() => Router.push("/herramientas?estado=En%20uso")}
+                  >
+                    <p className="text-xl font-bold">{enUso.length}</p>
+                    <p className="text-sm">En Uso</p>
+                  </div>
+                  <div
+                    className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
+                    onClick={() => Router.push("/herramientas?calibracion=Calibrada")}
+                  >
+                    <p className="text-xl font-bold">{calibradas.length}</p>
+                    <p className="text-sm">Calibradas</p>
+                  </div>
+                  <div
+                    className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300 col-span-2 md:col-span-1"
+                    onClick={() => Router.push("/herramientas?calibracion=No%20calibrada")}
+                  >
+                    <p className="text-xl font-bold">{noCalibradas.length}</p>
+                    <p className="text-sm">No Calibradas</p>
+                  </div>
+                </div>
+                {/* Gráfica de barras herramientas */}
+                <div className="bg-white p-6 rounded-lg shadow mb-8">
+                  <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Herramientas</h2>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                        {data.map((entry, index) => (
+                        <Cell
+                            key={`cell-${index}`}
+                            fill={
+                            entry.name === "Disponibles" ? "#3B82F6" :
+                            entry.name === "En Uso" ? "#EF4444" :
+                            entry.name === "Calibradas" ? "#FACC15" :
+                            "#9CA3AF"
+                            }
+                        />
+                        ))}
+                    </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                  <button
+                    onClick={() => generateReporteHerramienta("Reporte General de Herramientas", herramientasPorBodega)}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Exportar Reporte General
+                  </button>
+
+                  <button
+                    onClick={() => generateReporteHerramienta("Herramientas Disponibles", disponibles)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                  >
+                    Exportar Disponibles
+                  </button>
+
+                  <button
+                    onClick={() => generateReporteHerramienta("Herramientas en Uso", enUso)}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
+                  >
+                    Exportar En Uso
+                  </button>
+
+                  <button
+                    onClick={() => generateReporteHerramienta("Herramientas Calibradas", calibradas)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                  >
+                    Exportar Calibradas
+                  </button>
+
+                  <button
+                    onClick={() => generateReporteHerramienta("Herramientas No Calibradas", noCalibradas)}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+                  >
+                    Exportar No Calibradas
+                  </button>
+                </div>
+              </Section>     
+              <Section title="Estado de solicitudes">
+                {/* Estadísticas rápidas */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div
+                    className="bg-purple-200 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-300"
+                    onClick={() => router.push("/solicitudes?estado=PENDIENTE")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
+                    <p className="text-sm">Solicitudes Pendientes</p>
+                  </div>
+                  <div
+                    className="bg-pink-200 p-4 rounded-lg text-center cursor-pointer hover:bg-pink-300"
+                    onClick={() => router.push("/solicitudes?estado=NO%20ENTREGADO")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
+                    <p className="text-sm">Solicitudes No Entregadas</p>
+                  </div>
+                  <div
+                    className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
+                    onClick={() => router.push("/solicitudes")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesRealizadas}</p>
+                    <p className="text-sm">Solicitudes Realizadas</p>
+                  </div>
+                  <div
+                    className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                    onClick={() => router.push("/solicitudes?estado=ENTREGADO")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
+                    <p className="text-sm">Solicitudes Entregadas</p>
+                  </div>
+                </div>
+                {/* Gráfica de barras solicitudes */}
+                <div className="bg-white p-6 rounded-lg shadow mb-8">
+                  <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Solicitudes</h2>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={dataSolicitud} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                        {dataSolicitud.map((entry, index) => (
+                        <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              entry.name === "Solicitudes Realizadas" ? "#7C3AED" :
+                              entry.name === "Solicitudes Entregadas" ? "#10B981" :
+                              entry.name === "Solicitudes No Entregadas" ? "#FBBF24" :
+                              "#F43F5E"
+                            }
+                        />
+                        ))}
+                    </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* Botones de exportación */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                  <button
+                    onClick={() => generateReporteSolicitudes("Solicitudes de Herramientas", solicitudes)}
+                    className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600"
+                  >
+                    Exportar Solicitudes Herramientas
+                  </button>
+
+                  <button
+                    onClick={() => generateReporteSolicitudes("Solicitudes No Entregadas", solicitudes.filter(s => s.estado === "NO ENTREGADO"))}
+                    className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600"
+                  >
+                    Exportar Solicitudes No Entregadas
+                  </button>
+                  <button
+                    onClick={() => generateReporteSolicitudes("Solicitudes Entregadas", solicitudes.filter(s => s.estado === "ENTREGADA"))}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                  >
+                    Exportar Solicitudes Entregadas
+                  </button>
+                  <button
+                    onClick={() => generateReporteSolicitudes("Solicitudes Pendiente", solicitudes.filter(s => s.estado === "PENDIENTE"))}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                  >
+                    Exportar Solicitudes Pendientes
+                  </button>
+                </div>
+              </Section>
+              <Section title="Estado de calibraciones">
+                  {/* Estadísticas rápidas */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div
+                    className="bg-orange-200 p-4 rounded-lg text-center cursor-pointer hover:bg-orange-300"
+                    onClick={() => router.push("/calibracion?estado=Herramientas%20calibradas")}
+                  >
+                    <p className="text-xl font-bold">{calibracionesRealizadas.length}</p>
+                    <p className="text-sm">Calibraciones Realizadas</p>
+                  </div>
+                  <div
+                    className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300"
+                    onClick={() => router.push("/calibracion?estado=VENCIDA")}
+                  >
+                    <p className="text-xl font-bold">{calibracionVencida.length}</p>
+                    <p className="text-sm">Calibración Vencida</p>
+                  </div>
+                  <div
+                    className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
+                    onClick={() => router.push("/calibracion?estado=En%20calibracion")}
+                  >
+                    <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
+                    <p className="text-sm">Calibraciones Pendientes</p>
+                  </div>
+                  <div
+                    className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                    onClick={() => router.push("/calibracion")}
+                  >
+                    <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
+                    <p className="text-sm">Solicitudes de Calibración</p>
+                  </div>
+                </div>
+                {/* Gráfica de barras calibraciones */}
+                <div className="bg-white p-6 rounded-lg shadow mb-8">
+                  <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Calibraciones</h2>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={dataCalibraciones} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                        {dataCalibraciones.map((entry, index) => (
+                        <Cell
                           key={`cell-${index}`}
                           fill={
-                          entry.name === "Disponibles" ? "#3B82F6" :
-                          entry.name === "En Uso" ? "#EF4444" :
-                          entry.name === "Calibradas" ? "#FACC15" :
-                          "#9CA3AF"
-                          }
-                      />
-                      ))}
-                  </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                <button
-                  onClick={() => generateReporteHerramienta("Reporte General de Herramientas", herramientasPorBodega)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                >
-                  Exportar Reporte General
-                </button>
-
-                <button
-                  onClick={() => generateReporteHerramienta("Herramientas Disponibles", disponibles)}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-                >
-                  Exportar Disponibles
-                </button>
-
-                <button
-                  onClick={() => generateReporteHerramienta("Herramientas en Uso", enUso)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
-                >
-                  Exportar En Uso
-                </button>
-
-                <button
-                  onClick={() => generateReporteHerramienta("Herramientas Calibradas", calibradas)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                >
-                  Exportar Calibradas
-                </button>
-
-                <button
-                  onClick={() => generateReporteHerramienta("Herramientas No Calibradas", noCalibradas)}
-                  className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
-                >
-                  Exportar No Calibradas
-                </button>
-              </div>
-            </Section>     
-            <Section title="Estado de solicitudes">
-              {/* Estadísticas rápidas */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div
-                  className="bg-purple-200 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-300"
-                  onClick={() => router.push("/solicitudes?estado=PENDIENTE")}
-                >
-                  <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
-                  <p className="text-sm">Solicitudes Pendientes</p>
-                </div>
-                <div
-                  className="bg-pink-200 p-4 rounded-lg text-center cursor-pointer hover:bg-pink-300"
-                  onClick={() => router.push("/solicitudes?estado=NO%20ENTREGADO")}
-                >
-                  <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
-                  <p className="text-sm">Solicitudes No Entregadas</p>
-                </div>
-                <div
-                  className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
-                  onClick={() => router.push("/solicitudes")}
-                >
-                  <p className="text-xl font-bold">{solicitudesRealizadas}</p>
-                  <p className="text-sm">Solicitudes Realizadas</p>
-                </div>
-                <div
-                  className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
-                  onClick={() => router.push("/solicitudes?estado=ENTREGADO")}
-                >
-                  <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
-                  <p className="text-sm">Solicitudes Entregadas</p>
-                </div>
-              </div>
-              {/* Gráfica de barras solicitudes */}
-              <div className="bg-white p-6 rounded-lg shadow mb-8">
-                <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Solicitudes</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={dataSolicitud} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                      {dataSolicitud.map((entry, index) => (
-                      <Cell
-                          key={`cell-${index}`}
-                          fill={
-                            entry.name === "Solicitudes Realizadas" ? "#7C3AED" :
-                            entry.name === "Solicitudes Entregadas" ? "#10B981" :
-                            entry.name === "Solicitudes No Entregadas" ? "#FBBF24" :
+                            entry.name === "Calibraciones Solicitadas" ? "#A78BFA" :
+                            entry.name === "Calibraciones Realizadas" ? "#34D399" :
+                            entry.name === "Calibraciones Pendientes" ? "#FBBF24" :
                             "#F43F5E"
                           }
-                      />
-                      ))}
-                  </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              {/* Botones de exportación */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                <button
-                  onClick={() => generateReporteSolicitudes("Solicitudes de Herramientas", solicitudes)}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600"
-                >
-                  Exportar Solicitudes Herramientas
-                </button>
-
-                <button
-                  onClick={() => generateReporteSolicitudes("Solicitudes No Entregadas", solicitudes.filter(s => s.estado === "NO ENTREGADO"))}
-                  className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600"
-                >
-                  Exportar Solicitudes No Entregadas
-                </button>
-                <button
-                  onClick={() => generateReporteSolicitudes("Solicitudes Entregadas", solicitudes.filter(s => s.estado === "ENTREGADA"))}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                >
-                  Exportar Solicitudes Entregadas
-                </button>
-                <button
-                  onClick={() => generateReporteSolicitudes("Solicitudes Pendiente", solicitudes.filter(s => s.estado === "PENDIENTE"))}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
-                >
-                  Exportar Solicitudes Pendientes
-                </button>
-              </div>
-            </Section>
-            <Section title="Estado de calibraciones">
-                {/* Estadísticas rápidas */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div
-                  className="bg-orange-200 p-4 rounded-lg text-center cursor-pointer hover:bg-orange-300"
-                  onClick={() => router.push("/calibracion?estado=Herramientas%20calibradas")}
-                >
-                  <p className="text-xl font-bold">{calibracionesRealizadas.length}</p>
-                  <p className="text-sm">Calibraciones Realizadas</p>
+                        />
+                        ))}
+                    </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-                <div
-                  className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300"
-                  onClick={() => router.push("/calibracion?estado=VENCIDA")}
-                >
-                  <p className="text-xl font-bold">{calibracionVencida.length}</p>
-                  <p className="text-sm">Calibración Vencida</p>
+                {/* Botones de exportación */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                  <button
+                    onClick={() => generateReporteCalibraciones("Calibraciones Realizadas", calibracionesRealizadas)}
+                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600"
+                  >
+                    Exportar Calibraciones Realizadas
+                  </button>
+                  <button
+                    onClick={() => generateReporteCalibraciones("Calibraciones Pendientes", calibracionesPendientes)}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
+                  >
+                    Exportar Calibraciones Pendientes
+                  </button>
+                  <button
+                    onClick={() => generateReporteCalibraciones("Calibraciones Caducadas", calibracionVencida)}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Exportar Calibraciones Caducadas
+                  </button>
+                  <button
+                    onClick={() => generateReporteCalibraciones("Solicitudes ", calibraciones.filter(s => s.estado === "SOLICITADAS"))}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                  >
+                    Exportar Solicitudes de calibraciones
+                  </button>
                 </div>
-                <div
-                  className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
-                  onClick={() => router.push("/calibracion?estado=En%20calibracion")}
-                >
-                  <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
-                  <p className="text-sm">Calibraciones Pendientes</p>
-                </div>
-                <div
-                  className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
-                  onClick={() => router.push("/calibracion")}
-                >
-                  <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
-                  <p className="text-sm">Solicitudes de Calibración</p>
-                </div>
-              </div>
-              {/* Gráfica de barras calibraciones */}
-              <div className="bg-white p-6 rounded-lg shadow mb-8">
-                <h2 className="text-center text-xl font-bold mb-4 text-blue-800">Estado de Calibraciones</h2>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={dataCalibraciones} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                      {dataCalibraciones.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          entry.name === "Calibraciones Solicitadas" ? "#A78BFA" :
-                          entry.name === "Calibraciones Realizadas" ? "#34D399" :
-                          entry.name === "Calibraciones Pendientes" ? "#FBBF24" :
-                          "#F43F5E"
-                        }
-                      />
-                      ))}
-                  </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              {/* Botones de exportación */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                <button
-                  onClick={() => generateReporteCalibraciones("Calibraciones Realizadas", calibracionesRealizadas)}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600"
-                >
-                  Exportar Calibraciones Realizadas
-                </button>
-                <button
-                  onClick={() => generateReporteCalibraciones("Calibraciones Pendientes", calibracionesPendientes)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600"
-                >
-                  Exportar Calibraciones Pendientes
-                </button>
-                <button
-                  onClick={() => generateReporteCalibraciones("Calibraciones Caducadas", calibracionVencida)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                >
-                  Exportar Calibraciones Caducadas
-                </button>
-                <button
-                  onClick={() => generateReporteCalibraciones("Solicitudes ", calibraciones.filter(s => s.estado === "SOLICITADAS"))}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                >
-                  Exportar Solicitudes de calibraciones
-                </button>
-              </div>
-            </Section>        
+              </Section>        
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

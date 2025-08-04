@@ -7,7 +7,7 @@ import Document, {
 } from "next/document";
 import { ServerStyleSheet } from "styled-components";
 
-// rehidrata los estilos para bootstrap
+// Rehidrata los estilos para styled-components
 export default class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const sheet = new ServerStyleSheet();
@@ -34,10 +34,29 @@ export default class MyDocument extends Document {
     return (
       <Html lang="es">
         <Head />
-
         <body>
           <Main />
           <NextScript />
+          <noscript>
+            <div
+              style={{
+                backgroundColor: "#fff",
+                color: "#000",
+                padding: "1rem",
+                fontFamily: "sans-serif",
+              }}
+            >
+              <p>
+                JavaScript está deshabilitado en tu navegador. Algunas funciones
+                de esta página pueden no estar disponibles.
+              </p>
+              <p>
+                <a href="/version-accesible">
+                  Haz clic aquí para acceder a una versión alternativa.
+                </a>
+              </p>
+            </div>
+          </noscript>
         </body>
       </Html>
     );
