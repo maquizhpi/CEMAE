@@ -66,7 +66,7 @@ const Sidebar = () => {
         </button>
         {/* Imagen del logo */}
         <div className="flex justify-center">
-          <Image src="/image/logo2.jpeg" alt="Logo" width={100} height={100} />
+          <Image src="/image/logo2.jpeg" alt="Logo perteneciente a la unidad CEMAE" width={100} height={100} />
         </div>
         {/* Nombre del usuario */}
         <p className="text-center mb-4">
