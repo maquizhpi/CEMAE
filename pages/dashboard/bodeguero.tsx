@@ -9,7 +9,7 @@ import { generateReporteSolicitudes } from "../../controllers/utils/reporteSolic
 import { generateReporteCalibraciones } from "../../controllers/utils/reporteCalibraciones";
 import { generateReporteHerramienta } from "../../controllers/utils/reporteHerramientas";
 import router, { useRouter } from "next/router";
-import Layout from "../layouts/Lauout";
+import Head from "next/head";
 
 
 export default function DashboardBodeguero() {
@@ -131,7 +131,13 @@ export default function DashboardBodeguero() {
   };
   
   return (
-    <Layout title="Panel del Bodeguero">
+    <>
+      <Head>
+        <title>Panel del Bodeguero - CEMAE</title>
+        <meta name="description" content="Panel de control para el bodeguero del sistema de herramientas CEMAE." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charSet="UTF-8" />
+      </Head>
       <div className="flex h-screen">
         {/* Barra lateral */}
         <div className="md:w-1/6 max-w-none">
@@ -434,6 +440,6 @@ export default function DashboardBodeguero() {
           </div>
         </div>
       </div>
-    </Layout>
+   </>
   );
 }
