@@ -7,6 +7,7 @@ import HttpClient from "../../../controllers/utils/http_client";
 import { LoginData } from "../../../models";
 import LoadingContainer from "../../components/loading_container";
 import Router from "next/router";
+import Head from "next/head";
 
 const currentYear = new Date().getFullYear();
 // login de la app
@@ -71,18 +72,20 @@ const LoginPage = () => {
     Router.push({ pathname: "/recuperar" });
   };
 
-  return (
+return (
     <>
-      <title>Inicio de sesión</title>
+      <Head>
+        <title>Inicio de sesión</title>
+      </Head>
       <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
         <div className="flex flex-col items-center justify-center rounded-3xl shadow-lg bg-white w-full max-w-md p-8">
-        <img 
+          <img 
             src="/image/logo1.jpeg" 
             alt="Bienvenido" 
             className="w-32 mx-auto mb-4"
           />
           <h2 className="text-center text-3xl font-extrabold text-blue-800 mb-6">
-            SISTEMA DE HERRAMIETAS DEL HELICÓPTERO SUPER PUMA
+            SISTEMA DE HERRAMIENTAS DEL HELICÓPTERO SUPER PUMA
           </h2>
           {/* Imagen de bienvenida */}
 
@@ -93,7 +96,7 @@ const LoginPage = () => {
                   htmlFor="correo"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Correo electronico
+                  Correo electrónico
                 </label>
                 <input
                   type="text"
@@ -106,7 +109,7 @@ const LoginPage = () => {
               </div>
               <div className="mb-6">
                 <label
-                  htmlFor="password"
+                  htmlFor="contraseña"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Contraseña
@@ -145,6 +148,6 @@ const LoginPage = () => {
       </section>
     </>
   );
-};
+}
 
 export default LoginPage;

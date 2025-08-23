@@ -1,44 +1,105 @@
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import Head from "next/head";
-import { useAuth } from "../../controllers/hooks/use_auth";
 
-export default function DashboardIndex() {
+/* eslint-disable react/no-unescaped-entities */
+import { useEffect, useState } from "react";
+import { Herramienta } from "../../models";
+import { useAuth } from "../../controllers/hooks/use_auth";
+import HttpClient from "../../controllers/utils/http_client";
+import Sidebar from "../components/sidebar";
+import CatalogoHerramientaModal from "../components/modals/catalogoHerramientaModal";
+
+const CatalogoHerramientas = () => {
   const { auth } = useAuth();
-  const router = useRouter();
+  const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [herramientaSeleccionada, setHerramientaSeleccionada] = useState<Herramienta | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+
+  const loadHerramientas = async () => {
+    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+    const bodegas = response.data ?? [];
+    const todasHerramientas: Herramienta[] = bodegas.flatMap((b) =>
+      (b.herramientas || []).map((h: Herramienta) => ({
+        ...h,
+        nombreBodega: b.nombreBodega,
+      }))
+    );
+    setHerramientas(todasHerramientas);
+  };
 
   useEffect(() => {
-    if (auth === null) return; // aún no sabemos el rol
-    const path =
-      auth?.rol === 0 ? "/dashboard/admin" :
-      auth?.rol === 1 ? "/dashboard/bodeguero" :
-      auth?.rol === 2 ? "/dashboard/cliente" :
-      "/login";
+    loadHerramientas();
+  }, []);
 
-    // replace evita ensuciar el historial (mejor para back button)
-    router.replace(path);
-  }, [auth, router]);
+  const abrirModal = (herramienta: Herramienta) => {
+    setHerramientaSeleccionada(herramienta);
+    setShowModal(true);
+  };
+
+  const cerrarModal = () => {
+    setShowModal(false);
+    setHerramientaSeleccionada(null);
+  };
+
+  const herramientasFiltradas = herramientas.filter((h) =>
+    h.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+    h.modelo.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   return (
-    <>
-      <Head>
-        <title>Redireccionando…</title>
-        <meta name="description" content="Redireccionamiento automático al panel correspondiente." />
-      </Head>
-
-      {/* Región viva para lectores de pantalla */}
-      <div className="flex items-center justify-center h-screen" aria-live="polite">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Redireccionando…</h1>
-          <p className="mt-4">Por favor, espere mientras lo llevamos a su panel.</p>
-
-          {/* Fallback accesible si JS está desactivado */}
-          <noscript>
-            <p>La redirección automática requiere JavaScript. Use el siguiente enlace:</p>
-            <a href="/login">Ir al inicio de sesión</a>
-          </noscript>
-        </div>
+    <div className="flex h-screen">
+      {/* Sidebar izquierdo */}
+      <div className="md:w-1/6 max-w-none">
+        <Sidebar />
       </div>
-    </>
+
+      {/* Contenido principal */}
+      <div className="w-12/12 md:w-5/6 bg-blue-100 p-6 overflow-y-auto h-screen">
+        <h1 className="text-2xl font-bold text-blue-700 mb-6 text-center">Catálogo de Herramientas</h1>
+
+        {/* Panel de búsqueda */}
+        <div className="mb-6 flex justify-center">
+          <input
+            type="text"
+            placeholder="Buscar por nombre o modelo..."
+            className="w-full md:w-1/2 p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
+
+        {/* Tarjetas de herramientas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          {herramientasFiltradas
+            .sort((a, b) => a.nombre.localeCompare(b.nombre))
+            .map((h) => (
+
+            <div
+              key={h.id}
+              className="bg-white shadow-md rounded-lg p-4 cursor-pointer hover:shadow-xl transition duration-300"
+              onClick={() => abrirModal(h)}
+            >
+              <img
+                src={h.imagen || "/image/no-image.png"}
+                alt="imagen"
+                className="w-full h-40 object-cover rounded-md mb-2"
+              />
+              <h3 className="text-lg font-semibold uppercase text-blue-600">{h.nombre}</h3>
+              <p className="text-sm text-gray-600">Modelo: {h.modelo}</p>
+              <p className="text-sm text-gray-600">Estado: {h.estado}</p>
+              <p className="text-sm text-gray-600">Bodega: {h.nombreBodega}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Modal de detalle */}
+        <CatalogoHerramientaModal
+          visible={showModal}
+          close={cerrarModal}
+          herramienta={herramientaSeleccionada}
+        />
+      </div>
+    </div>
   );
-}
+};
+
+export default CatalogoHerramientas;
