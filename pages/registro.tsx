@@ -98,6 +98,20 @@ const Register = () => {
           <LoadingContainer visible={loading} miniVersion>
             <form onSubmit={formik.handleSubmit} className="w-full">
               {/* Usuario */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700">Nombre de usuario</label>
+                <input
+                  type="text"
+                  name="usuario"
+                  value={formik.values.usuario}
+                  onChange={formik.handleChange}
+                  placeholder="Ingrese su usuario EJ. jdoe123"
+                  className="mt-1 block w-full h-12 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
+                />
+                {formik.touched.usuario && formik.errors.usuario && (
+                  <p className="text-red-500 text-sm mt-1">{formik.errors.usuario}</p>
+                )}
+              </div>
               {/* Correo */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
@@ -138,7 +152,7 @@ const Register = () => {
                   name="nombre"
                   value={formik.values.nombre}
                   onChange={formik.handleChange}
-                  placeholder="Ingrese su nombre"
+                  placeholder="Ingrese su grado y apellido y nombre"
                   className="mt-1 block w-full h-12 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
                 />
                 {formik.touched.nombre && formik.errors.nombre && (

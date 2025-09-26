@@ -85,7 +85,7 @@ return (
             className="w-32 mx-auto mb-4"
           />
           <h2 className="text-center text-3xl font-extrabold text-blue-800 mb-6">
-            SISTEMA DE HERRAMIENTAS DEL HELICÓPTERO SUPER PUMA
+            SISTEMA DE HERRAMIENTAS DEL CEMAE
           </h2>
           {/* Imagen de bienvenida */}
 

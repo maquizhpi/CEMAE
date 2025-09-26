@@ -308,7 +308,7 @@ export const HerramientasPage = () => {
                 paging
                 showNavigationButtons
                 showNavigationInfo
-                pageSize={15}
+                pageSize={25}
                 infoText={(actual, total, items) =>
                   `Página ${actual} de ${total} (${items} herramientas)`
                 }

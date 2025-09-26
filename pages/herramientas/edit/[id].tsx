@@ -67,7 +67,8 @@ export const EditarHerramienta = () => {
 
   const loadUbicaciones = useCallback(async () => {
     const response = await HttpClient("/api/ubicaciones", "GET", auth.usuario, auth.rol);
-    setUbicaciones(response.data ?? []);
+    const ubicaciones = response.data ?? [];
+    setUbicaciones(ubicaciones);
   }, [auth.usuario, auth.rol]);
 
   useEffect(() => {

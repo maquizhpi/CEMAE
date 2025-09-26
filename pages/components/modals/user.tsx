@@ -42,29 +42,19 @@ const UserModal = (props: Props) => {
     onSubmit: async (formData: Usuario) => {
       if (formData.nombre === "") {
         toast.warning("El nombre no puede estar vacio");
-        return;
-      }
-
+        return;      }
       if (formData.identificacion === "") {
         toast.warning("La cedula no puede estar vacio");
-        return;
-      }
-
+        return;      }
       if (formData.usuario === "") {
         toast.warning("Ingrese un nombre de usuario");
-        return;
-      }
-
+        return;      }
       if (formData.contraseña === "") {
         toast.warning("Ingrese una contraseña para el usuario");
-        return;
-      }
-
+        return;      }
       if (formData.estado === null) {
         toast.warning("Seleccione un estado para el usuario");
-        return;
-      }
-
+        return;      }
       setLoading(true);
       console.log(formData);
       await props.onDone(formData);
@@ -72,7 +62,6 @@ const UserModal = (props: Props) => {
       handleClose();
     },
   });
-
   useEffect(() => {
     if (props.initialData) setInitialValues(props.initialData);
   }, [props.initialData]);

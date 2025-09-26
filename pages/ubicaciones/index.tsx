@@ -17,21 +17,61 @@ const UbicacionesPanel = () => {
   const [tableData, setTableData] = useState<Array<Ubicaciones>>([]);
   const [editingUbicaciones, setEditingUbicaciones] = useState<Ubicaciones | null>(null);
 
-  //  Hook de callback
-  const loadData = useCallback(async () => {
+    //  Hook de callback
+    const loadData = useCallback(async () => {
     if (!auth?.usuario || auth.rol === undefined) return;
 
     setLoading(true);
-    const response = await HttpClient("/api/ubicaciones", "GET", auth.usuario, auth.rol);
 
-    if (response.success) {
-      const users: Array<any> = response.data;
-      setTableData(users);
-    } else {
-      toast.warning(response.message);
-    }
+    const response = await HttpClient(
+        "/api/ubicaciones",
+        "GET",
+        auth.usuario,
+        auth.rol
+    );
+
+    const ubicaciones = response?.data ?? [];
+
+    // Obtén una identificación confiable del usuario autenticado
+    const myIdent =        
+        auth?.identificacion ??
+        null;
+
+    // Admin (rol 0) ve todo; Bodeguero (rol 1) solo sus ubicaciones
+    const ubicacionesFiltradas =
+        auth.rol === 0
+        ? ubicaciones
+        : ubicaciones.filter((u: any) => {
+            const identUbic =
+                u?.bodegueroAsignado?.identificacion ??
+                u?.bodega?.bodegueroAsignado?.identificacion ??
+                u?.bodegueroAsignadoId ??
+                u?.bodega?.bodegueroAsignadoId ??
+                null;
+
+            // Compara como string por seguridad
+            return (
+                myIdent != null &&
+                identUbic != null &&
+                String(identUbic) === String(myIdent)
+            );
+            });
+
+    // Normaliza campos para la UI
+    const normalizadas = ubicacionesFiltradas.map((u: any) => ({
+        ...u,
+        // Si necesitas nombre listo para columna
+        bodegueroAsignadoNombre:
+        u?.bodegueroAsignado?.nombre ??
+        u?.bodega?.bodegueroAsignado?.nombre ??
+        "N/A",
+        bodegaNombre: u?.bodega?.nombre ?? u?.bodega ?? "N/A",
+    }));
+
+    setTableData(normalizadas);
     setLoading(false);
-  }, [auth]);
+    }, [auth]);
+
 
   //  Hook de efecto
   useEffect(() => {

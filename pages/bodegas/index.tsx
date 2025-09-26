@@ -20,7 +20,11 @@ export const BodegasPage = () => {
     if (!auth?.usuario || auth.rol === undefined) return;
 
     setLoading(true);
-    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+    const response = await HttpClient(
+      "/api/bodegas", 
+      "GET", 
+      auth.usuario, 
+      auth.rol);
     const bodegas = response.data ?? [];
 
     const bodegasFiltradas = (auth.rol === 0
@@ -94,7 +98,7 @@ export const BodegasPage = () => {
         : toast.error("No puedes acceder"),
     
     delete: (rowData: Bodega) => {
-      if (!CheckPermissions(auth, [0, 1])) {
+      if (!CheckPermissions(auth, [0])) {
         toast.error("No tienes permisos para eliminar este registro");
         return;
       }
@@ -133,7 +137,7 @@ export const BodegasPage = () => {
                 Todas las bodegas
               </p>
             </div>
-            {!CheckPermissions(auth, [2]) && (
+            {!CheckPermissions(auth, [1,2]) && (
               <Button
                 className="text-white bg-blue-400 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-3 text-center mx-2 mb-2 mt-3 dark:focus:ring-blue-900"
                 onClick={() =>
