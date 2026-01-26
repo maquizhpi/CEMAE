@@ -111,252 +111,252 @@ export default function DashboardGlobal() {
   };
 
 // pagina principal del dashboard global del administrador
-return (
-  <div className="flex h-screen">
-    <div className="md:w-1/6 max-w-none">
-      <Sidebar />
-    </div>
-    <div className="w-12/12 md:w-5/6 bg-blue-100 overflow-y-scroll">
-      <div className="flex-1 p-6">
-        <div className="bg-white w-full rounded-xl shadow-2xl p-6 mb-8">
-          <h2 className="text-3xl text-center text-blue-800 font-bold mb-6">
-            Dashboard Global del Administrador
-          </h2>
+  return (
+    <div className="flex h-screen">
+      <div className="md:w-1/6 max-w-none">
+        <Sidebar />
+      </div>
+      <div className="w-12/12 md:w-5/6 bg-blue-100 overflow-y-scroll">
+        <div className="flex-1 p-6">
+          <div className="bg-white w-full rounded-xl shadow-2xl p-6 mb-8">
+            <h2 className="text-3xl text-center text-blue-800 font-bold mb-6">
+              Dashboard Global del Administrador
+            </h2>
 
-          <Section title="Bodegas Registradas">
-            {/* Cards de bodegas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {bodegas.map((bodega, index) => (
-                <div
-                  key={bodega.id}
-                  className={`p-4 rounded-lg text-center shadow-md ${
-                    index % 3 === 0
-                      ? 'bg-green-200'
-                      : index % 3 === 1
-                      ? 'bg-blue-200'
-                      : 'bg-yellow-200'
-                  }`}
-                >
-                  <p className="text-lg font-semibold text-blue-800 uppercase">{bodega.nombreBodega}</p>
-                  <p className="text-sm mt-1">Herramientas Registradas:</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {bodega.herramientas?.length || 0}
-                  </p>
+            <Section title="Bodegas Registradas">
+              {/* Cards de bodegas */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {bodegas.map((bodega, index) => (
+                  <div
+                    key={bodega.id}
+                    className={`p-4 rounded-lg text-center shadow-md ${
+                      index % 3 === 0
+                        ? 'bg-green-200'
+                        : index % 3 === 1
+                        ? 'bg-blue-200'
+                        : 'bg-yellow-200'
+                    }`}
+                  >
+                    <p className="text-lg font-semibold text-blue-800 uppercase">{bodega.nombreBodega}</p>
+                    <p className="text-sm mt-1">Herramientas Registradas:</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {bodega.herramientas?.length || 0}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <button onClick={() => generateReporteBodegas("Reporte Global Bodegas", bodegas)} className="bg-yellow-600 text-white px-4 py-2 rounded-lg">Exportar Bodegas</button>
+              </div>
+            </Section>
+
+            <Section title="Métricas de Herramientas">
+              <h3 className="text-3xl text-center text-blue-900 mb-6">
+                Métricas herramientas
+              </h3>
+              {/* Métricas herramientas*/}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div
+                    className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
+                    onClick={() => Router.push("/herramientas")}
+                  >
+                    <p className="text-xl font-bold">{total}</p>
+                    <p className="text-sm">Total Herramientas</p>
+                  </div>
+                  <div
+                    className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                    onClick={() => Router.push("/herramientas?estado=Disponible")}
+                  >
+                    <p className="text-xl font-bold">{disponibles.length}</p>
+                    <p className="text-sm">Disponibles</p>
+                  </div>
+                  <div
+                    className="bg-red-200 p-4 rounded-lg text-center cursor-pointer hover:bg-red-300"
+                    onClick={() => Router.push("/herramientas?estado=En%20uso")}
+                  >
+                    <p className="text-xl font-bold">{enUso.length}</p>
+                    <p className="text-sm">En Uso</p>
+                  </div>
+                  <div
+                    className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
+                    onClick={() => Router.push("/herramientas?calibracion=Calibrada")}
+                  >
+                    <p className="text-xl font-bold">{calibradas.length}</p>
+                    <p className="text-sm">Calibradas</p>
+                  </div>
+                  <div
+                    className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300 col-span-2 md:col-span-1"
+                    onClick={() => Router.push("/herramientas?calibracion=No%20calibrada")}
+                  >
+                    <p className="text-xl font-bold">{noCalibradas.length}</p>
+                    <p className="text-sm">No Calibradas</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              <button onClick={() => generateReporteBodegas("Reporte Global Bodegas", bodegas)} className="bg-yellow-600 text-white px-4 py-2 rounded-lg">Exportar Bodegas</button>
-            </div>
-          </Section>
+              <h3 className="text-3xl text-center text-blue-900 mb-6">
+                Gráfico de herramientas
+              </h3>
+              {/* Gráficas */}
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value">
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.name === "Disponibles" ? "#3B82F6" :
+                          entry.name === "En Uso" ? "#EF4444" :
+                          entry.name === "Calibradas" ? "#FACC15" :
+                          "#9CA3AF"
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <button onClick={() => generateReporteHerramienta("Reporte Global Herramientas", herramientas)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                  Exportar Herramientas
+                  </button>
+              </div>
+            </Section>
 
-          <Section title="Métricas de Herramientas">
-            <h3 className="text-3xl text-center text-blue-900 mb-6">
-              Métricas herramientas
-            </h3>
-            {/* Métricas herramientas*/}
+            <Section title="Métricas de Solicitudes">
+              <h3 className="text-3xl text-center text-blue-900 mb-6">
+                Métricas de solicitudes
+              </h3>
+              {/* Métricas Solicitudes*/}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">               
+                  <div
+                    className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
+                    onClick={() => router.push("/solicitudes")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesRealizadas}</p>
+                    <p className="text-sm">Solicitudes Realizadas</p>
+                  </div>
+                  <div
+                    className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
+                    onClick={() => router.push("/solicitudes?estado=ENTREGADO")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
+                    <p className="text-sm">Solicitudes Entregadas</p>
+                  </div>
+                  <div
+                    className="bg-pink-200 p-4 rounded-lg text-center cursor-pointer hover:bg-pink-300"
+                    onClick={() => router.push("/solicitudes?estado=NO%20ENTREGADO")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
+                    <p className="text-sm">Solicitudes No Entregadas</p>
+                  </div>
+                  <div
+                    className="bg-purple-200 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-300"
+                    onClick={() => router.push("/solicitudes?estado=PENDIENTE")}
+                  >
+                    <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
+                    <p className="text-sm">Solicitudes Pendientes</p>
+                  </div>
+                </div>
+              <h3 className="text-3xl text-center text-blue-900 mb-6">
+                Gráfico de solicitudes
+              </h3>
+              <ResponsiveContainer width="100%" height={300} className="mt-8">
+                <BarChart data={dataSolicitud} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value">
+                    {dataSolicitud.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.name === "Solicitudes Realizadas" ? "#3B82F6" :
+                          entry.name === "Entregadas" ? "#10B981" :
+                          entry.name === "No Entregadas" ? "#EF4444" :
+                          "#9CA3AF"
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <button onClick={() => generateReporteSolicitudes("Reporte Global Solicitudes", solicitudes)} className="bg-green-600 text-white px-4 py-2 rounded-lg">Exportar Solicitudes</button>
+              </div>
+            </Section>
+
+            <Section title="Métricas de Calibraciones">
+              <h3 className="text-3xl text-center text-blue-900 mb-6">
+                Métricas de calibraciones
+              </h3>
+              {/* Métricas Calibraciones*/}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div
-                  className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
-                  onClick={() => Router.push("/herramientas")}
+                  className="bg-orange-200 p-4 rounded-lg text-center cursor-pointer hover:bg-orange-300"
+                  onClick={() => router.push("/calibracion?estado=Herramientas%20calibradas")}
                 >
-                  <p className="text-xl font-bold">{total}</p>
-                  <p className="text-sm">Total Herramientas</p>
+                  <p className="text-xl font-bold">{calibracionesRealizadas.length}</p>
+                  <p className="text-sm">Calibraciones Realizadas</p>
                 </div>
                 <div
-                  className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
-                  onClick={() => Router.push("/herramientas?estado=Disponible")}
+                  className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300"
+                  onClick={() => router.push("/calibracion?estado=VENCIDA")}
                 >
-                  <p className="text-xl font-bold">{disponibles.length}</p>
-                  <p className="text-sm">Disponibles</p>
-                </div>
-                <div
-                  className="bg-red-200 p-4 rounded-lg text-center cursor-pointer hover:bg-red-300"
-                  onClick={() => Router.push("/herramientas?estado=En%20uso")}
-                >
-                  <p className="text-xl font-bold">{enUso.length}</p>
-                  <p className="text-sm">En Uso</p>
+                  <p className="text-xl font-bold">{calibracionVencida.length}</p>
+                  <p className="text-sm">Calibración Vencida</p>
                 </div>
                 <div
                   className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
-                  onClick={() => Router.push("/herramientas?calibracion=Calibrada")}
+                  onClick={() => router.push("/calibracion?estado=En%20calibracion")}
                 >
-                  <p className="text-xl font-bold">{calibradas.length}</p>
-                  <p className="text-sm">Calibradas</p>
-                </div>
-                <div
-                  className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300 col-span-2 md:col-span-1"
-                  onClick={() => Router.push("/herramientas?calibracion=No%20calibrada")}
-                >
-                  <p className="text-xl font-bold">{noCalibradas.length}</p>
-                  <p className="text-sm">No Calibradas</p>
-                </div>
-              </div>
-            <h3 className="text-3xl text-center text-blue-900 mb-6">
-              Gráfico de herramientas
-            </h3>
-            {/* Gráficas */}
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value">
-                  {data.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        entry.name === "Disponibles" ? "#3B82F6" :
-                        entry.name === "En Uso" ? "#EF4444" :
-                        entry.name === "Calibradas" ? "#FACC15" :
-                        "#9CA3AF"
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              <button onClick={() => generateReporteHerramienta("Reporte Global Herramientas", herramientas)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg">
-                Exportar Herramientas
-                </button>
-            </div>
-          </Section>
-
-          <Section title="Métricas de Solicitudes">
-            <h3 className="text-3xl text-center text-blue-900 mb-6">
-              Métricas de solicitudes
-            </h3>
-            {/* Métricas Solicitudes*/}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">               
-                <div
-                  className="bg-green-200 p-4 rounded-lg text-center cursor-pointer hover:bg-green-300"
-                  onClick={() => router.push("/solicitudes")}
-                >
-                  <p className="text-xl font-bold">{solicitudesRealizadas}</p>
-                  <p className="text-sm">Solicitudes Realizadas</p>
+                  <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
+                  <p className="text-sm">Calibraciones Pendientes</p>
                 </div>
                 <div
                   className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
-                  onClick={() => router.push("/solicitudes?estado=ENTREGADO")}
+                  onClick={() => router.push("/calibracion")}
                 >
-                  <p className="text-xl font-bold">{solicitudesEntregadas.length}</p>
-                  <p className="text-sm">Solicitudes Entregadas</p>
-                </div>
-                <div
-                  className="bg-pink-200 p-4 rounded-lg text-center cursor-pointer hover:bg-pink-300"
-                  onClick={() => router.push("/solicitudes?estado=NO%20ENTREGADO")}
-                >
-                  <p className="text-xl font-bold">{solicitudesNoEntregadas.length}</p>
-                  <p className="text-sm">Solicitudes No Entregadas</p>
-                </div>
-                <div
-                  className="bg-purple-200 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-300"
-                  onClick={() => router.push("/solicitudes?estado=PENDIENTE")}
-                >
-                  <p className="text-xl font-bold">{solicitudesPendientes.length}</p>
-                  <p className="text-sm">Solicitudes Pendientes</p>
+                  <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
+                  <p className="text-sm">Solicitudes de Calibración</p>
                 </div>
               </div>
-            <h3 className="text-3xl text-center text-blue-900 mb-6">
-              Gráfico de solicitudes
-            </h3>
-            <ResponsiveContainer width="100%" height={300} className="mt-8">
-              <BarChart data={dataSolicitud} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value">
-                  {dataSolicitud.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        entry.name === "Solicitudes Realizadas" ? "#3B82F6" :
-                        entry.name === "Entregadas" ? "#10B981" :
-                        entry.name === "No Entregadas" ? "#EF4444" :
-                        "#9CA3AF"
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              <button onClick={() => generateReporteSolicitudes("Reporte Global Solicitudes", solicitudes)} className="bg-green-600 text-white px-4 py-2 rounded-lg">Exportar Solicitudes</button>
-            </div>
-          </Section>
-
-          <Section title="Métricas de Calibraciones">
-            <h3 className="text-3xl text-center text-blue-900 mb-6">
-              Métricas de calibraciones
-            </h3>
-            {/* Métricas Calibraciones*/}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div
-                className="bg-orange-200 p-4 rounded-lg text-center cursor-pointer hover:bg-orange-300"
-                onClick={() => router.push("/calibracion?estado=Herramientas%20calibradas")}
-              >
-                <p className="text-xl font-bold">{calibracionesRealizadas.length}</p>
-                <p className="text-sm">Calibraciones Realizadas</p>
-              </div>
-              <div
-                className="bg-gray-200 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-300"
-                onClick={() => router.push("/calibracion?estado=VENCIDA")}
-              >
-                <p className="text-xl font-bold">{calibracionVencida.length}</p>
-                <p className="text-sm">Calibración Vencida</p>
-              </div>
-              <div
-                className="bg-yellow-200 p-4 rounded-lg text-center cursor-pointer hover:bg-yellow-300"
-                onClick={() => router.push("/calibracion?estado=En%20calibracion")}
-              >
-                <p className="text-xl font-bold">{calibracionesPendientes.length}</p>
-                <p className="text-sm">Calibraciones Pendientes</p>
-              </div>
-              <div
-                className="bg-blue-200 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-300"
-                onClick={() => router.push("/calibracion")}
-              >
-                <p className="text-xl font-bold">{calibracionesSolicitadas}</p>
-                <p className="text-sm">Solicitudes de Calibración</p>
-              </div>
-            </div>
-            <h3 className="text-3xl text-center text-blue-900 mb-6">
-              Gráfico de calibraciones
-            </h3>
-            <ResponsiveContainer width="100%" height={300} className="mt-8">
-              <BarChart data={dataCalibraciones} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value">
-                  {dataCalibraciones.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        entry.name === "Solicitadas" ? "#3B82F6" :
-                        entry.name === "Realizadas" ? "#10B981" :
-                        entry.name === "Pendientes" ? "#F59E0B" :
-                        "#EF4444"
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              <button onClick={() => generateReporteCalibraciones("Reporte Global Calibraciones", calibraciones)} className="bg-purple-600 text-white px-4 py-2 rounded-lg">Exportar Calibraciones</button>
-            </div> 
-          </Section>
+              <h3 className="text-3xl text-center text-blue-900 mb-6">
+                Gráfico de calibraciones
+              </h3>
+              <ResponsiveContainer width="100%" height={300} className="mt-8">
+                <BarChart data={dataCalibraciones} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value">
+                    {dataCalibraciones.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.name === "Solicitadas" ? "#3B82F6" :
+                          entry.name === "Realizadas" ? "#10B981" :
+                          entry.name === "Pendientes" ? "#F59E0B" :
+                          "#EF4444"
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                <button onClick={() => generateReporteCalibraciones("Reporte Global Calibraciones", calibraciones)} className="bg-purple-600 text-white px-4 py-2 rounded-lg">Exportar Calibraciones</button>
+              </div> 
+            </Section>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 

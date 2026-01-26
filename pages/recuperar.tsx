@@ -17,6 +17,7 @@ const RecuperarClave = () => {
 
   // valores del formulario
   const [initialValues, _setInitialValues] = useState<Usuario>({
+    user: {} as Usuario,
     number: 0,
     identificacion: "",
     usuario: "",

@@ -6,6 +6,7 @@ import { ResponseData, Usuario } from "../../../../models";
 import HttpClient from "../../../../controllers/utils/http_client";
 import TreeTable, { ColumnData } from "../../../components/tree_table";
 import UserModal from "../../../components/modals/user";
+import Link from "next/link";
 
 const UsersPanel = () => {
   const { auth } = useAuth();
@@ -103,12 +104,25 @@ const UsersPanel = () => {
 
   return (
     <div style={{ padding: "40px 0" }}>
+      
       <button
         className="text-center bg-transparent hover:bg-blue-600 text-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
         onClick={showModal}
       >
         Crear Usuario
       </button>
+
+      <Link
+        href="/layouts/config/users/importar"
+        className="text-center bg-transparent hover:bg-blue-600 text-blue-500 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
+      >
+        Importar Usuarios
+      </Link>
+
+      
+
+      
+
       <LoadingContainer visible={loading} miniVersion>
         <TreeTable
           dataSource={tableData}

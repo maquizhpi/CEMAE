@@ -22,6 +22,7 @@ const UserSchema = new mongoose.Schema<Usuario>(
     telefono: { type: String },
     rol: { type: Number },
     estado: { type: String },
+    imagen: { type: String },
   },
   { timestamps: true }
 );

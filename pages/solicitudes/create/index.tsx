@@ -21,17 +21,23 @@ export const RegistroCreate = () => {
   const [loading, setLoading] = useState(false);
   const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
   const [client, setClient] = useState<Usuario[]>([]);
-  const [selectedTool, setSelectedTool] = useState(null);
+  const [selectedTool, setSelectedTool] = useState<any>(null);
   const [bodegasDelUsuario, setBodegasDelUsuario] = useState<any[]>([]);
   const [bodegaSeleccionada, setBodegaSeleccionada] = useState<string>("");
 
   // Cargar bodegas
   const loadProducts = useCallback(async () => {
     setLoading(true);
-    const response = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+    const response = await HttpClient(
+      "/api/bodegas",
+      "GET",
+      auth.usuario,
+      auth.rol
+    );
     const bodegas = response.data ?? [];
     const bodegasUsuario = bodegas.filter(
-      (bodega) => bodega.bodegueroAsignado?.identificacion === auth.identificacion
+      (bodega) =>
+        bodega.bodegueroAsignado?.identificacion === auth.identificacion
     );
     setBodegasDelUsuario(bodegasUsuario);
     if (bodegasUsuario.length > 0 && !bodegaSeleccionada) {
@@ -43,7 +49,9 @@ export const RegistroCreate = () => {
   const loadClient = useCallback(async () => {
     setLoading(true);
     const response = await HttpClient("/api/user", "GET", auth.usuario, auth.rol);
-    const clientesDisponibles = (response.data ?? []).filter((c: any) => c.rol === 2);
+    const clientesDisponibles = (response.data ?? []).filter(
+      (c: any) => c.rol === 2
+    );
     setClient(clientesDisponibles);
     setLoading(false);
   }, [auth.usuario, auth.rol]);
@@ -72,7 +80,7 @@ export const RegistroCreate = () => {
       nombre: auth.nombre,
       identificacion: auth.identificacion,
       telefono: auth.telefono,
-      correo: auth.correo
+      correo: auth.correo,
     },
     receptor: {
       nombre: "",
@@ -82,7 +90,7 @@ export const RegistroCreate = () => {
     },
     estado: "NO ENTREGADO",
     bodega: "",
-    observacion: ""
+    observacion: "",
   };
 
   const formik = useFormik({
@@ -98,10 +106,12 @@ export const RegistroCreate = () => {
       }
 
       setLoading(true);
-      const bodegaSeleccionadaObj = bodegasDelUsuario.find(b => b.id === bodegaSeleccionada);
+      const bodegaSeleccionadaObj = bodegasDelUsuario.find(
+        (b) => b.id === bodegaSeleccionada
+      );
       values.bodega = bodegaSeleccionadaObj?.nombreBodega || "Bodega no encontrada";
 
-      const response = await HttpClient(
+      const response: ResponseData = await HttpClient(
         "/api/solicitudes",
         "POST",
         auth.usuario,
@@ -111,51 +121,69 @@ export const RegistroCreate = () => {
 
       if (response.success) {
         try {
-          const bodegasResponse = await HttpClient("/api/bodegas", "GET", auth.usuario, auth.rol);
+          const bodegasResponse = await HttpClient(
+            "/api/bodegas",
+            "GET",
+            auth.usuario,
+            auth.rol
+          );
           const bodegas = bodegasResponse.data ?? [];
-          const actualizacionesPorBodega = {};
+          const actualizacionesPorBodega: any = {};
 
           for (const herramientaSolicitud of values.herramientas) {
             for (const bodega of bodegas) {
               if (!bodega.herramientas) continue;
-              const indiceHerramienta = bodega.herramientas.findIndex(h => h.id === herramientaSolicitud.id);
+              const indiceHerramienta = bodega.herramientas.findIndex(
+                (h: Herramienta) => h.id === herramientaSolicitud.id
+              );
               if (indiceHerramienta !== -1) {
                 if (!actualizacionesPorBodega[bodega.id]) {
                   actualizacionesPorBodega[bodega.id] = {
                     bodega: bodega,
-                    herramientasActualizar: []
+                    herramientasActualizar: [],
                   };
                 }
                 actualizacionesPorBodega[bodega.id].herramientasActualizar.push({
                   indice: indiceHerramienta,
-                  id: herramientaSolicitud.id
+                  id: herramientaSolicitud.id,
                 });
                 break;
               }
             }
           }
 
-          await Promise.all(Object.values(actualizacionesPorBodega).map(async (actualizacion) => {
-            //@ts-ignore
-            const { bodega, herramientasActualizar } = actualizacion;
-            const herramientasActualizadas = [...bodega.herramientas];
-            for (const { indice } of herramientasActualizar) {
-              herramientasActualizadas[indice] = {
-                ...herramientasActualizadas[indice],
-                estado: "En uso"
+          await Promise.all(
+            Object.values(actualizacionesPorBodega).map(async (actualizacion: any) => {
+              const { bodega, herramientasActualizar } = actualizacion;
+              const herramientasActualizadas = [...bodega.herramientas];
+              for (const { indice } of herramientasActualizar) {
+                herramientasActualizadas[indice] = {
+                  ...herramientasActualizadas[indice],
+                  estado: "En uso",
+                };
+              }
+              const bodegaActualizada = {
+                ...bodega,
+                herramientas: herramientasActualizadas,
               };
-            }
-            const bodegaActualizada = {
-              ...bodega,
-              herramientas: herramientasActualizadas
-            };
-            return HttpClient("/api/bodegas/", "PUT", auth.usuario, auth.rol, bodegaActualizada);
-          }));
+              return HttpClient(
+                "/api/bodegas/",
+                "PUT",
+                auth.usuario,
+                auth.rol,
+                bodegaActualizada
+              );
+            })
+          );
 
-          toast.success("Registro creado correctamente y herramientas actualizadas a 'En uso'!");
+          toast.success(
+            "Registro creado correctamente y herramientas actualizadas a 'En uso'!"
+          );
         } catch (error) {
           console.error("Error al actualizar las herramientas:", error);
-          toast.warning("Registro creado pero hubo un problema al actualizar las herramientas.");
+          toast.warning(
+            "Registro creado pero hubo un problema al actualizar las herramientas."
+          );
         }
 
         Router.back();
@@ -167,6 +195,7 @@ export const RegistroCreate = () => {
     },
   });
 
+  // === OPCIONES PARA HERRAMIENTAS ===
   const herramientasDisponibles = herramientas.filter(
     (h) => !formik.values.herramientas.some((selected) => selected.id === h.id)
   );
@@ -174,6 +203,13 @@ export const RegistroCreate = () => {
   const toolOptions = herramientasDisponibles.map((tool) => ({
     value: tool.id || tool._id,
     label: `${tool.nombre} - ${tool.codigo} - ${tool.modelo} - ${tool.marca} - ${tool.ubicacion} - ${tool.serie}`,
+  }));
+
+  // === OPCIONES PARA RECEPTOR (CLIENTES) ===
+  const clientOptions = client.map((c) => ({
+    value: c.id || (c as any)._id,
+    label: c.nombre,
+    data: c,
   }));
 
   const addHerramienta = () => {
@@ -203,7 +239,9 @@ export const RegistroCreate = () => {
           <form onSubmit={formik.handleSubmit}>
             {/* SELECCION DE BODEGA */}
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">Seleccionar Bodega</label>
+              <label className="block text-blue-500 font-bold mb-2">
+                Seleccionar Bodega
+              </label>
               <select
                 value={bodegaSeleccionada}
                 onChange={(e) => setBodegaSeleccionada(e.target.value)}
@@ -219,7 +257,9 @@ export const RegistroCreate = () => {
 
             {/* BODEGUERO */}
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">Bodeguero</label>
+              <label className="block text-blue-500 font-bold mb-2">
+                Bodeguero
+              </label>
               <input
                 type="text"
                 name="bodeguero"
@@ -230,32 +270,53 @@ export const RegistroCreate = () => {
               />
             </div>
 
-            {/* RECEPTOR */}
+            {/* RECEPTOR CON REACT-SELECT */}
             <div className="mb-4">
-              <label className="block text-blue-500 font-bold mb-2">Receptor</label>
-              <select
-                name="receptor"
-                value={formik.values.receptor?.nombre || ""}
-                onChange={(e) => {
-                  const selectedClient = client.find(c => c.nombre === e.target.value);
-                  formik.setFieldValue("receptor", selectedClient || {
-                    nombre: "", identificacion: "", correo: "", telefono: ""
-                  });
+              <label className="block text-blue-500 font-bold mb-2">
+                Receptor
+              </label>
+              <Select
+                options={clientOptions}
+                isSearchable
+                isClearable
+                placeholder="Buscar receptor..."
+                // Buscar la opción que corresponde al receptor guardado en formik
+                value={
+                  formik.values.receptor?.identificacion
+                    ? clientOptions.find(
+                        (opt) =>
+                          opt.data.identificacion ===
+                          formik.values.receptor.identificacion
+                      ) || null
+                    : null
+                }
+                onChange={(option) => {
+                  if (option) {
+                    const selectedClient = (option as any).data as Usuario;
+                    formik.setFieldValue("receptor", {
+                      nombre: selectedClient.nombre,
+                      identificacion: selectedClient.identificacion,
+                      correo: selectedClient.correo,
+                      telefono: selectedClient.telefono,
+                    });
+                  } else {
+                    formik.setFieldValue("receptor", {
+                      nombre: "",
+                      identificacion: "",
+                      correo: "",
+                      telefono: "",
+                    });
+                  }
                 }}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              >
-                <option value="">Seleccione un cliente</option>
-                {client.map((c) => (
-                  <option key={c.id} value={c.nombre}>
-                    {c.nombre} - {c.identificacion} - {c.correo}
-                  </option>
-                ))}
-              </select>
+                className="w-full"
+              />
             </div>
 
             {/* AGREGAR HERRAMIENTAS */}
             <div className="mb-4">
-              <p className="text-xl font-bold text-blue-500 mb-2">Agregar herramientas</p>
+              <p className="text-xl font-bold text-blue-500 mb-2">
+                Agregar herramientas
+              </p>
               <div className="flex items-center gap-2">
                 <div className="w-full">
                   <Select
@@ -279,21 +340,30 @@ export const RegistroCreate = () => {
 
             {/* LISTADO DE HERRAMIENTAS AGREGADAS */}
             <div className="mb-4">
-              <p className="text-xl font-bold text-blue-500 mb-2">Herramientas agregadas</p>
+              <p className="text-xl font-bold text-blue-500 mb-2">
+                Herramientas agregadas
+              </p>
               {formik.values.herramientas.length === 0 ? (
                 <p className="text-gray-500">No hay herramientas agregadas.</p>
               ) : (
                 <ul className="border rounded-lg p-3 bg-gray-50">
                   {formik.values.herramientas.map((tool, index) => (
-                    <li key={index} className="flex justify-between items-center border-b last:border-b-0 p-2">
+                    <li
+                      key={index}
+                      className="flex justify-between items-center border-b last:border-b-0 p-2"
+                    >
                       <span>
-                        {tool.nombre} - {tool.codigo} - {tool.modelo} - {tool.marca} - {tool.ubicacion} - {tool.serie}
+                        {tool.nombre} - {tool.codigo} - {tool.modelo} -{" "}
+                        {tool.marca} - {tool.ubicacion} - {tool.serie}
                       </span>
                       <Button
                         className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg"
                         size="sm"
                         onClick={() => {
-                          const updatedTools = formik.values.herramientas.filter((_, i) => i !== index);
+                          const updatedTools =
+                            formik.values.herramientas.filter(
+                              (_: any, i: number) => i !== index
+                            );
                           formik.setFieldValue("herramientas", updatedTools);
                         }}
                       >

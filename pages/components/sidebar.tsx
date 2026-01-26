@@ -17,6 +17,7 @@ import { useCallback, useState } from "react";
 import Router, { useRouter } from "next/router";
 import { CheckPermissions } from "../../controllers/utils/check_permissions";
 import Image from "next/image";
+import Link from "next/link";
 
 
 const Sidebar = () => {
@@ -61,17 +62,32 @@ const Sidebar = () => {
         <button
           className="lg:hidden absolute top-4 right-4 text-gray-700 text-2xl"
           onClick={() => setMenuAbierto(false)}
-        >
-          ×
+        >        
         </button>
+        
         {/* Imagen del logo */}
-        <div className="flex justify-center">
-          <Image src="/image/logo2.jpeg" alt="Logo perteneciente a la unidad CEMAE" width={100} height={100} />
+        <div className="flex flex-col items-center">
+          <Link href="/dashboard/perfil" className="cursor-pointer">
+            <div className="w-40 h-40 rounded-full overflow-hidden border bg-gray-100 flex items-center justify-center hover:opacity-90 transition">
+              {auth.imagen && auth.imagen.trim() !== "" ? (
+                <Image
+                  src={auth.imagen || "/avatar.png"}   // pon una imagen local fallback si quieres
+                  alt="Foto de perfil"
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                />
+
+              ) : (
+                <span className="text-5xl text-gray-600">
+                  {auth.nombre?.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+          </Link>
         </div>
-        {/* Nombre del usuario */}
-        <p className="text-center mb-4">
-          <strong>{auth?.nombre}</strong>
-        </p>
+
+
         {/* Tipo de cliente */}
         <p className="text-center text-black text-base font-bold mb-4">
           {auth?.rol === 0 && "Administrador"}

@@ -13,6 +13,7 @@ const Register = () => {
   const { login } = useAuth();
 
   const [initialValues, _setInitialValues] = useState<Usuario>({
+    user: {} as Usuario, // or provide a valid Usuario object if needed
     number: 0,
     identificacion: "",
     usuario: "",

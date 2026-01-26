@@ -28,6 +28,7 @@ export type UserRole =
 
 // Modelo para los usuarios
 export type Usuario = {
+  user: Usuario;
   id?: string;
   number: number;
   identificacion: string;
@@ -38,6 +39,7 @@ export type Usuario = {
   telefono: string;
   rol: UserRole;
   estado: string;
+  imagen?: string;   // ← URL de la foto de perfil
 };
 
 // modelo para url imgenes de las herramientas
