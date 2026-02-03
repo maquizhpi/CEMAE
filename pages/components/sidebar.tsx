@@ -65,21 +65,19 @@ const Sidebar = () => {
         >        
         </button>
         
-        {/* Imagen del logo */}
         <div className="flex flex-col items-center">
           <Link href="/dashboard/perfil" className="cursor-pointer">
-            <div className="w-40 h-40 rounded-full overflow-hidden border bg-gray-100 flex items-center justify-center hover:opacity-90 transition">
+            <div className="relative w-40 h-40 rounded-full overflow-hidden border bg-gray-100 hover:opacity-90 transition">
               {auth.imagen && auth.imagen.trim() !== "" ? (
                 <Image
-                  src={auth.imagen || "/avatar.png"}   // pon una imagen local fallback si quieres
+                  src={auth.imagen || "/avatar.png"}
                   alt="Foto de perfil"
-                  width={40}
-                  height={40}
-                  className="rounded-full object-cover"
+                  fill
+                  className="object-cover rounded-full"
+                  priority
                 />
-
               ) : (
-                <span className="text-5xl text-gray-600">
+                <span className="text-5xl text-gray-600 flex items-center justify-center h-full">
                   {auth.nombre?.charAt(0).toUpperCase()}
                 </span>
               )}
